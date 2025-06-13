@@ -31,29 +31,29 @@ export default function Header() {
           
           <nav className="hidden md:flex space-x-8">
             <Link href="/dashboard">
-              <a className={`px-3 py-2 text-sm font-medium transition-colors ${
+              <span className={`px-3 py-2 text-sm font-medium transition-colors cursor-pointer ${
                 isActive('/dashboard') 
                   ? 'text-solar-orange border-b-2 border-solar-orange' 
                   : 'text-gray-700 hover:text-solar-orange'
               }`}>
                 Dashboard
-              </a>
+              </span>
             </Link>
             <Link href="/simulation">
-              <a className={`px-3 py-2 text-sm font-medium transition-colors ${
+              <span className={`px-3 py-2 text-sm font-medium transition-colors cursor-pointer ${
                 isActive('/simulation') 
                   ? 'text-solar-orange border-b-2 border-solar-orange' 
                   : 'text-gray-700 hover:text-solar-orange'
               }`}>
                 Simulações
-              </a>
+              </span>
             </Link>
-            <a href="#reports" className="text-gray-700 hover:text-solar-orange px-3 py-2 text-sm font-medium">
+            <span className="text-gray-700 hover:text-solar-orange px-3 py-2 text-sm font-medium cursor-pointer">
               Relatórios
-            </a>
-            <a href="#settings" className="text-gray-700 hover:text-solar-orange px-3 py-2 text-sm font-medium">
+            </span>
+            <span className="text-gray-700 hover:text-solar-orange px-3 py-2 text-sm font-medium cursor-pointer">
               Configurações
-            </a>
+            </span>
           </nav>
 
           <div className="flex items-center space-x-4">
