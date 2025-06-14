@@ -1,0 +1,65 @@
+Olá! Seguem abaixo as observações identificadas durante os testes de funcionalidade na aplicação AUTON®, com foco especial nas simulações por categoria e nos relatórios gerados.
+
+✅ Relatório de Pendências Identificadas
+📄 Relatórios em PDF não foram gerados para unidades comerciais
+
+A funcionalidade de exportação em PDF aparentemente está inoperante quando a simulação pertence ao tipo "Comercial".
+
+É necessário investigar se o problema está na lógica condicional, na renderização do template ou na chamada de geração de PDF.
+
+🏠 A simulação do tipo "Residencial" não está gerando saída
+
+Quando o usuário seleciona o tipo Residencial, o botão de calcular simulação não dispara ação ou não retorna resultado.
+
+Verificar se há erro de rota, ausência de cálculo vinculado ou falha no back-end.
+
+⚙️ Menus “Relatórios” e “Configurações” estão desativados
+
+Esses menus aparecem na interface, porém estão sem ação vinculada ou com visibilidade limitada.
+
+Avaliar se estão comentados no código, se faltam links de rota ou permissões condicionais de usuário.
+
+💾 Simulações não estão sendo salvas
+
+Nenhuma simulação realizada é registrada no banco de dados após o clique em “Salvar”.
+
+Verificar se o botão está acionando o endpoint correto e se o backend está recebendo e persistindo os dados.
+
+Verificar integridade da collection/tabela de simulações.
+
+💰 Necessário validar os cálculos financeiros
+
+Precisamos revisar se os seguintes indicadores estão corretos:
+
+Geração estimada mensal (kWh)
+
+Payback
+
+Investimento total
+
+Economia mensal
+
+Comparar valores com planilha de referência técnica e regras paramétricas adotadas.
+
+📊 Verificar a origem dos dados utilizados nas simulações
+
+Especificar claramente:
+
+Quais são os coeficientes fixos usados (ex: irradiação solar média, rendimento de painéis).
+
+Se os dados estão vindo de arquivos .json, banco de dados ou valores hardcoded.
+
+Ideal que esses parâmetros estejam acessíveis em um único arquivo de configuração ou módulo central.
+
+✅ Ações Esperadas
+Corrigir os bugs e reativar funcionalidades citadas.
+
+Garantir salvamento correto no banco de dados.
+
+Validar precisão dos cálculos financeiros.
+
+Documentar (via README ou comentários no código) a origem dos dados de simulação.
+
+Caso necessário, retornar com print de logs ou traceback para análise pontual.
+
+🧪 Os testes foram realizados com 4 tipos de simulação: Residencial, Recarga de Veículos Elétricos, Áreas Comuns e Comercial. Apenas Recarga e Áreas Comuns estão operando com resultado completo.

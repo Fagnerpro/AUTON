@@ -318,25 +318,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Simulação não encontrada" });
       }
       
-      let results;
-      const params = simulation.parameters as any;
-      
-      switch (simulation.type) {
-        case 'residential':
-          results = calculateResidentialSystem(params);
-          break;
-        case 'ev_charging':
-          results = calculateEVChargingSystem(params);
-          break;
-        case 'commercial':
-          results = calculateCommercialSystem(params);
-          break;
-        case 'common_areas':
-          results = calculateCommonAreasSystem(params);
-          break;
-        default:
-          return res.status(400).json({ message: "Tipo de simulação inválido" });
-      }
+      // Use the new calculation engine
+      const results = await storage.calculateSimulationResults(simulation);
       
       const updatedSimulation = await storage.updateSimulation(id, {
         results,
@@ -345,7 +328,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(updatedSimulation);
     } catch (error) {
-      res.status(500).json({ message: "Erro ao calcular simulação" });
+      console.error('Erro ao calcular simulação:', error);
+      res.status(500).json({ message: "Erro ao calcular simulação: " + (error as Error).message });
     }
   });
 

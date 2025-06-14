@@ -1,4 +1,11 @@
 import { users, simulations, organizations, type User, type InsertUser, type Simulation, type InsertSimulation, type Organization, type InsertOrganization } from "@shared/schema";
+import { 
+  SOLAR_SIMULATION_CONFIG, 
+  getSolarIrradiation, 
+  getRegionalFactor, 
+  calculateRequiredPower, 
+  calculatePanelCount 
+} from '@shared/simulation-config';
 
 export interface IStorage {
   // User operations
@@ -27,6 +34,9 @@ export interface IStorage {
     totalSavings: number;
     totalPower: number;
   }>;
+  
+  // Calculate simulation with improved algorithm
+  calculateSimulationResults(simulation: Simulation): Promise<any>;
 }
 
 export class MemStorage implements IStorage {
@@ -187,6 +197,221 @@ export class MemStorage implements IStorage {
       activeProjects,
       totalSavings,
       totalPower,
+    };
+  }
+
+  async calculateSimulationResults(simulation: Simulation): Promise<any> {
+    const parameters = simulation.parameters as any;
+    const state = simulation.state || 'GO';
+    
+    try {
+      switch (simulation.type) {
+        case 'residential':
+          return this.calculateResidential(parameters, state);
+        case 'commercial':
+          return this.calculateCommercial(parameters, state);
+        case 'ev_charging':
+          return this.calculateEVCharging(parameters, state);
+        case 'common_areas':
+          return this.calculateCommonAreas(parameters, state);
+        default:
+          throw new Error(`Tipo de simulação não suportado: ${simulation.type}`);
+      }
+    } catch (error) {
+      console.error('Erro no cálculo da simulação:', error);
+      throw error;
+    }
+  }
+
+  private calculateResidential(parameters: any, state: string): any {
+    const monthlyConsumption = parameters.monthlyConsumption || 350;
+    const availableArea = parameters.roofArea || 50;
+    
+    const irradiation = getSolarIrradiation(state);
+    const requiredPower = calculateRequiredPower(monthlyConsumption, state);
+    const panelCount = calculatePanelCount(requiredPower);
+    const requiredArea = panelCount * SOLAR_SIMULATION_CONFIG.PANEL_SPECS.area;
+    
+    if (requiredArea > availableArea) {
+      const maxPanels = Math.floor(availableArea / SOLAR_SIMULATION_CONFIG.PANEL_SPECS.area);
+      const maxPower = maxPanels * (SOLAR_SIMULATION_CONFIG.PANEL_SPECS.power / 1000);
+      const maxGeneration = maxPower * irradiation * 30 * SOLAR_SIMULATION_CONFIG.SYSTEM_EFFICIENCY.overall;
+      
+      return this.calculateFinancials({
+        installedPower: maxPower,
+        panelCount: maxPanels,
+        monthlyGeneration: maxGeneration,
+        monthlyConsumption,
+        usedArea: maxPanels * SOLAR_SIMULATION_CONFIG.PANEL_SPECS.area,
+        coveragePercentage: (maxGeneration / monthlyConsumption) * 100,
+        state
+      });
+    }
+    
+    const monthlyGeneration = requiredPower * irradiation * 30 * SOLAR_SIMULATION_CONFIG.SYSTEM_EFFICIENCY.overall;
+    
+    return this.calculateFinancials({
+      installedPower: requiredPower,
+      panelCount,
+      monthlyGeneration,
+      monthlyConsumption,
+      usedArea: requiredArea,
+      coveragePercentage: 100,
+      state
+    });
+  }
+
+  private calculateCommercial(parameters: any, state: string): any {
+    const monthlyConsumption = parameters.monthlyConsumption || 2500;
+    const availableArea = parameters.availableArea || 200;
+    const operatingHours = parameters.operatingHours || 12;
+    
+    // Ajuste para consumo comercial (maior durante o dia)
+    const daytimeConsumption = monthlyConsumption * 0.7; // 70% do consumo durante o dia
+    const irradiation = getSolarIrradiation(state);
+    const requiredPower = calculateRequiredPower(daytimeConsumption, state);
+    const panelCount = calculatePanelCount(requiredPower);
+    const requiredArea = panelCount * SOLAR_SIMULATION_CONFIG.PANEL_SPECS.area;
+    
+    if (requiredArea > availableArea) {
+      const maxPanels = Math.floor(availableArea / SOLAR_SIMULATION_CONFIG.PANEL_SPECS.area);
+      const maxPower = maxPanels * (SOLAR_SIMULATION_CONFIG.PANEL_SPECS.power / 1000);
+      const maxGeneration = maxPower * irradiation * 30 * SOLAR_SIMULATION_CONFIG.SYSTEM_EFFICIENCY.overall;
+      
+      return this.calculateFinancials({
+        installedPower: maxPower,
+        panelCount: maxPanels,
+        monthlyGeneration: maxGeneration,
+        monthlyConsumption,
+        usedArea: maxPanels * SOLAR_SIMULATION_CONFIG.PANEL_SPECS.area,
+        coveragePercentage: (maxGeneration / monthlyConsumption) * 100,
+        state,
+        projectType: 'commercial'
+      });
+    }
+    
+    const monthlyGeneration = requiredPower * irradiation * 30 * SOLAR_SIMULATION_CONFIG.SYSTEM_EFFICIENCY.overall;
+    
+    return this.calculateFinancials({
+      installedPower: requiredPower,
+      panelCount,
+      monthlyGeneration,
+      monthlyConsumption,
+      usedArea: requiredArea,
+      coveragePercentage: 100,
+      state,
+      projectType: 'commercial'
+    });
+  }
+
+  private calculateEVCharging(parameters: any, state: string): any {
+    const vehicleCount = parameters.vehicleCount || 1;
+    const monthlyKm = parameters.monthlyKm || 1200;
+    const vehicleEfficiency = parameters.vehicleEfficiency || 6; // km/kWh
+    
+    const monthlyConsumption = (monthlyKm / vehicleEfficiency) * vehicleCount;
+    const irradiation = getSolarIrradiation(state);
+    const requiredPower = calculateRequiredPower(monthlyConsumption, state);
+    const panelCount = calculatePanelCount(requiredPower);
+    const requiredArea = panelCount * SOLAR_SIMULATION_CONFIG.PANEL_SPECS.area;
+    
+    const monthlyGeneration = requiredPower * irradiation * 30 * SOLAR_SIMULATION_CONFIG.SYSTEM_EFFICIENCY.overall;
+    
+    return this.calculateFinancials({
+      installedPower: requiredPower,
+      panelCount,
+      monthlyGeneration,
+      monthlyConsumption,
+      usedArea: requiredArea,
+      coveragePercentage: 100,
+      state,
+      projectType: 'ev_charging',
+      vehicleCount,
+      monthlyKm
+    });
+  }
+
+  private calculateCommonAreas(parameters: any, state: string): any {
+    const buildingUnits = parameters.buildingUnits || 20;
+    const hasElevator = parameters.hasElevator || false;
+    const hasPool = parameters.hasPool || false;
+    const hasSecurity = parameters.hasSecurity || true;
+    
+    let monthlyConsumption = buildingUnits * 50; // 50 kWh base por unidade
+    
+    if (hasElevator) monthlyConsumption += SOLAR_SIMULATION_CONFIG.PROJECT_TYPES.common_areas.elevator_consumption;
+    if (hasPool) monthlyConsumption += SOLAR_SIMULATION_CONFIG.PROJECT_TYPES.common_areas.pool_consumption;
+    if (hasSecurity) monthlyConsumption += SOLAR_SIMULATION_CONFIG.PROJECT_TYPES.common_areas.security_consumption;
+    
+    const irradiation = getSolarIrradiation(state);
+    const requiredPower = calculateRequiredPower(monthlyConsumption, state);
+    const panelCount = calculatePanelCount(requiredPower);
+    const requiredArea = panelCount * SOLAR_SIMULATION_CONFIG.PANEL_SPECS.area;
+    
+    const monthlyGeneration = requiredPower * irradiation * 30 * SOLAR_SIMULATION_CONFIG.SYSTEM_EFFICIENCY.overall;
+    
+    return this.calculateFinancials({
+      installedPower: requiredPower,
+      panelCount,
+      monthlyGeneration,
+      monthlyConsumption,
+      usedArea: requiredArea,
+      coveragePercentage: 100,
+      state,
+      projectType: 'common_areas',
+      buildingUnits
+    });
+  }
+
+  private calculateFinancials(data: any): any {
+    const { installedPower, panelCount, monthlyGeneration, monthlyConsumption, usedArea, coveragePercentage, state, projectType } = data;
+    
+    const regionalFactor = getRegionalFactor(state);
+    const totalInvestment = installedPower * 1000 * SOLAR_SIMULATION_CONFIG.FINANCIAL.installation_cost_per_wp * regionalFactor.cost;
+    
+    const monthlySavings = monthlyGeneration * SOLAR_SIMULATION_CONFIG.FINANCIAL.tariff_kwh;
+    const annualSavings = monthlySavings * 12;
+    
+    // Cálculo do payback considerando aumento anual da tarifa
+    let cumulativeSavings = 0;
+    let paybackYears = 0;
+    
+    for (let year = 1; year <= 25; year++) {
+      const yearlyTariff = SOLAR_SIMULATION_CONFIG.FINANCIAL.tariff_kwh * Math.pow(1 + SOLAR_SIMULATION_CONFIG.FINANCIAL.annual_increase, year - 1);
+      const yearlySavings = monthlyGeneration * 12 * yearlyTariff;
+      cumulativeSavings += yearlySavings;
+      
+      if (cumulativeSavings >= totalInvestment && paybackYears === 0) {
+        paybackYears = year + (totalInvestment - (cumulativeSavings - yearlySavings)) / yearlySavings;
+      }
+    }
+    
+    const roi = ((cumulativeSavings - totalInvestment) / totalInvestment) * 100;
+    
+    return {
+      technical_specs: {
+        installed_power: Math.round(installedPower * 100) / 100,
+        panel_count: panelCount,
+        monthly_generation: Math.round(monthlyGeneration),
+        annual_generation: Math.round(monthlyGeneration * 12),
+        used_area: Math.round(usedArea * 100) / 100,
+        coverage_percentage: Math.round(coveragePercentage),
+        irradiation: getSolarIrradiation(state),
+        system_efficiency: SOLAR_SIMULATION_CONFIG.SYSTEM_EFFICIENCY.overall
+      },
+      financial_analysis: {
+        total_investment: Math.round(totalInvestment),
+        monthly_savings: Math.round(monthlySavings),
+        annual_savings: Math.round(annualSavings),
+        payback_years: Math.round(paybackYears * 100) / 100,
+        roi_25_years: Math.round(roi),
+        total_savings_25_years: Math.round(cumulativeSavings),
+        net_profit_25_years: Math.round(cumulativeSavings - totalInvestment)
+      },
+      environmental_impact: {
+        co2_avoided_annually: Math.round(monthlyGeneration * 12 * 0.0817), // kg CO2/kWh
+        trees_equivalent: Math.round(monthlyGeneration * 12 * 0.0817 / 21.77) // árvores equivalentes
+      }
     };
   }
 }
