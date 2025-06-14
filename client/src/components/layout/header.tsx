@@ -48,12 +48,24 @@ export default function Header() {
                 Simulações
               </span>
             </Link>
-            <span className="text-gray-700 hover:text-solar-orange px-3 py-2 text-sm font-medium cursor-pointer">
-              Relatórios
-            </span>
-            <span className="text-gray-700 hover:text-solar-orange px-3 py-2 text-sm font-medium cursor-pointer">
-              Configurações
-            </span>
+            <Link href="/reports">
+              <span className={`px-3 py-2 text-sm font-medium transition-colors cursor-pointer ${
+                isActive('/reports') 
+                  ? 'text-solar-orange border-b-2 border-solar-orange' 
+                  : 'text-gray-700 hover:text-solar-orange'
+              }`}>
+                Relatórios
+              </span>
+            </Link>
+            <Link href="/settings">
+              <span className={`px-3 py-2 text-sm font-medium transition-colors cursor-pointer ${
+                isActive('/settings') 
+                  ? 'text-solar-orange border-b-2 border-solar-orange' 
+                  : 'text-gray-700 hover:text-solar-orange'
+              }`}>
+                Configurações
+              </span>
+            </Link>
           </nav>
 
           <div className="flex items-center space-x-4">

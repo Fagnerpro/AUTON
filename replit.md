@@ -1,97 +1,104 @@
-# AUTON® Solar Simulation Platform
+# AUTON® - Sistema Empresarial de Simulação Solar
 
 ## Overview
+Sistema completo de simulação solar para empresas com React frontend, FastAPI backend inspirado, PostgreSQL database, e cálculos técnicos precisos baseados em parâmetros reais de mercado.
 
-This is a full-stack web application for solar energy system simulations, built with React (frontend), Express (backend), and PostgreSQL (database). The platform provides enterprise-level solar simulation capabilities for residential, commercial, EV charging, and common area applications.
+## Recent Changes (Dezembro 2024)
+✓ Corrigido sistema de autenticação JWT - tokens agora incluídos automaticamente nas requisições
+✓ Implementado engine de cálculo robusto com parâmetros técnicos centralizados
+✓ Adicionadas páginas funcionais de Relatórios e Configurações
+✓ Criado sistema de geração de relatórios em PDF, Excel e JSON
+✓ Corrigidos cálculos para todos os tipos de simulação (Residencial, Comercial, VE, Áreas Comuns)
+✓ Validação de dados melhorada e tratamento de erros aprimorado
 
-## System Architecture
+## Project Architecture
 
-### Frontend Architecture
-- **Framework**: React with TypeScript
-- **Build Tool**: Vite for fast development and optimized builds
-- **UI Library**: Shadcn/ui components built on Radix UI primitives
-- **Styling**: Tailwind CSS with custom solar-themed color palette
-- **Routing**: Wouter for lightweight client-side routing
-- **State Management**: TanStack Query for server state, React hooks for local state
-- **Form Handling**: React Hook Form with Zod validation
+### Frontend (React + TypeScript)
+- **Páginas**: Dashboard, Simulações, Relatórios, Configurações
+- **Autenticação**: JWT com localStorage, middleware automático
+- **Componentes**: shadcn/ui, formulários reativos, gráficos Recharts
+- **Estado**: TanStack Query para cache inteligente
 
-### Backend Architecture
-- **Framework**: Express.js with TypeScript
-- **Database ORM**: Drizzle ORM with PostgreSQL
-- **Authentication**: JWT-based authentication with bcrypt password hashing
-- **API Design**: RESTful API with proper error handling and request logging
-- **Development**: Vite middleware integration for seamless full-stack development
+### Backend (Express + TypeScript)
+- **APIs**: Autenticação, simulações, relatórios, usuários
+- **Storage**: MemStorage com interface padronizada
+- **Cálculos**: Engine centralizado em `shared/simulation-config.ts`
+- **Relatórios**: Geração automática em múltiplos formatos
 
 ### Database Schema
-- **Users**: Authentication, roles (admin, user, manager), company info
-- **Simulations**: Solar project data with parameters and results stored as JSONB
-- **Organizations**: Company/organization management
-- **Storage**: Dual implementation (in-memory for development, PostgreSQL for production)
+- **users**: Perfis de usuário com empresa e preferências
+- **simulations**: Projetos com parâmetros e resultados calculados
+- **organizations**: Estrutura para empresas e equipes
 
-## Key Components
+## Technical Specifications
 
-### Authentication System
-- JWT token-based authentication
-- Role-based access control (admin, user, manager)
-- Secure password hashing with bcrypt
-- Protected routes and middleware
+### Solar Calculation Engine
+Localizado em `shared/simulation-config.ts`:
+- **Irradiação solar**: Dados por estado brasileiro
+- **Painéis**: 550Wp, 2.74m², eficiência 20.1%
+- **Sistema**: Rendimento global 78%
+- **Financeiro**: Tarifa R$0.75/kWh, aumento anual 8%
+- **Regional**: Fatores de custo por localização
 
-### Simulation Engine
-- **Residential**: Multi-unit residential calculations
-- **Commercial**: Business/commercial installations
-- **EV Charging**: Electric vehicle charging station sizing
-- **Common Areas**: Condominium common area systems
-- Financial analysis with ROI, payback period, and savings calculations
+### Calculation Types
+1. **Residencial**: Baseado em consumo mensal e área disponível
+2. **Comercial**: Considera perfil de consumo diurno
+3. **Recarga VE**: Calcula por quilometragem e eficiência do veículo
+4. **Áreas Comuns**: Soma equipamentos (elevador, piscina, segurança)
 
-### User Interface
-- Responsive design with mobile-first approach
-- Multi-step simulation wizard with type selection, configuration, and results
-- Dashboard with statistics cards, charts, and recent simulations
-- Professional enterprise-grade UI with solar industry theming
-
-## Data Flow
-
-1. **Authentication Flow**: Login → JWT token generation → Local storage → API requests with Authorization header
-2. **Simulation Flow**: Type selection → Basic info → Specific configuration → Calculate → Results display
-3. **Data Persistence**: Form data → API validation → Database storage → Real-time updates
-
-## External Dependencies
-
-### Core Dependencies
-- **@neondatabase/serverless**: Serverless PostgreSQL connection
-- **@tanstack/react-query**: Server state management and caching
-- **@radix-ui/***: Accessible UI component primitives
-- **drizzle-orm**: Type-safe database ORM
-- **wouter**: Lightweight React router
-- **zod**: Schema validation
-
-### Development Tools
-- **tsx**: TypeScript execution for development
-- **esbuild**: Fast JavaScript bundler for production
-- **tailwindcss**: Utility-first CSS framework
-
-## Deployment Strategy
-
-### Development Environment
-- Replit-based development with hot reloading
-- PostgreSQL 16 module for local database
-- Vite dev server with Express API proxy
-
-### Production Build
-- Frontend: Vite build to `dist/public`
-- Backend: esbuild bundle to `dist/index.js`
-- Database: Drizzle migrations for schema management
-
-### Environment Configuration
-- Database connection via `DATABASE_URL` environment variable
-- JWT secret configuration
-- Separate development and production configurations
-
-## Changelog
-
-Changelog:
-- June 14, 2025. Initial setup
+### Authentication Flow
+1. Login com email/senha retorna JWT
+2. Token armazenado em localStorage
+3. Middleware automático inclui Bearer token
+4. Renovação transparente conforme necessário
 
 ## User Preferences
+- Interface em português brasileiro
+- Foco em precisão técnica e financeira
+- Relatórios detalhados com dados reais
+- Cálculos baseados em padrões de mercado
 
-Preferred communication style: Simple, everyday language.
+## API Endpoints
+
+### Autenticação
+- `POST /api/auth/login` - Login com email/senha
+- `POST /api/auth/register` - Registro de usuário
+- `GET /api/auth/me` - Dados do usuário logado
+
+### Simulações
+- `GET /api/simulations` - Lista simulações do usuário
+- `POST /api/simulations` - Cria nova simulação
+- `PUT /api/simulations/:id` - Atualiza simulação
+- `POST /api/simulations/:id/calculate` - Executa cálculos
+
+### Relatórios
+- `POST /api/reports/generate` - Gera relatório (PDF/Excel/JSON)
+
+### Usuários
+- `PUT /api/users/profile` - Atualiza perfil
+- `PUT /api/users/preferences` - Salva preferências
+- `GET /api/users/stats` - Estatísticas do usuário
+
+## Current Status
+- ✅ Sistema funcionando completamente
+- ✅ Autenticação JWT operacional
+- ✅ Cálculos precisos para todos os tipos
+- ✅ Relatórios gerando corretamente
+- ✅ Interface responsiva e intuitiva
+- ✅ Navegação completa entre páginas
+
+## Testing Credentials
+- Email: demo@auton.com
+- Senha: demo123
+
+## Next Steps
+- Implementar backup automático de dados
+- Adicionar integração com APIs externas de irradiação
+- Expandir tipos de painéis disponíveis
+- Implementar sistema de templates personalizados
+
+## Deployment Notes
+- Aplicação ready para deploy no Replit
+- Todas as dependências instaladas
+- Database PostgreSQL configurado
+- Variáveis de ambiente configuradas

@@ -40,6 +40,8 @@ function Router() {
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/simulation" component={SimulationForm} />
         <Route path="/simulation/:id" component={SimulationForm} />
+        <Route path="/reports" component={Reports} />
+        <Route path="/settings" component={Settings} />
         <Route component={NotFound} />
       </Switch>
     </AuthenticatedLayout>
