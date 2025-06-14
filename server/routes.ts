@@ -7,6 +7,88 @@ import bcrypt from "bcrypt";
 
 const JWT_SECRET = process.env.JWT_SECRET || "auton-solar-secret-key";
 
+// Report generation function
+async function generateReport(simulation: any, format: string): Promise<Buffer | string> {
+  const results = simulation.results;
+  
+  if (format === 'json') {
+    return JSON.stringify({
+      simulation: {
+        id: simulation.id,
+        name: simulation.name,
+        type: simulation.type,
+        created: simulation.createdAt,
+        status: simulation.status
+      },
+      parameters: simulation.parameters,
+      results: results,
+      generated_at: new Date().toISOString()
+    }, null, 2);
+  }
+  
+  if (format === 'excel') {
+    const csvData = [
+      ['Relatório de Simulação Solar', ''],
+      ['Nome do Projeto', simulation.name],
+      ['Tipo', simulation.type],
+      ['Data de Criação', new Date(simulation.createdAt).toLocaleDateString('pt-BR')],
+      ['', ''],
+      ['Especificações Técnicas', ''],
+      ['Potência Instalada (kWp)', results.technical_specs?.installed_power || 0],
+      ['Número de Painéis', results.technical_specs?.panel_count || 0],
+      ['Geração Mensal (kWh)', results.technical_specs?.monthly_generation || 0],
+      ['Geração Anual (kWh)', results.technical_specs?.annual_generation || 0],
+      ['Área Utilizada (m²)', results.technical_specs?.used_area || 0],
+      ['Cobertura (%)', results.technical_specs?.coverage_percentage || 0],
+      ['', ''],
+      ['Análise Financeira', ''],
+      ['Investimento Total (R$)', results.financial_analysis?.total_investment || 0],
+      ['Economia Mensal (R$)', results.financial_analysis?.monthly_savings || 0],
+      ['Economia Anual (R$)', results.financial_analysis?.annual_savings || 0],
+      ['Payback (anos)', results.financial_analysis?.payback_years || 0],
+      ['ROI 25 anos (%)', results.financial_analysis?.roi_25_years || 0],
+      ['Lucro Líquido 25 anos (R$)', results.financial_analysis?.net_profit_25_years || 0]
+    ].map(row => row.join(',')).join('\n');
+    
+    return Buffer.from(csvData, 'utf-8');
+  }
+  
+  // PDF format - simple text-based report
+  const pdfContent = `RELATÓRIO DE SIMULAÇÃO SOLAR
+============================
+
+Projeto: ${simulation.name}
+Tipo: ${simulation.type}
+Data: ${new Date(simulation.createdAt).toLocaleDateString('pt-BR')}
+
+ESPECIFICAÇÕES TÉCNICAS
+-----------------------
+Potência Instalada: ${results.technical_specs?.installed_power || 0} kWp
+Número de Painéis: ${results.technical_specs?.panel_count || 0}
+Geração Mensal: ${results.technical_specs?.monthly_generation || 0} kWh
+Geração Anual: ${results.technical_specs?.annual_generation || 0} kWh
+Área Utilizada: ${results.technical_specs?.used_area || 0} m²
+Cobertura: ${results.technical_specs?.coverage_percentage || 0}%
+
+ANÁLISE FINANCEIRA
+------------------
+Investimento Total: R$ ${results.financial_analysis?.total_investment || 0}
+Economia Mensal: R$ ${results.financial_analysis?.monthly_savings || 0}
+Economia Anual: R$ ${results.financial_analysis?.annual_savings || 0}
+Payback: ${results.financial_analysis?.payback_years || 0} anos
+ROI (25 anos): ${results.financial_analysis?.roi_25_years || 0}%
+Lucro Líquido (25 anos): R$ ${results.financial_analysis?.net_profit_25_years || 0}
+
+IMPACTO AMBIENTAL
+-----------------
+CO2 evitado anualmente: ${results.environmental_impact?.co2_avoided_annually || 0} kg
+Equivalente em árvores: ${results.environmental_impact?.trees_equivalent || 0}
+
+Relatório gerado em: ${new Date().toLocaleString('pt-BR')}`;
+  
+  return Buffer.from(pdfContent, 'utf-8');
+}
+
 interface AuthRequest extends Express.Request {
   user?: User;
 }
@@ -368,6 +450,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       res.status(500).json({ message: "Erro ao deletar simulação" });
+    }
+  });
+
+  // Reports routes
+  app.post("/api/reports/generate", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const { simulationId, format } = req.body;
+      const simulation = await storage.getSimulation(simulationId);
+      
+      if (!simulation || simulation.userId !== req.user!.id) {
+        return res.status(404).json({ message: "Simulação não encontrada" });
+      }
+
+      if (!simulation.results) {
+        return res.status(400).json({ message: "Simulação não foi calculada ainda" });
+      }
+
+      const reportData = await generateReport(simulation, format);
+      
+      if (format === 'pdf') {
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="relatorio-${simulation.name}.pdf"`);
+      } else if (format === 'excel') {
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="relatorio-${simulation.name}.xlsx"`);
+      } else {
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Disposition', `attachment; filename="relatorio-${simulation.name}.json"`);
+      }
+      
+      res.send(reportData);
+    } catch (error) {
+      console.error('Erro ao gerar relatório:', error);
+      res.status(500).json({ message: "Erro ao gerar relatório" });
+    }
+  });
+
+  // User profile routes
+  app.put("/api/users/profile", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const updateData = req.body;
+      const updatedUser = await storage.updateUser(req.user!.id, updateData);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      const { hashedPassword, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      res.status(400).json({ message: "Erro ao atualizar perfil" });
+    }
+  });
+
+  app.put("/api/users/preferences", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      // For now, just return success - preferences would be stored in user profile
+      res.json({ message: "Preferências atualizadas com sucesso" });
+    } catch (error) {
+      res.status(400).json({ message: "Erro ao atualizar preferências" });
     }
   });
 

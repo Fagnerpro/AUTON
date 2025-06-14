@@ -7,6 +7,8 @@ import { queryClient } from "./lib/queryClient";
 import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
 import SimulationForm from "@/pages/simulation-form";
+import Reports from "@/pages/reports";
+import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
