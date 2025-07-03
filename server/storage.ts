@@ -264,6 +264,10 @@ export class MemStorage implements IStorage {
           roi_percentage: baseResults.financial_analysis?.roi_25_years || baseResults.roi_percentage,
           coverage_percentage: baseResults.technical_specs?.coverage_percentage || baseResults.coverage_percentage,
           
+          // Adicionar valores técnicos importantes
+          irradiation: baseResults.technical_specs?.irradiation || 5.8,
+          system_efficiency: baseResults.technical_specs?.system_efficiency || 0.78,
+          
           // Adicionar informações do projeto
           project_info: {
             total_units: totalUnits,

@@ -47,7 +47,9 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
     monthly_generation: results.monthly_generation,
     annual_generation: results.annual_generation,
     used_area: results.required_area,
-    coverage_percentage: results.coverage_percentage
+    coverage_percentage: results.coverage_percentage,
+    irradiation: results.irradiation || results.technical_specs?.irradiation,
+    system_efficiency: results.system_efficiency || results.technical_specs?.system_efficiency
   };
   
   const financialAnalysis = {
@@ -56,7 +58,9 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
     annual_savings: results.annual_savings,
     payback_years: results.payback_years,
     roi_25_years: results.roi_percentage,
-    net_profit_25_years: (results.annual_savings * 25) - results.total_investment
+    net_profit_25_years: (results.annual_savings * 25) - results.total_investment,
+    total_savings_25_years: results.annual_savings * 25,
+    investment_scenarios: results.financial_analysis?.investment_scenarios || {}
   };
   
   const environmentalImpact = {
