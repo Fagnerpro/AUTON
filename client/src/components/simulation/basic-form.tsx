@@ -43,6 +43,50 @@ export default function BasicForm({ data, onChange }: BasicFormProps) {
           </div>
         </div>
 
+        {/* Campos para Multi-Unidades */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="md:col-span-3">
+            <h4 className="text-md font-medium text-blue-900 mb-2">🏢 Projeto Multi-Unidades</h4>
+            <p className="text-sm text-blue-700 mb-4">Para construtoras e incorporadoras - multiplicamos automaticamente por número de unidades</p>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="totalUnits">Número de Unidades</Label>
+            <Input
+              id="totalUnits"
+              type="number"
+              min="1"
+              placeholder="Ex: 90"
+              value={data.totalUnits || 1}
+              onChange={(e) => handleChange('totalUnits', parseInt(e.target.value) || 1)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="hasCommonAreas">
+              <input
+                type="checkbox"
+                checked={data.hasCommonAreas || false}
+                onChange={(e) => handleChange('hasCommonAreas', e.target.checked)}
+                className="mr-2"
+              />
+              Incluir Áreas Comuns
+            </Label>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="hasEvCharging">
+              <input
+                type="checkbox"
+                checked={data.hasEvCharging || false}
+                onChange={(e) => handleChange('hasEvCharging', e.target.checked)}
+                className="mr-2"
+              />
+              Incluir Recarga de VE
+            </Label>
+          </div>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="description">Descrição (Opcional)</Label>
           <Textarea

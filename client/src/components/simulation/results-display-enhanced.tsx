@@ -40,9 +40,34 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
     });
   };
 
-  const technicalSpecs = results.technical_specs;
-  const financialAnalysis = results.financial_analysis;
-  const environmentalImpact = results.environmental_impact;
+  // Adaptar para a nova estrutura de resultados
+  const technicalSpecs = {
+    installed_power: results.system_power,
+    panel_count: results.num_panels,
+    monthly_generation: results.monthly_generation,
+    annual_generation: results.annual_generation,
+    used_area: results.required_area,
+    coverage_percentage: results.coverage_percentage
+  };
+  
+  const financialAnalysis = {
+    total_investment: results.total_investment,
+    monthly_savings: results.monthly_savings,
+    annual_savings: results.annual_savings,
+    payback_years: results.payback_years,
+    roi_25_years: results.roi_percentage,
+    net_profit_25_years: (results.annual_savings * 25) - results.total_investment
+  };
+  
+  const environmentalImpact = {
+    co2_avoided_annually: (results.annual_generation * 0.0817) / 1000, // toneladas CO2/ano
+    trees_equivalent: Math.round((results.annual_generation * 0.0817) / 21.77), // árvores plantadas
+    oil_saved_annually: results.annual_generation * 0.00043 // barris de petróleo
+  };
+
+  // Informações sobre múltiplas unidades
+  const projectInfo = results.project_info;
+  const totalUnits = simulation.totalUnits || 1;
 
   const getViabilityBadge = () => {
     const payback = financialAnalysis?.payback_years;
@@ -70,6 +95,52 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
           </div>
         </CardHeader>
       </Card>
+
+      {/* Informações Multi-Unidades */}
+      {totalUnits > 1 && (
+        <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
+          <CardHeader>
+            <CardTitle className="text-orange-800 flex items-center gap-2">
+              <Home className="h-5 w-5" />
+              🏢 Projeto Multi-Unidades
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center p-3 bg-white rounded-lg border">
+                <p className="text-2xl font-bold text-orange-600">{totalUnits}</p>
+                <p className="text-sm text-gray-600">Unidades Totais</p>
+              </div>
+              
+              {projectInfo && (
+                <>
+                  <div className="text-center p-3 bg-white rounded-lg border">
+                    <p className="text-2xl font-bold text-green-600">
+                      {formatCurrency(projectInfo.unit_investment || 0)}
+                    </p>
+                    <p className="text-sm text-gray-600">Por Unidade</p>
+                  </div>
+                  
+                  <div className="text-center p-3 bg-white rounded-lg border">
+                    <p className="text-2xl font-bold text-blue-600">
+                      {formatCurrency(projectInfo.unit_savings || 0)}
+                    </p>
+                    <p className="text-sm text-gray-600">Economia/Mês por Unidade</p>
+                  </div>
+                </>
+              )}
+            </div>
+            
+            <Alert className="mt-4 border-orange-200 bg-orange-50">
+              <AlertCircle className="h-4 w-4 text-orange-600" />
+              <AlertDescription className="text-orange-800">
+                <strong>Valores Totais:</strong> Todos os cálculos apresentados já incluem a multiplicação por {totalUnits} unidades. 
+                O sistema foi dimensionado considerando o consumo agregado de todas as unidades.
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Métricas Principais */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

@@ -185,6 +185,117 @@ export function calculateModularInvestment(
 }
 
 /**
+ * Cálculo para projetos multi-unidades (construtoras e incorporadoras)
+ */
+export function calculateMultiUnitProject(
+  unitsData: {
+    totalUnits: number;
+    consumptionPerUnit: number;
+    commonAreas?: {
+      elevators?: number;
+      pools?: number;
+      security?: number;
+      lighting?: number;
+      pumps?: number;
+    };
+    evCharging?: {
+      stations: number;
+      dailyKm: number;
+      efficiency: number;
+    };
+  },
+  state: string = 'GO'
+): {
+  residential: any;
+  commonAreas?: any;
+  evCharging?: any;
+  combined: any;
+} {
+  const { totalUnits, consumptionPerUnit, commonAreas, evCharging } = unitsData;
+  
+  // Cálculo residencial (todas as unidades)
+  const totalResidentialConsumption = totalUnits * consumptionPerUnit;
+  const residentialPower = calculateRequiredPower(totalResidentialConsumption, state);
+  const residential = calculateSolarSystem({
+    monthly_consumption: totalResidentialConsumption,
+    available_area: 1000, // Área fictícia para multi-unidades
+    state
+  });
+
+  let result: any = { residential };
+
+  // Cálculo de áreas comuns se especificado
+  if (commonAreas) {
+    const commonAreasConsumption = calculateCommonAreasConsumption(commonAreas);
+    const commonAreasPower = calculateRequiredPower(commonAreasConsumption, state);
+    result.commonAreas = calculateSolarSystem({
+      monthly_consumption: commonAreasConsumption,
+      available_area: 500,
+      state
+    });
+  }
+
+  // Cálculo de recarga de VE se especificado
+  if (evCharging) {
+    const evConsumption = calculateEvConsumption(evCharging.stations, evCharging.dailyKm, evCharging.efficiency);
+    const evPower = calculateRequiredPower(evConsumption, state);
+    result.evCharging = calculateSolarSystem({
+      monthly_consumption: evConsumption,
+      available_area: 300,
+      state
+    });
+  }
+
+  // Cálculo combinado
+  const totalConsumption = residential.results.monthly_consumption + 
+    (result.commonAreas?.results.monthly_consumption || 0) + 
+    (result.evCharging?.results.monthly_consumption || 0);
+  
+  const totalPower = residential.results.system_power + 
+    (result.commonAreas?.results.system_power || 0) + 
+    (result.evCharging?.results.system_power || 0);
+
+  result.combined = {
+    total_units: totalUnits,
+    total_consumption: totalConsumption,
+    total_power: totalPower,
+    total_investment: residential.results.total_investment + 
+      (result.commonAreas?.results.total_investment || 0) + 
+      (result.evCharging?.results.total_investment || 0),
+    monthly_savings: residential.results.monthly_savings + 
+      (result.commonAreas?.results.monthly_savings || 0) + 
+      (result.evCharging?.results.monthly_savings || 0),
+    scenarios: getInvestmentScenarios(totalPower)
+  };
+
+  return result;
+}
+
+/**
+ * Cálculo de consumo de áreas comuns
+ */
+function calculateCommonAreasConsumption(commonAreas: any): number {
+  let totalConsumption = 0;
+  
+  if (commonAreas.elevators) totalConsumption += commonAreas.elevators * 450; // 450 kWh/mês por elevador
+  if (commonAreas.pools) totalConsumption += commonAreas.pools * 300; // 300 kWh/mês por piscina
+  if (commonAreas.security) totalConsumption += commonAreas.security * 200; // 200 kWh/mês por sistema
+  if (commonAreas.lighting) totalConsumption += commonAreas.lighting * 150; // 150 kWh/mês por área
+  if (commonAreas.pumps) totalConsumption += commonAreas.pumps * 100; // 100 kWh/mês por bomba
+  
+  return totalConsumption;
+}
+
+/**
+ * Cálculo de consumo para recarga de VE
+ */
+function calculateEvConsumption(stations: number, dailyKm: number, efficiency: number): number {
+  const dailyConsumptionPerStation = (dailyKm / efficiency) * 1.2; // 20% de perdas
+  const monthlyConsumptionPerStation = dailyConsumptionPerStation * 30;
+  return stations * monthlyConsumptionPerStation;
+}
+
+/**
  * Cenários de investimento pré-definidos para tomada de decisão
  */
 export function getInvestmentScenarios(systemPowerKw: number) {

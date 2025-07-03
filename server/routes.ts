@@ -18,7 +18,8 @@ async function generateReport(simulation: any, format: string): Promise<Buffer |
         name: simulation.name,
         type: simulation.type,
         created: simulation.createdAt,
-        status: simulation.status
+        status: simulation.status,
+        total_units: simulation.totalUnits || 1
       },
       parameters: simulation.parameters,
       results: results,
@@ -27,52 +28,80 @@ async function generateReport(simulation: any, format: string): Promise<Buffer |
   }
   
   if (format === 'excel') {
+    const totalUnits = simulation.totalUnits || 1;
+    const projectInfo = results.project_info;
+    
     const csvData = [
-      ['Relatório de Simulação Solar', ''],
+      ['Relatório de Simulação Solar AUTON®', ''],
       ['Nome do Projeto', simulation.name],
       ['Tipo', simulation.type],
       ['Data de Criação', new Date(simulation.createdAt).toLocaleDateString('pt-BR')],
       ['', ''],
-      ['Especificações Técnicas', ''],
-      ['Potência Instalada (kWp)', results.technical_specs?.installed_power || 0],
-      ['Número de Painéis', results.technical_specs?.panel_count || 0],
-      ['Geração Mensal (kWh)', results.technical_specs?.monthly_generation || 0],
-      ['Geração Anual (kWh)', results.technical_specs?.annual_generation || 0],
-      ['Área Utilizada (m²)', results.technical_specs?.used_area || 0],
-      ['Cobertura (%)', results.technical_specs?.coverage_percentage || 0],
+      ['Informações do Projeto', ''],
+      ['Número Total de Unidades', totalUnits],
+      ...(projectInfo ? [
+        ['Investimento por Unidade (R$)', projectInfo.unit_investment?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || 0],
+        ['Economia Mensal por Unidade (R$)', projectInfo.unit_savings?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || 0]
+      ] : []),
       ['', ''],
-      ['Análise Financeira', ''],
-      ['Investimento Total (R$)', results.financial_analysis?.total_investment || 0],
-      ['Economia Mensal (R$)', results.financial_analysis?.monthly_savings || 0],
-      ['Economia Anual (R$)', results.financial_analysis?.annual_savings || 0],
-      ['Payback (anos)', results.financial_analysis?.payback_years || 0],
-      ['ROI 25 anos (%)', results.financial_analysis?.roi_25_years || 0],
-      ['Lucro Líquido 25 anos (R$)', results.financial_analysis?.net_profit_25_years || 0]
+      ['Especificações Técnicas Totais', ''],
+      ['Potência Instalada Total (kWp)', results.system_power?.toFixed(2) || 0],
+      ['Número Total de Painéis', results.num_panels || 0],
+      ['Geração Mensal Total (kWh)', results.monthly_generation?.toFixed(0) || 0],
+      ['Geração Anual Total (kWh)', results.annual_generation?.toFixed(0) || 0],
+      ['Área Total Necessária (m²)', results.required_area?.toFixed(2) || 0],
+      ['Cobertura do Consumo (%)', results.coverage_percentage?.toFixed(1) || 0],
+      ['', ''],
+      ['Análise Financeira Total', ''],
+      ['Investimento Total (R$)', results.total_investment?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || 0],
+      ['Economia Mensal Total (R$)', results.monthly_savings?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || 0],
+      ['Economia Anual Total (R$)', results.annual_savings?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || 0],
+      ['Payback (anos)', results.payback_years?.toFixed(1) || 0],
+      ['ROI 25 anos (%)', results.roi_percentage?.toFixed(1) || 0],
+      ['', ''],
+      ['Observações', ''],
+      ['Sistema calculado para ' + totalUnits + (totalUnits > 1 ? ' unidades' : ' unidade'), ''],
+      ['Valores já incluem multiplicação por número de unidades', ''],
+      ['Relatório gerado pelo AUTON® em ' + new Date().toLocaleString('pt-BR'), '']
     ].map(row => row.join(',')).join('\n');
     
-    return Buffer.from(csvData, 'utf-8');
+    return Buffer.from('\uFEFF' + csvData, 'utf-8'); // Add BOM for proper Excel UTF-8 handling
   }
   
-  // PDF format - simple text-based report
-  const pdfContent = `RELATÓRIO DE SIMULAÇÃO SOLAR
-============================
+  // PDF format - comprehensive multi-unit report
+  const totalUnits = simulation.totalUnits || 1;
+  const projectInfo = results.project_info;
+  
+  const pdfContent = `RELATÓRIO DE SIMULAÇÃO SOLAR AUTON®
+========================================
 
+INFORMAÇÕES DO PROJETO
+----------------------
 Projeto: ${simulation.name}
 Tipo: ${simulation.type}
 Data: ${new Date(simulation.createdAt).toLocaleDateString('pt-BR')}
+Número de Unidades: ${totalUnits}
+Status: ${simulation.status}
 
-ESPECIFICAÇÕES TÉCNICAS
------------------------
-Potência Instalada: ${results.technical_specs?.installed_power || 0} kWp
-Número de Painéis: ${results.technical_specs?.panel_count || 0}
-Geração Mensal: ${results.technical_specs?.monthly_generation || 0} kWh
-Geração Anual: ${results.technical_specs?.annual_generation || 0} kWh
-Área Utilizada: ${results.technical_specs?.used_area || 0} m²
-Cobertura: ${results.technical_specs?.coverage_percentage || 0}%
+${projectInfo ? `
+VALORES POR UNIDADE
+-------------------
+Investimento por Unidade: R$ ${projectInfo.unit_investment?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || 0}
+Economia Mensal por Unidade: R$ ${projectInfo.unit_savings?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || 0}
+` : ''}
 
-ANÁLISE FINANCEIRA
-------------------
-Investimento Total: R$ ${results.financial_analysis?.total_investment || 0}
+ESPECIFICAÇÕES TÉCNICAS TOTAIS
+------------------------------
+Potência Total Instalada: ${results.system_power?.toFixed(2) || 0} kWp
+Número Total de Painéis: ${results.num_panels || 0}
+Geração Mensal Total: ${results.monthly_generation?.toLocaleString('pt-BR') || 0} kWh
+Geração Anual Total: ${results.annual_generation?.toLocaleString('pt-BR') || 0} kWh
+Área Total Necessária: ${results.required_area?.toFixed(2) || 0} m²
+Cobertura do Consumo: ${results.coverage_percentage?.toFixed(1) || 0}%
+
+ANÁLISE FINANCEIRA TOTAL
+------------------------
+Investimento Total: R$ ${results.total_investment?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || 0}
 Economia Mensal: R$ ${results.financial_analysis?.monthly_savings || 0}
 Economia Anual: R$ ${results.financial_analysis?.annual_savings || 0}
 Payback: ${results.financial_analysis?.payback_years || 0} anos
@@ -510,6 +539,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Preferências atualizadas com sucesso" });
     } catch (error) {
       res.status(400).json({ message: "Erro ao atualizar preferências" });
+    }
+  });
+
+  // Reports route
+  app.post("/api/reports/generate", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const { simulationId, format } = req.body;
+      
+      if (!simulationId || !format) {
+        return res.status(400).json({ message: "simulationId e format são obrigatórios" });
+      }
+
+      const simulation = await storage.getSimulation(simulationId);
+      
+      if (!simulation || simulation.userId !== req.user!.id) {
+        return res.status(404).json({ message: "Simulação não encontrada" });
+      }
+
+      if (simulation.status !== 'calculated' && simulation.status !== 'completed') {
+        return res.status(400).json({ message: "Simulação deve estar calculada para gerar relatório" });
+      }
+
+      const reportData = await generateReport(simulation, format);
+      
+      let contentType: string;
+      let filename: string;
+      
+      switch (format) {
+        case 'pdf':
+          contentType = 'text/plain';
+          filename = `relatorio-${simulation.name}-${simulation.id}.txt`;
+          break;
+        case 'excel':
+          contentType = 'text/csv';
+          filename = `relatorio-${simulation.name}-${simulation.id}.csv`;
+          break;
+        case 'json':
+          contentType = 'application/json';
+          filename = `relatorio-${simulation.name}-${simulation.id}.json`;
+          break;
+        default:
+          return res.status(400).json({ message: "Formato não suportado" });
+      }
+
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      
+      if (typeof reportData === 'string') {
+        res.send(reportData);
+      } else {
+        res.send(reportData);
+      }
+    } catch (error) {
+      console.error('Erro ao gerar relatório:', error);
+      res.status(500).json({ message: "Erro ao gerar relatório: " + (error as Error).message });
     }
   });
 

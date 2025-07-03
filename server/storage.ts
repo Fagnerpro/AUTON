@@ -205,19 +205,67 @@ export class MemStorage implements IStorage {
     const parameters = simulation.parameters as any;
     const state = simulation.state || 'GO';
     
+    // Obter multiplicadores para multi-unidades
+    const totalUnits = simulation.totalUnits || 1;
+    const hasCommonAreas = simulation.hasCommonAreas || false;
+    const hasEvCharging = simulation.hasEvCharging || false;
+    
     try {
+      let baseResults;
+      
       switch (simulation.type) {
         case 'residential':
-          return this.calculateResidential(parameters, state);
+          baseResults = this.calculateResidential(parameters, state);
+          break;
         case 'commercial':
-          return this.calculateCommercial(parameters, state);
+          baseResults = this.calculateCommercial(parameters, state);
+          break;
         case 'ev_charging':
-          return this.calculateEVCharging(parameters, state);
+          baseResults = this.calculateEVCharging(parameters, state);
+          break;
         case 'common_areas':
-          return this.calculateCommonAreas(parameters, state);
+          baseResults = this.calculateCommonAreas(parameters, state);
+          break;
         default:
           throw new Error(`Tipo de simulação não suportado: ${simulation.type}`);
       }
+
+      // Aplicar multiplicação por unidades (conforme solicitado)
+      if (totalUnits > 1) {
+        console.log(`\n=== MULTIPLICAÇÃO POR ${totalUnits} UNIDADES ===`);
+        console.log('Valores unitários:', baseResults);
+        
+        baseResults = {
+          ...baseResults,
+          // Multiplicar valores financeiros e técnicos
+          total_investment: baseResults.total_investment * totalUnits,
+          monthly_savings: baseResults.monthly_savings * totalUnits,
+          annual_savings: baseResults.annual_savings * totalUnits,
+          system_power: baseResults.system_power * totalUnits,
+          num_panels: baseResults.num_panels * totalUnits,
+          monthly_consumption: baseResults.monthly_consumption * totalUnits,
+          annual_generation: baseResults.annual_generation * totalUnits,
+          required_area: baseResults.required_area * totalUnits,
+          
+          // Manter valores relativos inalterados
+          payback_years: baseResults.payback_years,
+          roi_percentage: baseResults.roi_percentage,
+          coverage_percentage: baseResults.coverage_percentage,
+          
+          // Adicionar informações do projeto
+          project_info: {
+            total_units: totalUnits,
+            unit_investment: baseResults.total_investment,
+            unit_savings: baseResults.monthly_savings,
+            has_common_areas: hasCommonAreas,
+            has_ev_charging: hasEvCharging
+          }
+        };
+        
+        console.log('Valores finais multiplicados:', baseResults);
+      }
+
+      return baseResults;
     } catch (error) {
       console.error('Erro no cálculo da simulação:', error);
       throw error;

@@ -25,10 +25,15 @@ export const simulations = pgTable("simulations", {
   address: text("address"),
   city: text("city"),
   state: text("state").default("GO"),
-  type: text("type", { enum: ["residential", "commercial", "ev_charging", "common_areas"] }).notNull(),
+  type: text("type", { enum: ["residential", "commercial", "ev_charging", "common_areas", "multi_unit"] }).notNull(),
   parameters: jsonb("parameters").notNull(),
   results: jsonb("results"),
   status: text("status", { enum: ["draft", "calculated", "approved", "completed"] }).notNull().default("draft"),
+  // Campos para projetos multi-unidades
+  totalUnits: integer("total_units").default(1),
+  hasCommonAreas: boolean("has_common_areas").default(false),
+  hasEvCharging: boolean("has_ev_charging").default(false),
+  projectType: text("project_type", { enum: ["single", "residential_complex", "commercial_complex", "mixed_use"] }).default("single"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
