@@ -4,7 +4,8 @@ import {
   getSolarIrradiation, 
   getRegionalFactor, 
   calculateRequiredPower, 
-  calculatePanelCount 
+  calculatePanelCount,
+  validateCalculationPython
 } from '@shared/simulation-config';
 
 export interface IStorage {
@@ -262,9 +263,12 @@ export class MemStorage implements IStorage {
     // CORREÇÃO: Usar a fórmula correta para geração
     const monthlyGeneration = requiredPower * irradiation * 30 * SOLAR_SIMULATION_CONFIG.SYSTEM_EFFICIENCY.overall;
     
-    console.log('Geração mensal calculada:', monthlyGeneration.toFixed(0), 'kWh');
+    console.log('=== ANÁLISE FINAL CORRIGIDA ===');
+    console.log('Potência necessária:', requiredPower.toFixed(2), 'kWp');
+    console.log('Número de painéis:', panelCount);
+    console.log('Geração mensal:', monthlyGeneration.toFixed(0), 'kWh');
     console.log('Cobertura do consumo:', ((monthlyGeneration / monthlyConsumption) * 100).toFixed(1), '%');
-    console.log('=====================================');
+    console.log('==============================');
     
     return this.calculateFinancials({
       installedPower: requiredPower,

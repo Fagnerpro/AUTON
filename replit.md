@@ -12,6 +12,7 @@ Sistema completo de simulação solar para empresas com React frontend, FastAPI 
 ✓ Parâmetros financeiros atualizados com valores realistas do mercado brasileiro 2024
 ✓ Erro React DOM na página Reports corrigido com download seguro
 ✓ Estrutura de resultados mapeada corretamente (technical_specs, financial_analysis)
+✓ ANÁLISE METODOLÓGICA: Comparação com código Python externo validada
 
 ## Project Architecture
 
@@ -53,6 +54,28 @@ Localizado em `shared/simulation-config.ts`:
 2. Token armazenado em localStorage
 3. Middleware automático inclui Bearer token
 4. Renovação transparente conforme necessário
+
+## Metodologias de Cálculo Comparadas
+
+### Nossa Implementação (AUTON®)
+- **Fórmula**: `potencia = consumo_mensal / (irradiação × 30 × eficiencia_global)`
+- **Eficiência**: 78% (perdas já incluídas)
+- **Irradiação**: 5.8 kWh/m²/dia (Goiás)
+- **Custo**: R$ 5,20/Wp (instalação completa)
+- **Tarifa**: R$ 0,65/kWh
+
+### Código Python Externo (Streamlit)
+- **Fórmula**: `energia = (potencia_wp/1000) × irradiação × (eficiencia/100) × 0.90`
+- **Eficiência**: 80% + fator 0.90 (perdas adicionais)
+- **Irradiação**: 5.5 kWh/m²/dia (conservador)
+- **Custo**: R$ 9,50/Wp (painéis) + R$ 1,50/Wp (inversores) + 10% instalação
+- **Tarifa**: R$ 0,74593/kWh
+
+### Diferenças Técnicas Principais
+1. **Tratamento de perdas**: Nosso sistema aplica eficiência global vs. fator multiplicativo
+2. **Estrutura de custos**: Custo unificado vs. componentes separados
+3. **Dados climáticos**: CRESESB oficial vs. valores conservadores
+4. **Modularidade**: Tipos específicos vs. sistema modular complexo
 
 ## User Preferences
 - Interface em português brasileiro

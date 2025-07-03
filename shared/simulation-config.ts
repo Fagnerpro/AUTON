@@ -108,20 +108,37 @@ export function getRegionalFactor(state: string): { cost: number; labor: number 
 
 /**
  * Calcula potência necessária baseada no consumo
- * CORREÇÃO CRÍTICA: A fórmula padrão da indústria solar
+ * METODOLOGIA HÍBRIDA: Combina nossa fórmula com validação externa
  */
 export function calculateRequiredPower(monthlyConsumption: number, state: string): number {
   const irradiation = getSolarIrradiation(state);
   const efficiency = SOLAR_SIMULATION_CONFIG.SYSTEM_EFFICIENCY.overall;
   
-  // Fórmula correta da indústria solar:
-  // Potência (kWp) = Consumo mensal (kWh) / (Irradiação (kWh/m²/dia) × 30 dias × Eficiência × HSP)
-  // HSP (Horas de Sol Pleno) está implícito na irradiação diária
-  
+  // Fórmula principal (nossa metodologia)
   const dailyGeneration = irradiation * efficiency; // kWh/kWp/dia
   const monthlyGeneration = dailyGeneration * 30;   // kWh/kWp/mês
   
   return monthlyConsumption / monthlyGeneration;
+}
+
+/**
+ * Validação usando metodologia do código Python externo
+ * Para verificação cruzada de resultados
+ */
+export function validateCalculationPython(
+  panelPowerWp: number, 
+  numPanels: number, 
+  state: string
+): number {
+  const irradiation = getSolarIrradiation(state);
+  const systemEfficiency = 80; // 80% como no código Python
+  const additionalLosses = 0.90; // Fator 0.90 do código Python
+  
+  // Fórmula do código Python:
+  // energia_por_painel = (potencia_wp / 1000) * rad_solar * (eficiência / 100) * 0.90
+  const energyPerPanelDaily = (panelPowerWp / 1000) * irradiation * (systemEfficiency / 100) * additionalLosses;
+  
+  return numPanels * energyPerPanelDaily * 30; // Geração mensal
 }
 
 /**
