@@ -13,6 +13,10 @@ Sistema completo de simulação solar para empresas com React frontend, FastAPI 
 ✓ Erro React DOM na página Reports corrigido com download seguro
 ✓ Estrutura de resultados mapeada corretamente (technical_specs, financial_analysis)
 ✓ ANÁLISE METODOLÓGICA: Comparação com código Python externo validada
+✓ **NOVO**: Sistema multi-unidades implementado para construtoras/incorporadoras
+✓ **NOVO**: Multiplicação automática simples por número de unidades
+✓ **NOVO**: Interface específica com valores unitários e totais
+✓ **CORREÇÃO**: Bug na multiplicação de valores - estruturas aninhadas corrigidas
 
 ## Project Architecture
 

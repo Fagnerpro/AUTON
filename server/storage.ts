@@ -235,28 +235,40 @@ export class MemStorage implements IStorage {
         console.log(`\n=== MULTIPLICAÇÃO POR ${totalUnits} UNIDADES ===`);
         console.log('Valores unitários:', baseResults);
         
+        // Extrair valores das estruturas aninhadas
+        const unitInvestment = baseResults.financial_analysis?.total_investment || baseResults.total_investment || 0;
+        const unitMonthlySavings = baseResults.financial_analysis?.monthly_savings || baseResults.monthly_savings || 0;
+        const unitAnnualSavings = baseResults.financial_analysis?.annual_savings || baseResults.annual_savings || 0;
+        const unitSystemPower = baseResults.technical_specs?.installed_power || baseResults.system_power || 0;
+        const unitPanelCount = baseResults.technical_specs?.panel_count || baseResults.num_panels || 0;
+        const unitMonthlyGeneration = baseResults.technical_specs?.monthly_generation || baseResults.monthly_generation || 0;
+        const unitAnnualGeneration = baseResults.technical_specs?.annual_generation || baseResults.annual_generation || 0;
+        const unitRequiredArea = baseResults.technical_specs?.used_area || baseResults.required_area || 0;
+        
+        // Aplicar multiplicação nos valores corretos
         baseResults = {
           ...baseResults,
-          // Multiplicar valores financeiros e técnicos
-          total_investment: baseResults.total_investment * totalUnits,
-          monthly_savings: baseResults.monthly_savings * totalUnits,
-          annual_savings: baseResults.annual_savings * totalUnits,
-          system_power: baseResults.system_power * totalUnits,
-          num_panels: baseResults.num_panels * totalUnits,
-          monthly_consumption: baseResults.monthly_consumption * totalUnits,
-          annual_generation: baseResults.annual_generation * totalUnits,
-          required_area: baseResults.required_area * totalUnits,
+          // Multiplicar valores financeiros e técnicos principais
+          total_investment: unitInvestment * totalUnits,
+          monthly_savings: unitMonthlySavings * totalUnits,
+          annual_savings: unitAnnualSavings * totalUnits,
+          system_power: unitSystemPower * totalUnits,
+          num_panels: unitPanelCount * totalUnits,
+          monthly_consumption: (baseResults.monthly_consumption || 350) * totalUnits,
+          monthly_generation: unitMonthlyGeneration * totalUnits,
+          annual_generation: unitAnnualGeneration * totalUnits,
+          required_area: unitRequiredArea * totalUnits,
           
           // Manter valores relativos inalterados
-          payback_years: baseResults.payback_years,
-          roi_percentage: baseResults.roi_percentage,
-          coverage_percentage: baseResults.coverage_percentage,
+          payback_years: baseResults.financial_analysis?.payback_years || baseResults.payback_years,
+          roi_percentage: baseResults.financial_analysis?.roi_25_years || baseResults.roi_percentage,
+          coverage_percentage: baseResults.technical_specs?.coverage_percentage || baseResults.coverage_percentage,
           
           // Adicionar informações do projeto
           project_info: {
             total_units: totalUnits,
-            unit_investment: baseResults.total_investment,
-            unit_savings: baseResults.monthly_savings,
+            unit_investment: unitInvestment,
+            unit_savings: unitMonthlySavings,
             has_common_areas: hasCommonAreas,
             has_ev_charging: hasEvCharging
           }
