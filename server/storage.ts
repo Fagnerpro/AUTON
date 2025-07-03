@@ -232,6 +232,17 @@ export class MemStorage implements IStorage {
     const panelCount = calculatePanelCount(requiredPower);
     const requiredArea = panelCount * SOLAR_SIMULATION_CONFIG.PANEL_SPECS.area;
     
+    // Log detalhado para análise de métricas
+    console.log('=== ANÁLISE DE CÁLCULO RESIDENCIAL ===');
+    console.log('Estado:', state);
+    console.log('Consumo mensal:', monthlyConsumption, 'kWh');
+    console.log('Área disponível:', availableArea, 'm²');
+    console.log('Irradiação solar:', irradiation, 'kWh/m²/dia');
+    console.log('Potência necessária calculada:', requiredPower.toFixed(2), 'kWp');
+    console.log('Número de painéis:', panelCount);
+    console.log('Área necessária:', requiredArea.toFixed(2), 'm²');
+    console.log('Eficiência do sistema:', SOLAR_SIMULATION_CONFIG.SYSTEM_EFFICIENCY.overall);
+    
     if (requiredArea > availableArea) {
       const maxPanels = Math.floor(availableArea / SOLAR_SIMULATION_CONFIG.PANEL_SPECS.area);
       const maxPower = maxPanels * (SOLAR_SIMULATION_CONFIG.PANEL_SPECS.power / 1000);
@@ -248,7 +259,12 @@ export class MemStorage implements IStorage {
       });
     }
     
-    const monthlyGeneration = requiredPower * irradiation * 30 * SOLAR_SIMULATION_CONFIG.SYSTEM_EFFICIENCY.overall;
+    // CORREÇÃO: A geração já inclui a eficiência no cálculo da potência necessária
+    const monthlyGeneration = requiredPower * irradiation * 30;
+    
+    console.log('Geração mensal calculada:', monthlyGeneration.toFixed(0), 'kWh');
+    console.log('Cobertura do consumo:', ((monthlyGeneration / monthlyConsumption) * 100).toFixed(1), '%');
+    console.log('=====================================');
     
     return this.calculateFinancials({
       installedPower: requiredPower,
@@ -369,8 +385,20 @@ export class MemStorage implements IStorage {
     const regionalFactor = getRegionalFactor(state);
     const totalInvestment = installedPower * 1000 * SOLAR_SIMULATION_CONFIG.FINANCIAL.installation_cost_per_wp * regionalFactor.cost;
     
+    // Log dos cálculos financeiros
+    console.log('=== ANÁLISE FINANCEIRA ===');
+    console.log('Potência instalada:', installedPower.toFixed(2), 'kWp');
+    console.log('Geração mensal:', monthlyGeneration.toFixed(0), 'kWh');
+    console.log('Fator regional de custo:', regionalFactor.cost);
+    console.log('Custo por Wp:', SOLAR_SIMULATION_CONFIG.FINANCIAL.installation_cost_per_wp, 'R$');
+    console.log('Investimento total:', totalInvestment.toFixed(0), 'R$');
+    
     const monthlySavings = monthlyGeneration * SOLAR_SIMULATION_CONFIG.FINANCIAL.tariff_kwh;
     const annualSavings = monthlySavings * 12;
+    
+    console.log('Tarifa kWh:', SOLAR_SIMULATION_CONFIG.FINANCIAL.tariff_kwh, 'R$');
+    console.log('Economia mensal:', monthlySavings.toFixed(0), 'R$');
+    console.log('Economia anual:', annualSavings.toFixed(0), 'R$');
     
     // Cálculo do payback considerando aumento anual da tarifa
     let cumulativeSavings = 0;

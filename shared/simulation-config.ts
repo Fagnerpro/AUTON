@@ -113,8 +113,12 @@ export function calculateRequiredPower(monthlyConsumption: number, state: string
   const irradiation = getSolarIrradiation(state);
   const efficiency = SOLAR_SIMULATION_CONFIG.SYSTEM_EFFICIENCY.overall;
   
+  // CORREÇÃO: A irradiação é por dia, então precisamos multiplicar por 30 dias
   // Potência necessária = Consumo mensal / (Irradiação × 30 dias × Eficiência)
-  return monthlyConsumption / (irradiation * 30 * efficiency);
+  const monthlyIrradiation = irradiation * 30; // kWh/m²/mês
+  
+  // Para calcular a potência, usamos: kWp = kWh_consumo / (irradiação_mensal × eficiência)
+  return monthlyConsumption / (monthlyIrradiation * efficiency);
 }
 
 /**
