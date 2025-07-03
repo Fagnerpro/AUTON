@@ -10,6 +10,9 @@ interface ResultsDisplayProps {
 }
 
 export default function ResultsDisplay({ type, results, simulation }: ResultsDisplayProps) {
+  // Debug: vamos ver o que está chegando nos resultados
+  console.log('ResultsDisplay - Dados recebidos:', { type, results, simulation });
+  
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -26,8 +29,8 @@ export default function ResultsDisplay({ type, results, simulation }: ResultsDis
   };
 
   const getRecommendation = () => {
-    const payback = results.payback_years;
-    const roi = results.roi_percentage;
+    const payback = results.financial_analysis?.payback_years;
+    const roi = results.financial_analysis?.roi_25_years;
     
     if (payback <= 5 && roi >= 200) {
       return {
@@ -80,21 +83,21 @@ export default function ResultsDisplay({ type, results, simulation }: ResultsDis
                 <div>
                   <p className="text-sm text-gray-600">Número de Painéis</p>
                   <p className="text-lg font-semibold text-gray-900">
-                    {results.num_panels || 0}
+                    {results.technical_specs?.panel_count || 0}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Potência Total</p>
                   <p className="text-lg font-semibold text-gray-900">
-                    {formatNumber(results.total_power || 0)} kWp
+                    {formatNumber(results.technical_specs?.installed_power || 0)} kWp
                   </p>
                 </div>
                 
-                {results.required_area && (
+                {results.technical_specs?.used_area && (
                   <div>
                     <p className="text-sm text-gray-600">Área Necessária</p>
                     <p className="text-lg font-semibold text-gray-900">
-                      {formatNumber(results.required_area)} m²
+                      {formatNumber(results.technical_specs.used_area)} m²
                     </p>
                   </div>
                 )}
@@ -104,7 +107,7 @@ export default function ResultsDisplay({ type, results, simulation }: ResultsDis
                     {type === 'ev_charging' ? 'Consumo Anual' : 'Geração Anual'}
                   </p>
                   <p className="text-lg font-semibold text-gray-900">
-                    {formatNumber((results.annual_generation || results.annual_consumption || 0) / 1000)} MWh
+                    {formatNumber((results.technical_specs?.annual_generation || 0) / 1000)} MWh
                   </p>
                 </div>
 
@@ -157,7 +160,7 @@ export default function ResultsDisplay({ type, results, simulation }: ResultsDis
                 <div>
                   <p className="text-sm text-gray-600">Investimento Total</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {formatCurrency(results.total_investment || 0)}
+                    {formatCurrency(results.financial_analysis?.total_investment || 0)}
                   </p>
                 </div>
                 
@@ -165,13 +168,13 @@ export default function ResultsDisplay({ type, results, simulation }: ResultsDis
                   <div>
                     <p className="text-sm text-gray-600">Economia Anual</p>
                     <p className="text-lg font-semibold text-green-700">
-                      {formatCurrency(results.annual_savings || 0)}
+                      {formatCurrency(results.financial_analysis?.annual_savings || 0)}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Payback</p>
                     <p className="text-lg font-semibold text-green-700">
-                      {formatNumber(results.payback_years || 0)} anos
+                      {formatNumber(results.financial_analysis?.payback_years || 0)} anos
                     </p>
                   </div>
                 </div>
@@ -179,7 +182,7 @@ export default function ResultsDisplay({ type, results, simulation }: ResultsDis
                 <div>
                   <p className="text-sm text-gray-600">ROI (25 anos)</p>
                   <p className="text-lg font-semibold text-green-700">
-                    {formatNumber(results.roi_percentage || 0)}%
+                    {formatNumber(results.financial_analysis?.roi_25_years || 0)}%
                   </p>
                 </div>
               </div>
