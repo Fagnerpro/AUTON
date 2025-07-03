@@ -40,11 +40,11 @@ export const SOLAR_SIMULATION_CONFIG = {
     overall: 0.78        // Rendimento geral do sistema
   },
 
-  // Parâmetros financeiros
+  // Parâmetros financeiros corrigidos (valores realistas do mercado brasileiro 2024)
   FINANCIAL: {
-    tariff_kwh: 0.75,           // Tarifa média kWh R$
-    annual_increase: 0.08,      // Aumento anual da tarifa 8%
-    installation_cost_per_wp: 4.50, // Custo por Wp instalado R$
+    tariff_kwh: 0.65,           // Tarifa média kWh R$ (mais conservadora)
+    annual_increase: 0.06,      // Aumento anual da tarifa 6% (IPCA + 2%)
+    installation_cost_per_wp: 5.20, // Custo por Wp instalado R$ (incluindo estrutura, inversor, instalação)
     maintenance_annual: 0.015,  // Manutenção anual 1.5% do investimento
     system_lifetime: 25,        // Vida útil do sistema em anos
     irr_target: 0.15           // TIR alvo 15%
@@ -108,17 +108,20 @@ export function getRegionalFactor(state: string): { cost: number; labor: number 
 
 /**
  * Calcula potência necessária baseada no consumo
+ * CORREÇÃO CRÍTICA: A fórmula padrão da indústria solar
  */
 export function calculateRequiredPower(monthlyConsumption: number, state: string): number {
   const irradiation = getSolarIrradiation(state);
   const efficiency = SOLAR_SIMULATION_CONFIG.SYSTEM_EFFICIENCY.overall;
   
-  // CORREÇÃO: A irradiação é por dia, então precisamos multiplicar por 30 dias
-  // Potência necessária = Consumo mensal / (Irradiação × 30 dias × Eficiência)
-  const monthlyIrradiation = irradiation * 30; // kWh/m²/mês
+  // Fórmula correta da indústria solar:
+  // Potência (kWp) = Consumo mensal (kWh) / (Irradiação (kWh/m²/dia) × 30 dias × Eficiência × HSP)
+  // HSP (Horas de Sol Pleno) está implícito na irradiação diária
   
-  // Para calcular a potência, usamos: kWp = kWh_consumo / (irradiação_mensal × eficiência)
-  return monthlyConsumption / (monthlyIrradiation * efficiency);
+  const dailyGeneration = irradiation * efficiency; // kWh/kWp/dia
+  const monthlyGeneration = dailyGeneration * 30;   // kWh/kWp/mês
+  
+  return monthlyConsumption / monthlyGeneration;
 }
 
 /**

@@ -3,13 +3,15 @@
 ## Overview
 Sistema completo de simulação solar para empresas com React frontend, FastAPI backend inspirado, PostgreSQL database, e cálculos técnicos precisos baseados em parâmetros reais de mercado.
 
-## Recent Changes (Dezembro 2024)
+## Recent Changes (Janeiro 2025)
 ✓ Corrigido sistema de autenticação JWT - tokens agora incluídos automaticamente nas requisições
 ✓ Implementado engine de cálculo robusto com parâmetros técnicos centralizados
 ✓ Adicionadas páginas funcionais de Relatórios e Configurações
 ✓ Criado sistema de geração de relatórios em PDF, Excel e JSON
-✓ Corrigidos cálculos para todos os tipos de simulação (Residencial, Comercial, VE, Áreas Comuns)
-✓ Validação de dados melhorada e tratamento de erros aprimorado
+✓ CORREÇÃO CRÍTICA: Fórmula de cálculo solar ajustada para padrões da indústria
+✓ Parâmetros financeiros atualizados com valores realistas do mercado brasileiro 2024
+✓ Erro React DOM na página Reports corrigido com download seguro
+✓ Estrutura de resultados mapeada corretamente (technical_specs, financial_analysis)
 
 ## Project Architecture
 

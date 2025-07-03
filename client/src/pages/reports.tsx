@@ -25,20 +25,40 @@ export default function Reports() {
       return apiRequest('POST', `/api/reports/generate`, data);
     },
     onSuccess: async (response) => {
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `relatorio-simulacao-${selectedSimulation}.${reportFormat}`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      toast({
-        title: "Relatório gerado",
-        description: "Download iniciado com sucesso.",
-      });
+      try {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `relatorio-simulacao-${selectedSimulation}.${reportFormat}`;
+        a.style.display = 'none';
+        
+        // Verificar se o elemento não está no DOM antes de adicionar
+        if (!document.body.contains(a)) {
+          document.body.appendChild(a);
+        }
+        
+        a.click();
+        
+        // Remover o elemento de forma segura
+        setTimeout(() => {
+          if (document.body.contains(a)) {
+            document.body.removeChild(a);
+          }
+          window.URL.revokeObjectURL(url);
+        }, 100);
+        
+        toast({
+          title: "Relatório gerado",
+          description: "Download iniciado com sucesso.",
+        });
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Erro no download",
+          description: "Erro ao processar o arquivo.",
+        });
+      }
     },
     onError: () => {
       toast({

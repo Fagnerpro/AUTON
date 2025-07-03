@@ -1,0 +1,40 @@
+chunk-WERSD76P.js?v=baebf3bb:16670 Uncaught NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+    at removeChildFromContainer (chunk-WERSD76P.js?v=baebf3bb:8462:23)
+    at commitDeletionEffectsOnFiber (chunk-WERSD76P.js?v=baebf3bb:17508:21)
+    at recursivelyTraverseDeletionEffects (chunk-WERSD76P.js?v=baebf3bb:17486:13)
+    at commitDeletionEffectsOnFiber (chunk-WERSD76P.js?v=baebf3bb:17534:17)
+    at recursivelyTraverseDeletionEffects (chunk-WERSD76P.js?v=baebf3bb:17486:13)
+    at commitDeletionEffectsOnFiber (chunk-WERSD76P.js?v=baebf3bb:17577:15)
+    at recursivelyTraverseDeletionEffects (chunk-WERSD76P.js?v=baebf3bb:17486:13)
+    at commitDeletionEffectsOnFiber (chunk-WERSD76P.js?v=baebf3bb:17503:17)
+    at recursivelyTraverseDeletionEffects (chunk-WERSD76P.js?v=baebf3bb:17486:13)
+    at commitDeletionEffectsOnFiber (chunk-WERSD76P.js?v=baebf3bb:17577:15)
+chunk-WERSD76P.js?v=baebf3bb:14032 The above error occurred in the <Reports> component:
+
+    at Reports (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/src/pages/reports.tsx:29:55)
+    at Route (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=baebf3bb:323:16)
+    at Switch (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=baebf3bb:379:17)
+    at main
+    at div
+    at AuthenticatedLayout (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/src/App.tsx?v=BmjbLtGDGcNO4FZ5UV3mx:33:32)
+    at Router (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/src/App.tsx?v=BmjbLtGDGcNO4FZ5UV3mx:59:31)
+    at AuthProvider (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/src/hooks/use-auth.tsx:22:32)
+    at Provider (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-KPO4B3UQ.js?v=baebf3bb:32:15)
+    at TooltipProvider (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=baebf3bb:57:5)
+    at QueryClientProvider (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=baebf3bb:2805:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+logCapturedError @ chunk-WERSD76P.js?v=baebf3bb:14032
+chunk-WERSD76P.js?v=baebf3bb:9129 Uncaught NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+    at removeChildFromContainer (chunk-WERSD76P.js?v=baebf3bb:8462:23)
+    at commitDeletionEffectsOnFiber (chunk-WERSD76P.js?v=baebf3bb:17508:21)
+    at recursivelyTraverseDeletionEffects (chunk-WERSD76P.js?v=baebf3bb:17486:13)
+    at commitDeletionEffectsOnFiber (chunk-WERSD76P.js?v=baebf3bb:17534:17)
+    at recursivelyTraverseDeletionEffects (chunk-WERSD76P.js?v=baebf3bb:17486:13)
+    at commitDeletionEffectsOnFiber (chunk-WERSD76P.js?v=baebf3bb:17577:15)
+    at recursivelyTraverseDeletionEffects (chunk-WERSD76P.js?v=baebf3bb:17486:13)
+    at commitDeletionEffectsOnFiber (chunk-WERSD76P.js?v=baebf3bb:17503:17)
+    at recursivelyTraverseDeletionEffects (chunk-WERSD76P.js?v=baebf3bb:17486:13)
+    at commitDeletionEffectsOnFiber (chunk-WERSD76P.js?v=baebf3bb:17577:15)

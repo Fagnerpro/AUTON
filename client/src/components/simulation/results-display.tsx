@@ -10,9 +10,6 @@ interface ResultsDisplayProps {
 }
 
 export default function ResultsDisplay({ type, results, simulation }: ResultsDisplayProps) {
-  // Debug: vamos ver o que está chegando nos resultados
-  console.log('ResultsDisplay - Dados recebidos:', { type, results, simulation });
-  
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
