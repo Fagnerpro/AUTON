@@ -23,20 +23,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      if (authService.isAuthenticated()) {
+      const token = authService.getToken();
+      if (token) {
         try {
           const currentUser = await authService.getCurrentUser();
           setUser(currentUser);
-        } catch (error) {
+        } catch (error: any) {
           console.error('Failed to initialize auth:', error);
-          authService.logout();
+          // Se o token é inválido ou expirou, limpa o estado
+          if (error.message?.includes('403') || error.message?.includes('Invalid token')) {
+            authService.logout();
+            setUser(null);
+            toast({
+              variant: "destructive",
+              title: "Sessão expirada",
+              description: "Por favor, faça login novamente.",
+            });
+          }
         }
       }
       setIsLoading(false);
     };
 
     initializeAuth();
-  }, []);
+  }, [toast]);
 
   const login = async (credentials: LoginRequest) => {
     try {

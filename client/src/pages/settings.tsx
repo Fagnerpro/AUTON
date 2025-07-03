@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User, Settings as SettingsIcon, Bell, Shield, FileText, Calculator } from 'lucide-react';
+import { User as UserIcon, Settings as SettingsIcon, Bell, Shield, FileText, Calculator } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -39,7 +39,7 @@ export default function Settings() {
   });
 
   // Fetch user data
-  const { data: user } = useQuery({
+  const { data: user } = useQuery<any>({
     queryKey: ['/api/auth/me'],
   });
 
@@ -93,7 +93,7 @@ export default function Settings() {
       <Tabs defaultValue="profile" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="profile" className="flex items-center space-x-2">
-            <User className="h-4 w-4" />
+            <UserIcon className="h-4 w-4" />
             <span>Perfil</span>
           </TabsTrigger>
           <TabsTrigger value="notifications" className="flex items-center space-x-2">

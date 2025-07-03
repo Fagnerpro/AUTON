@@ -52,7 +52,15 @@ export const getQueryFn: <T>(options: {
       credentials: "include",
     });
 
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+    // Handle unauthorized access (401 and 403)
+    if ((res.status === 401 || res.status === 403) && unauthorizedBehavior === "returnNull") {
+      return null;
+    }
+
+    // For 403 errors, clear invalid token
+    if (res.status === 403) {
+      localStorage.removeItem('auth_token');
+      window.location.reload();
       return null;
     }
 

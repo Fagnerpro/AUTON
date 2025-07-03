@@ -15,7 +15,7 @@ export default function Reports() {
   const { toast } = useToast();
 
   // Fetch user simulations
-  const { data: simulations = [], isLoading } = useQuery({
+  const { data: simulations = [], isLoading } = useQuery<Simulation[]>({
     queryKey: ['/api/simulations'],
   });
 
@@ -66,14 +66,14 @@ export default function Reports() {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants = {
+    const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
       draft: 'secondary',
       calculated: 'default',
-      approved: 'success',
-      completed: 'success'
-    } as const;
+      approved: 'default',
+      completed: 'default'
+    };
     
-    const labels = {
+    const labels: Record<string, string> = {
       draft: 'Rascunho',
       calculated: 'Calculada',
       approved: 'Aprovada',
@@ -81,8 +81,8 @@ export default function Reports() {
     };
 
     return (
-      <Badge variant={variants[status as keyof typeof variants] || 'secondary'}>
-        {labels[status as keyof typeof labels] || status}
+      <Badge variant={variants[status] || 'secondary'}>
+        {labels[status] || status}
       </Badge>
     );
   };
@@ -140,7 +140,7 @@ export default function Reports() {
                   <SelectValue placeholder="Selecione uma simulação" />
                 </SelectTrigger>
                 <SelectContent>
-                  {simulations.map((sim: Simulation) => (
+                  {Array.isArray(simulations) && simulations.map((sim: Simulation) => (
                     <SelectItem key={sim.id} value={sim.id.toString()}>
                       <div className="flex items-center justify-between w-full">
                         <span className="font-medium">{sim.name}</span>
@@ -192,22 +192,26 @@ export default function Reports() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {simulations.filter((sim: Simulation) => sim.status === 'calculated' || sim.status === 'completed').map((sim: Simulation) => (
-                <div key={sim.id} className="p-3 border rounded-lg">
-                  <div className="flex items-start justify-between mb-2">
-                    <h4 className="font-medium text-sm">{sim.name}</h4>
-                    {getStatusBadge(sim.status)}
-                  </div>
-                  <div className="text-xs text-gray-500 space-y-1">
-                    <div>Tipo: {getTypeName(sim.type)}</div>
-                    <div className="flex items-center">
-                      <Calendar className="h-3 w-3 mr-1" />
-                      {new Date(sim.createdAt).toLocaleDateString('pt-BR')}
+              {Array.isArray(simulations) && simulations
+                .filter((sim: Simulation) => sim.status === 'calculated' || sim.status === 'completed')
+                .map((sim: Simulation) => (
+                  <div key={sim.id} className="p-3 border rounded-lg">
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="font-medium text-sm">{sim.name}</h4>
+                      {getStatusBadge(sim.status)}
+                    </div>
+                    <div className="text-xs text-gray-500 space-y-1">
+                      <div>Tipo: {getTypeName(sim.type)}</div>
+                      <div className="flex items-center">
+                        <Calendar className="h-3 w-3 mr-1" />
+                        {new Date(sim.createdAt).toLocaleDateString('pt-BR')}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-              {simulations.filter((sim: Simulation) => sim.status === 'calculated' || sim.status === 'completed').length === 0 && (
+                ))}
+              {Array.isArray(simulations) && simulations
+                .filter((sim: Simulation) => sim.status === 'calculated' || sim.status === 'completed')
+                .length === 0 && (
                 <div className="text-center text-gray-500 py-4">
                   <FileText className="h-8 w-8 mx-auto mb-2 text-gray-300" />
                   <p className="text-sm">Nenhuma simulação calculada encontrada</p>
