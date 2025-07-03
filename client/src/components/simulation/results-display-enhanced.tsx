@@ -24,12 +24,16 @@ interface ResultsDisplayProps {
 }
 
 export default function ResultsDisplayEnhanced({ type, results, simulation }: ResultsDisplayProps) {
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (value: number, decimals: number = 2) => {
+    // Para valores grandes (milhões), sempre mostrar 2 casas decimais
+    // Para valores menores, usar formatação padrão
+    const adjustedDecimals = value >= 1000000 ? 2 : decimals;
+    
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      minimumFractionDigits: adjustedDecimals,
+      maximumFractionDigits: adjustedDecimals,
     }).format(value);
   };
 
