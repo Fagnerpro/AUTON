@@ -17,6 +17,9 @@ Sistema completo de simulação solar para empresas com React frontend, FastAPI 
 ✓ **NOVO**: Multiplicação automática simples por número de unidades
 ✓ **NOVO**: Interface específica com valores unitários e totais
 ✓ **CORREÇÃO**: Bug na multiplicação de valores - estruturas aninhadas corrigidas
+✓ **CORREÇÃO**: Formatação monetária com casas decimais adequadas (R$ 1.316.340,00)
+✓ **CORREÇÃO**: Valores técnicos (irradiação 5,8 kWh/m², eficiência 78%) agora exibidos
+✓ **CORREÇÃO**: Erro React DOM na página Reports corrigido - checkboxes funcionando
 
 ## Project Architecture
 

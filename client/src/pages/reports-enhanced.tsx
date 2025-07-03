@@ -263,7 +263,7 @@ export default function ReportsEnhanced() {
                     <Checkbox
                       id="scenarios"
                       checked={includeScenarios}
-                      onCheckedChange={setIncludeScenarios}
+                      onCheckedChange={(checked) => setIncludeScenarios(checked === true)}
                     />
                     <label htmlFor="scenarios" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       💰 Cenários de Investimento
@@ -274,7 +274,7 @@ export default function ReportsEnhanced() {
                     <Checkbox
                       id="financial"
                       checked={includeFinancial}
-                      onCheckedChange={setIncludeFinancial}
+                      onCheckedChange={(checked) => setIncludeFinancial(checked === true)}
                     />
                     <label htmlFor="financial" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       📈 Análise Financeira Completa
@@ -289,7 +289,7 @@ export default function ReportsEnhanced() {
                     <Checkbox
                       id="technical"
                       checked={includeTechnical}
-                      onCheckedChange={setIncludeTechnical}
+                      onCheckedChange={(checked) => setIncludeTechnical(checked === true)}
                     />
                     <label htmlFor="technical" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       🔧 Detalhes Técnicos
@@ -300,7 +300,7 @@ export default function ReportsEnhanced() {
                     <Checkbox
                       id="environmental"
                       checked={includeEnvironmental}
-                      onCheckedChange={setIncludeEnvironmental}
+                      onCheckedChange={(checked) => setIncludeEnvironmental(checked === true)}
                     />
                     <label htmlFor="environmental" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       🌱 Impacto Ambiental
