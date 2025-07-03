@@ -12,6 +12,7 @@ import type { Simulation } from '@shared/schema';
 export default function Reports() {
   const [selectedSimulation, setSelectedSimulation] = useState<string>('');
   const [reportFormat, setReportFormat] = useState<string>('pdf');
+  const [includeScenarios, setIncludeScenarios] = useState<boolean>(true);
   const { toast } = useToast();
 
   // Fetch user simulations
@@ -19,9 +20,9 @@ export default function Reports() {
     queryKey: ['/api/simulations'],
   });
 
-  // Generate report mutation
+  // Generate report mutation with scenarios
   const generateReportMutation = useMutation({
-    mutationFn: async (data: { simulationId: number; format: string }) => {
+    mutationFn: async (data: { simulationId: number; format: string; includeScenarios?: boolean }) => {
       return apiRequest('POST', `/api/reports/generate`, data);
     },
     onSuccess: async (response) => {

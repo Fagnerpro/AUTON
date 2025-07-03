@@ -111,6 +111,9 @@ Localizado em `shared/simulation-config.ts`:
 - ✅ Relatórios gerando corretamente
 - ✅ Interface responsiva e intuitiva
 - ✅ Navegação completa entre páginas
+- ✅ **NOVO**: Cenários modulares de investimento implementados
+- ✅ **NOVO**: Interface de relatórios otimizada e intuitiva
+- ✅ **NOVO**: Visualização aprimorada com abas organizadas
 
 ## Testing Credentials
 - Email: demo@auton.com

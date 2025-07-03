@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TypeSelector from '@/components/simulation/type-selector';
 import BasicForm from '@/components/simulation/basic-form';
 import SpecificConfig from '@/components/simulation/specific-config';
-import ResultsDisplay from '@/components/simulation/results-display';
+import ResultsDisplayEnhanced from '@/components/simulation/results-display-enhanced';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -261,7 +261,7 @@ export default function SimulationForm() {
 
             <TabsContent value="results" className="space-y-6">
               {formData.results && (
-                <ResultsDisplay
+                <ResultsDisplayEnhanced
                   type={simulationType}
                   results={formData.results}
                   simulation={formData as Simulation}

@@ -5,7 +5,7 @@ import {
   getRegionalFactor, 
   calculateRequiredPower, 
   calculatePanelCount,
-  validateCalculationPython
+  getInvestmentScenarios
 } from '@shared/simulation-config';
 
 export interface IStorage {
@@ -387,7 +387,10 @@ export class MemStorage implements IStorage {
     const { installedPower, panelCount, monthlyGeneration, monthlyConsumption, usedArea, coveragePercentage, state, projectType } = data;
     
     const regionalFactor = getRegionalFactor(state);
-    const totalInvestment = installedPower * 1000 * SOLAR_SIMULATION_CONFIG.FINANCIAL.installation_cost_per_wp * regionalFactor.cost;
+    
+    // Cenários modulares de investimento para flexibilidade do cliente
+    const investmentScenarios = getInvestmentScenarios(installedPower);
+    const totalInvestment = investmentScenarios['Completo (com instalação)'].totalCost * regionalFactor.cost;
     
     // Log dos cálculos financeiros
     console.log('=== ANÁLISE FINANCEIRA ===');
@@ -438,7 +441,17 @@ export class MemStorage implements IStorage {
         payback_years: Math.round(paybackYears * 100) / 100,
         roi_25_years: Math.round(roi),
         total_savings_25_years: Math.round(cumulativeSavings),
-        net_profit_25_years: Math.round(cumulativeSavings - totalInvestment)
+        net_profit_25_years: Math.round(cumulativeSavings - totalInvestment),
+        investment_scenarios: Object.fromEntries(
+          Object.entries(investmentScenarios).map(([name, scenario]) => [
+            name,
+            {
+              total_cost: Math.round(scenario.totalCost * regionalFactor.cost),
+              payback_years: Math.round((scenario.totalCost * regionalFactor.cost / annualSavings) * 100) / 100,
+              cost_breakdown: scenario.costBreakdown
+            }
+          ])
+        )
       },
       environmental_impact: {
         co2_avoided_annually: Math.round(monthlyGeneration * 12 * 0.0817), // kg CO2/kWh

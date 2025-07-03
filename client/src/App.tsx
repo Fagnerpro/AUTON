@@ -7,7 +7,7 @@ import { queryClient } from "./lib/queryClient";
 import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
 import SimulationForm from "@/pages/simulation-form";
-import Reports from "@/pages/reports";
+import ReportsEnhanced from "@/pages/reports-enhanced";
 import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 import Header from "@/components/layout/header";
@@ -40,7 +40,7 @@ function Router() {
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/simulation" component={SimulationForm} />
         <Route path="/simulation/:id" component={SimulationForm} />
-        <Route path="/reports" component={Reports} />
+        <Route path="/reports" component={ReportsEnhanced} />
         <Route path="/settings" component={Settings} />
         <Route component={NotFound} />
       </Switch>

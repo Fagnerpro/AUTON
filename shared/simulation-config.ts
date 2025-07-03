@@ -40,11 +40,20 @@ export const SOLAR_SIMULATION_CONFIG = {
     overall: 0.78        // Rendimento geral do sistema
   },
 
-  // Parâmetros financeiros corrigidos (valores realistas do mercado brasileiro 2024)
+  // Parâmetros financeiros modulares (flexibilidade para diferentes cenários de investimento)
   FINANCIAL: {
     tariff_kwh: 0.65,           // Tarifa média kWh R$ (mais conservadora)
     annual_increase: 0.06,      // Aumento anual da tarifa 6% (IPCA + 2%)
-    installation_cost_per_wp: 5.20, // Custo por Wp instalado R$ (incluindo estrutura, inversor, instalação)
+    
+    // Custos modulares para flexibilidade de investimento
+    panels_cost_per_wp: 3.80,  // Custo painéis por Wp R$
+    inverter_cost_per_wp: 0.90, // Custo inversores por Wp R$
+    installation_cost_percentage: 0.15, // Instalação como % do equipamento
+    installation_fixed_cost: 8000, // Custo fixo de instalação R$
+    
+    // Custo unificado (para simulações simples)
+    installation_cost_per_wp: 5.20, // Custo por Wp instalado R$ (tudo incluído)
+    
     maintenance_annual: 0.015,  // Manutenção anual 1.5% do investimento
     system_lifetime: 25,        // Vida útil do sistema em anos
     irr_target: 0.15           // TIR alvo 15%
@@ -122,23 +131,76 @@ export function calculateRequiredPower(monthlyConsumption: number, state: string
 }
 
 /**
- * Validação usando metodologia do código Python externo
- * Para verificação cruzada de resultados
+ * Cálculo de investimento modular - permite diferentes cenários financeiros
  */
-export function validateCalculationPython(
-  panelPowerWp: number, 
-  numPanels: number, 
-  state: string
-): number {
-  const irradiation = getSolarIrradiation(state);
-  const systemEfficiency = 80; // 80% como no código Python
-  const additionalLosses = 0.90; // Fator 0.90 do código Python
+export function calculateModularInvestment(
+  systemPowerKw: number,
+  includeInstallation: boolean = true,
+  customParameters?: {
+    panelCostPerWp?: number;
+    inverterCostPerWp?: number;
+    installationPercentage?: number;
+    fixedInstallationCost?: number;
+  }
+): {
+  panelsCost: number;
+  invertersCost: number;
+  installationCost: number;
+  totalCost: number;
+  costBreakdown: string[];
+} {
+  const params = {
+    panelCostPerWp: customParameters?.panelCostPerWp || SOLAR_SIMULATION_CONFIG.FINANCIAL.panels_cost_per_wp,
+    inverterCostPerWp: customParameters?.inverterCostPerWp || SOLAR_SIMULATION_CONFIG.FINANCIAL.inverter_cost_per_wp,
+    installationPercentage: customParameters?.installationPercentage || SOLAR_SIMULATION_CONFIG.FINANCIAL.installation_cost_percentage,
+    fixedInstallationCost: customParameters?.fixedInstallationCost || SOLAR_SIMULATION_CONFIG.FINANCIAL.installation_fixed_cost
+  };
+
+  const systemPowerWp = systemPowerKw * 1000;
   
-  // Fórmula do código Python:
-  // energia_por_painel = (potencia_wp / 1000) * rad_solar * (eficiência / 100) * 0.90
-  const energyPerPanelDaily = (panelPowerWp / 1000) * irradiation * (systemEfficiency / 100) * additionalLosses;
+  const panelsCost = systemPowerWp * params.panelCostPerWp;
+  const invertersCost = systemPowerWp * params.inverterCostPerWp;
+  const equipmentCost = panelsCost + invertersCost;
   
-  return numPanels * energyPerPanelDaily * 30; // Geração mensal
+  const installationCost = includeInstallation 
+    ? (equipmentCost * params.installationPercentage) + params.fixedInstallationCost
+    : 0;
+  
+  const totalCost = panelsCost + invertersCost + installationCost;
+  
+  const costBreakdown = [
+    `Painéis: R$ ${panelsCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+    `Inversores: R$ ${invertersCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+    ...(includeInstallation ? [`Instalação: R$ ${installationCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`] : []),
+    `Total: R$ ${totalCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+  ];
+
+  return {
+    panelsCost,
+    invertersCost,
+    installationCost,
+    totalCost,
+    costBreakdown
+  };
+}
+
+/**
+ * Cenários de investimento pré-definidos para tomada de decisão
+ */
+export function getInvestmentScenarios(systemPowerKw: number) {
+  return {
+    'Básico (só equipamentos)': calculateModularInvestment(systemPowerKw, false),
+    'Completo (com instalação)': calculateModularInvestment(systemPowerKw, true),
+    'Premium (equipamentos top)': calculateModularInvestment(systemPowerKw, true, {
+      panelCostPerWp: 4.20,
+      inverterCostPerWp: 1.10
+    }),
+    'Econômico (custo reduzido)': calculateModularInvestment(systemPowerKw, true, {
+      panelCostPerWp: 3.40,
+      inverterCostPerWp: 0.75,
+      installationPercentage: 0.12
+    })
+  };
 }
 
 /**
