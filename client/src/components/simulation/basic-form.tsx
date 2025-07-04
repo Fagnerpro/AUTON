@@ -43,15 +43,20 @@ export default function BasicForm({ data, onChange }: BasicFormProps) {
           </div>
         </div>
 
-        {/* Campos para Multi-Unidades */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        {/* Configuração do Empreendimento */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
           <div className="md:col-span-3">
-            <h4 className="text-md font-medium text-blue-900 mb-2">🏢 Projeto Multi-Unidades</h4>
-            <p className="text-sm text-blue-700 mb-4">Para construtoras e incorporadoras - multiplicamos automaticamente por número de unidades</p>
+            <h4 className="text-lg font-semibold text-blue-900 mb-2">🏢 Configuração do Empreendimento</h4>
+            <p className="text-sm text-blue-700 mb-4">
+              <strong>📌 IMPORTANTE:</strong> Defina aqui as características gerais do projeto. 
+              Na próxima etapa você informará dados <strong>por unidade individual</strong>.
+            </p>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="totalUnits">Número de Unidades</Label>
+            <Label htmlFor="totalUnits" className="text-sm font-medium">
+              Total de Unidades do Empreendimento
+            </Label>
             <Input
               id="totalUnits"
               type="number"
@@ -60,29 +65,42 @@ export default function BasicForm({ data, onChange }: BasicFormProps) {
               value={data.totalUnits || 1}
               onChange={(e) => handleChange('totalUnits', parseInt(e.target.value) || 1)}
             />
+            <p className="text-xs text-gray-600">
+              Quantos apartamentos/casas terá o projeto completo?
+            </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="hasCommonAreas">
+            <Label htmlFor="hasCommonAreas" className="flex items-start space-x-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={data.hasCommonAreas || false}
                 onChange={(e) => handleChange('hasCommonAreas', e.target.checked)}
-                className="mr-2"
+                className="mt-1"
               />
-              Incluir Áreas Comuns
+              <div>
+                <span className="text-sm font-medium">Incluir Áreas Comuns</span>
+                <p className="text-xs text-gray-600">
+                  Piscina, academia, salão de festa, portaria
+                </p>
+              </div>
             </Label>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="hasEvCharging">
+            <Label htmlFor="hasEvCharging" className="flex items-start space-x-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={data.hasEvCharging || false}
                 onChange={(e) => handleChange('hasEvCharging', e.target.checked)}
-                className="mr-2"
+                className="mt-1"
               />
-              Incluir Recarga de VE
+              <div>
+                <span className="text-sm font-medium">Incluir Estação de Recarga VE</span>
+                <p className="text-xs text-gray-600">
+                  Para carros elétricos na garagem
+                </p>
+              </div>
             </Label>
           </div>
         </div>

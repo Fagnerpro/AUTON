@@ -22,6 +22,8 @@ Sistema completo de simulação solar para empresas com React frontend, FastAPI 
 ✓ **CORREÇÃO**: Erro React DOM na página Reports corrigido - checkboxes funcionando
 ✓ **OTIMIZAÇÃO**: Formulário simplificado removendo campos redundantes
 ✓ **CORREÇÃO**: Melhor tratamento de erros na API de simulações e relatórios
+✓ **UX APRIMORADA**: Descrições detalhadas e exemplos práticos nos formulários
+✓ **CLAREZA**: Diferenciação clara entre dados por unidade vs. totais do empreendimento
 
 ## Project Architecture
 
