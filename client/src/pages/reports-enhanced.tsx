@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -34,9 +34,19 @@ export default function ReportsEnhanced() {
   const { toast } = useToast();
 
   // Fetch user simulations
-  const { data: simulations = [], isLoading } = useQuery<Simulation[]>({
+  const { data: simulations = [], isLoading, error } = useQuery<Simulation[]>({
     queryKey: ['/api/simulations'],
   });
+
+  // Reset selected simulation if it no longer exists
+  useEffect(() => {
+    if (selectedSimulation && simulations.length > 0) {
+      const exists = simulations.some(s => s.id.toString() === selectedSimulation);
+      if (!exists) {
+        setSelectedSimulation('');
+      }
+    }
+  }, [selectedSimulation, simulations]);
 
   // Generate enhanced report mutation
   const generateReportMutation = useMutation({
@@ -177,9 +187,7 @@ export default function ReportsEnhanced() {
                   <SelectContent>
                     {simulations.map((simulation) => (
                       <SelectItem key={simulation.id} value={simulation.id.toString()}>
-                        <div className="flex items-center justify-between w-full">
-                          <span className="truncate">{simulation.name}</span>
-                        </div>
+                        {simulation.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
