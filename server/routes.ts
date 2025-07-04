@@ -1,7 +1,15 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { loginSchema, registerSchema, insertSimulationSchema, type User } from "@shared/schema";
+import { 
+  loginSchema, 
+  registerSchema, 
+  insertSimulationSchema, 
+  resetPasswordSchema,
+  updatePasswordSchema,
+  upgradeToPremiumumSchema,
+  type User 
+} from "@shared/schema";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
@@ -595,6 +603,368 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Erro ao gerar relatório:', error);
       res.status(500).json({ message: "Erro ao gerar relatório: " + (error as Error).message });
+    }
+  });
+
+  // ==========================================
+  // SISTEMA COMPLETO DE AUTENTICAÇÃO E PLANOS
+  // ==========================================
+
+  // Middleware para verificar acesso de plano
+  const checkPlanAccess = async (req: AuthRequest, res: any, next: any) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Usuário não autenticado" });
+    }
+
+    const access = await storage.checkUserPlanAccess(req.user.id);
+    if (!access.hasAccess) {
+      return res.status(403).json({ 
+        message: "Limite de simulações atingido. Faça upgrade para o plano Premium.",
+        plan: access.plan,
+        remainingSimulations: access.remainingSimulations
+      });
+    }
+
+    next();
+  };
+
+  // AUTH ROUTES - Conecta com a landing page
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const userData = registerSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(userData.email);
+      if (existingUser) {
+        return res.status(400).json({ message: "Email já está em uso" });
+      }
+
+      // Hash password and create user
+      const hashedPassword = await storage.hashPassword(userData.password);
+      const user = await storage.createUser({
+        ...userData,
+        hashedPassword,
+        plan: "gratuito",
+        maxSimulations: 5,
+        isActive: true,
+        isVerified: false
+      });
+
+      // Create session and generate token
+      const session = await storage.createSession(user.id);
+      const token = jwt.sign({ userId: user.id, sessionId: session.id }, JWT_SECRET, { expiresIn: '7d' });
+
+      res.status(201).json({
+        message: "Usuário criado com sucesso",
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          plan: user.plan,
+          company: user.company
+        },
+        token,
+        access: await storage.checkUserPlanAccess(user.id)
+      });
+    } catch (error) {
+      console.error('Erro no registro:', error);
+      res.status(400).json({ message: "Dados inválidos: " + (error as Error).message });
+    }
+  });
+
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { email, password } = loginSchema.parse(req.body);
+      
+      // Find user
+      const user = await storage.getUserByEmail(email);
+      if (!user || !user.isActive) {
+        return res.status(401).json({ message: "Credenciais inválidas" });
+      }
+
+      // Verify password
+      const isValidPassword = await storage.verifyPassword(password, user.hashedPassword);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: "Credenciais inválidas" });
+      }
+
+      // Create session and generate token
+      const session = await storage.createSession(user.id);
+      const token = jwt.sign({ userId: user.id, sessionId: session.id }, JWT_SECRET, { expiresIn: '7d' });
+
+      res.json({
+        message: "Login realizado com sucesso",
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          plan: user.plan,
+          company: user.company,
+          planExpiresAt: user.planExpiresAt
+        },
+        token,
+        access: await storage.checkUserPlanAccess(user.id)
+      });
+    } catch (error) {
+      console.error('Erro no login:', error);
+      res.status(400).json({ message: "Dados inválidos" });
+    }
+  });
+
+  app.post("/api/auth/logout", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const authHeader = req.headers['authorization'];
+      const token = authHeader && authHeader.split(' ')[1];
+      
+      if (token) {
+        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        await storage.deleteSession(decoded.sessionId);
+      }
+
+      res.json({ message: "Logout realizado com sucesso" });
+    } catch (error) {
+      res.json({ message: "Logout realizado com sucesso" });
+    }
+  });
+
+  // Password reset routes
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    try {
+      const { email } = resetPasswordSchema.parse(req.body);
+      
+      const resetToken = await storage.createResetToken(email);
+      if (!resetToken) {
+        // Don't reveal if email exists or not for security
+        return res.json({ message: "Se o email estiver em nosso sistema, você receberá instruções de recuperação." });
+      }
+
+      // In a real app, send email here
+      console.log(`Reset token for ${email}: ${resetToken}`);
+      
+      res.json({ 
+        message: "Se o email estiver em nosso sistema, você receberá instruções de recuperação.",
+        // For demo purposes only - remove in production
+        debug_token: resetToken
+      });
+    } catch (error) {
+      res.status(400).json({ message: "Email inválido" });
+    }
+  });
+
+  app.post("/api/auth/reset-password", async (req, res) => {
+    try {
+      const { token, password } = updatePasswordSchema.parse(req.body);
+      
+      const user = await storage.verifyResetToken(token);
+      if (!user) {
+        return res.status(400).json({ message: "Token inválido ou expirado" });
+      }
+
+      const hashedPassword = await storage.hashPassword(password);
+      const success = await storage.updatePassword(user.id, hashedPassword);
+      
+      if (success) {
+        res.json({ message: "Senha atualizada com sucesso" });
+      } else {
+        res.status(500).json({ message: "Erro ao atualizar senha" });
+      }
+    } catch (error) {
+      res.status(400).json({ message: "Dados inválidos" });
+    }
+  });
+
+  // PLAN ROUTES - Conecta com a seção de planos da landing page
+  app.get("/api/plans", async (req, res) => {
+    try {
+      const plans = await storage.getPlans();
+      res.json(plans);
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao buscar planos" });
+    }
+  });
+
+  app.get("/api/user/plan-status", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const access = await storage.checkUserPlanAccess(req.user!.id);
+      const user = req.user!;
+      
+      res.json({
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          plan: user.plan,
+          planExpiresAt: user.planExpiresAt,
+          maxSimulations: user.maxSimulations
+        },
+        access,
+        simulations: {
+          count: (await storage.getSimulationsByUser(user.id)).length,
+          limit: user.maxSimulations
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao verificar status do plano" });
+    }
+  });
+
+  // PAYMENT ROUTES - Integração com gateways
+  app.post("/api/payments/create-checkout", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const { planId, paymentMethod } = upgradeToPremiumumSchema.parse(req.body);
+      
+      const plan = await storage.getPlan(planId);
+      if (!plan || !plan.isActive) {
+        return res.status(404).json({ message: "Plano não encontrado" });
+      }
+
+      // Create payment record
+      const payment = await storage.createPayment({
+        userId: req.user!.id,
+        planId,
+        amount: plan.price,
+        currency: plan.currency || "BRL",
+        provider: paymentMethod,
+        providerId: `checkout_${Date.now()}`, // In real implementation, use actual provider ID
+        status: "pending",
+        metadata: { planName: plan.name, userEmail: req.user!.email }
+      });
+
+      // In a real implementation, integrate with Stripe/MercadoPago here
+      const checkoutUrl = paymentMethod === "stripe" 
+        ? `https://checkout.stripe.com/demo/${payment.id}`
+        : `https://mercadopago.com.br/checkout/${payment.id}`;
+
+      res.json({
+        checkoutUrl,
+        paymentId: payment.id,
+        plan: {
+          name: plan.displayName,
+          price: plan.price,
+          currency: plan.currency
+        }
+      });
+    } catch (error) {
+      console.error('Erro ao criar checkout:', error);
+      res.status(400).json({ message: "Erro ao processar pagamento" });
+    }
+  });
+
+  app.post("/api/payments/webhook", async (req, res) => {
+    try {
+      // This would be called by payment providers (Stripe/MercadoPago)
+      const { paymentId, status, metadata } = req.body;
+      
+      const payment = await storage.updatePaymentStatus(paymentId, status, metadata);
+      if (!payment) {
+        return res.status(404).json({ message: "Pagamento não encontrado" });
+      }
+
+      // If payment successful, upgrade user plan
+      if (status === "completed") {
+        const plan = await storage.getPlan(payment.planId);
+        if (plan) {
+          const expiresAt = new Date();
+          expiresAt.setFullYear(expiresAt.getFullYear() + 1); // 1 year from now
+          
+          await storage.upgradeUserPlan(payment.userId, plan.name, expiresAt);
+        }
+      }
+
+      res.json({ message: "Webhook processado" });
+    } catch (error) {
+      console.error('Erro no webhook:', error);
+      res.status(500).json({ message: "Erro no processamento" });
+    }
+  });
+
+  // Simulate payment completion for demo
+  app.post("/api/payments/:id/complete", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const paymentId = parseInt(req.params.id);
+      const payment = await storage.getPayment(paymentId);
+      
+      if (!payment || payment.userId !== req.user!.id) {
+        return res.status(404).json({ message: "Pagamento não encontrado" });
+      }
+
+      if (payment.status !== "pending") {
+        return res.status(400).json({ message: "Pagamento já processado" });
+      }
+
+      // Complete payment
+      await storage.updatePaymentStatus(paymentId, "completed", { simulatedAt: new Date() });
+      
+      // Upgrade user plan
+      const plan = await storage.getPlan(payment.planId);
+      if (plan) {
+        const expiresAt = new Date();
+        expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+        
+        await storage.upgradeUserPlan(payment.userId, plan.name, expiresAt);
+      }
+
+      res.json({ 
+        message: "Pagamento processado com sucesso!",
+        newPlan: plan?.name,
+        access: await storage.checkUserPlanAccess(req.user!.id)
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao processar pagamento" });
+    }
+  });
+
+  // USER DASHBOARD ROUTES
+  app.get("/api/user/dashboard", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const user = req.user!;
+      const simulations = await storage.getSimulationsByUser(user.id);
+      const payments = await storage.getPaymentsByUser(user.id);
+      const access = await storage.checkUserPlanAccess(user.id);
+
+      res.json({
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          company: user.company,
+          plan: user.plan,
+          planExpiresAt: user.planExpiresAt,
+          maxSimulations: user.maxSimulations,
+          memberSince: user.createdAt
+        },
+        stats: {
+          totalSimulations: simulations.length,
+          completedSimulations: simulations.filter(s => s.results).length,
+          remainingSimulations: access.remainingSimulations
+        },
+        recentSimulations: simulations.slice(0, 5),
+        recentPayments: payments.slice(0, 3),
+        access
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao carregar dashboard" });
+    }
+  });
+
+  // Apply plan access check to simulation creation
+  const originalSimulationPost = app._router.stack.find((layer: any) => 
+    layer.route?.path === '/api/simulations' && layer.route.methods.post
+  );
+  
+  // Override simulation creation to check plan access
+  app.post("/api/simulations", authenticateToken, checkPlanAccess, async (req: AuthRequest, res) => {
+    // Continue with original simulation logic but now with plan validation
+    try {
+      const simulationData = insertSimulationSchema.parse(req.body);
+      const simulation = await storage.createSimulation({
+        ...simulationData,
+        userId: req.user!.id,
+      });
+      res.status(201).json(simulation);
+    } catch (error) {
+      console.error('Erro ao criar simulação:', error);
+      res.status(400).json({ message: "Dados inválidos: " + (error as Error).message });
     }
   });
 

@@ -1,4 +1,32 @@
-import { users, simulations, organizations, type User, type InsertUser, type Simulation, type InsertSimulation, type Organization, type InsertOrganization } from "@shared/schema";
+import { 
+  users, 
+  simulations, 
+  organizations, 
+  plans,
+  payments,
+  sessions,
+  type User, 
+  type InsertUser, 
+  type Simulation, 
+  type InsertSimulation, 
+  type Organization, 
+  type InsertOrganization,
+  type Plan,
+  type InsertPlan,
+  type Payment,
+  type InsertPayment,
+  type Session,
+  type InsertSession
+} from "@shared/schema";
+import bcrypt from "bcrypt";
+import crypto from "crypto";
+
+// Fix iteration issue
+declare global {
+  interface SymbolConstructor {
+    readonly iterator: symbol;
+  }
+}
 import { 
   SOLAR_SIMULATION_CONFIG, 
   getSolarIrradiation, 
@@ -7,6 +35,7 @@ import {
   calculatePanelCount,
   getInvestmentScenarios
 } from '@shared/simulation-config';
+import { eq, and, desc, count, gte } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -15,6 +44,35 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, user: Partial<InsertUser>): Promise<User | undefined>;
   updateUserLastLogin(id: number): Promise<void>;
+  hashPassword(password: string): Promise<string>;
+  verifyPassword(password: string, hashedPassword: string): Promise<boolean>;
+  
+  // Password reset operations
+  createResetToken(email: string): Promise<string | null>;
+  verifyResetToken(token: string): Promise<User | null>;
+  updatePassword(userId: number, hashedPassword: string): Promise<boolean>;
+  clearResetToken(userId: number): Promise<void>;
+  
+  // Session operations
+  createSession(userId: number): Promise<Session>;
+  getSession(sessionId: string): Promise<Session | undefined>;
+  deleteSession(sessionId: string): Promise<boolean>;
+  cleanExpiredSessions(): Promise<void>;
+  
+  // Plan operations
+  getPlans(): Promise<Plan[]>;
+  getPlan(id: number): Promise<Plan | undefined>;
+  createPlan(plan: InsertPlan): Promise<Plan>;
+  
+  // Payment operations
+  createPayment(payment: InsertPayment): Promise<Payment>;
+  getPayment(id: number): Promise<Payment | undefined>;
+  getPaymentsByUser(userId: number): Promise<Payment[]>;
+  updatePaymentStatus(id: number, status: string, metadata?: any): Promise<Payment | undefined>;
+  
+  // Plan verification
+  checkUserPlanAccess(userId: number): Promise<{ hasAccess: boolean; plan: string; remainingSimulations?: number }>;
+  upgradeUserPlan(userId: number, plan: string, expiresAt?: Date): Promise<User | undefined>;
   
   // Simulation operations
   getSimulation(id: number): Promise<Simulation | undefined>;
@@ -44,26 +102,79 @@ export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private simulations: Map<number, Simulation>;
   private organizations: Map<number, Organization>;
+  private plans: Map<number, Plan>;
+  private payments: Map<number, Payment>;
+  private sessions: Map<string, Session>;
+  private resetTokens: Map<string, { userId: number; expiresAt: Date }>;
   private currentUserId: number;
   private currentSimulationId: number;
   private currentOrgId: number;
+  private currentPlanId: number;
+  private currentPaymentId: number;
 
   constructor() {
     this.users = new Map();
     this.simulations = new Map();
     this.organizations = new Map();
+    this.plans = new Map();
+    this.payments = new Map();
+    this.sessions = new Map();
+    this.resetTokens = new Map();
     this.currentUserId = 1;
     this.currentSimulationId = 1;
     this.currentOrgId = 1;
+    this.currentPlanId = 1;
+    this.currentPaymentId = 1;
     
+    this.initializeDefaultPlans();
+    this.createDemoUser();
+  }
+
+  private async initializeDefaultPlans() {
+    // Create Free Plan
+    await this.createPlan({
+      name: "gratuito",
+      displayName: "Plano Gratuito",
+      price: 0,
+      currency: "BRL",
+      maxSimulations: 5,
+      features: [
+        "Acesso limitado às simulações",
+        "Módulo residencial básico", 
+        "Relatórios simplificados"
+      ],
+      isActive: true,
+    });
+
+    // Create Premium Plan
+    await this.createPlan({
+      name: "premium",
+      displayName: "Plano Premium",
+      price: 24.90,
+      currency: "BRL",
+      maxSimulations: -1, // Unlimited
+      features: [
+        "Todos os módulos liberados",
+        "Simulações ilimitadas",
+        "Relatórios completos",
+        "Suporte prioritário"
+      ],
+      isActive: true,
+    });
+  }
+
+  private async createDemoUser() {
     // Create demo user
-    this.createUser({
+    await this.createUser({
       email: "demo@auton.com",
-      hashedPassword: "$2b$10$demo.hashed.password", // In real app, hash properly
+      hashedPassword: await this.hashPassword("demo123"),
       name: "Usuário Demo",
       company: "USINA I.A.",
       phone: "(62) 99999-9999",
       role: "admin",
+      plan: "premium",
+      planExpiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+      maxSimulations: -1,
       isActive: true,
       isVerified: true,
     });
@@ -110,6 +221,202 @@ export class MemStorage implements IStorage {
       user.lastLogin = new Date();
       this.users.set(id, user);
     }
+  }
+
+  // Authentication methods
+  async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, 10);
+  }
+
+  async verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
+    return bcrypt.compare(password, hashedPassword);
+  }
+
+  // Password reset methods
+  async createResetToken(email: string): Promise<string | null> {
+    const user = await this.getUserByEmail(email);
+    if (!user) return null;
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    
+    this.resetTokens.set(token, { userId: user.id, expiresAt });
+    
+    // Update user with reset token
+    await this.updateUser(user.id, {
+      resetToken: token,
+      resetTokenExpiresAt: expiresAt,
+    });
+
+    return token;
+  }
+
+  async verifyResetToken(token: string): Promise<User | null> {
+    const resetData = this.resetTokens.get(token);
+    if (!resetData || resetData.expiresAt < new Date()) {
+      this.resetTokens.delete(token);
+      return null;
+    }
+
+    const user = await this.getUser(resetData.userId);
+    return user || null;
+  }
+
+  async updatePassword(userId: number, hashedPassword: string): Promise<boolean> {
+    const user = await this.updateUser(userId, { hashedPassword });
+    if (user) {
+      await this.clearResetToken(userId);
+      return true;
+    }
+    return false;
+  }
+
+  async clearResetToken(userId: number): Promise<void> {
+    const user = this.users.get(userId);
+    if (user && user.resetToken) {
+      this.resetTokens.delete(user.resetToken);
+      await this.updateUser(userId, {
+        resetToken: null,
+        resetTokenExpiresAt: null,
+      });
+    }
+  }
+
+  // Session management
+  async createSession(userId: number): Promise<Session> {
+    const sessionId = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    const session: Session = {
+      id: sessionId,
+      userId,
+      expiresAt,
+      createdAt: new Date(),
+    };
+    
+    this.sessions.set(sessionId, session);
+    await this.updateUserLastLogin(userId);
+    return session;
+  }
+
+  async getSession(sessionId: string): Promise<Session | undefined> {
+    const session = this.sessions.get(sessionId);
+    if (session && session.expiresAt > new Date()) {
+      return session;
+    }
+    if (session) {
+      this.sessions.delete(sessionId);
+    }
+    return undefined;
+  }
+
+  async deleteSession(sessionId: string): Promise<boolean> {
+    return this.sessions.delete(sessionId);
+  }
+
+  async cleanExpiredSessions(): Promise<void> {
+    const now = new Date();
+    for (const [sessionId, session] of this.sessions.entries()) {
+      if (session.expiresAt <= now) {
+        this.sessions.delete(sessionId);
+      }
+    }
+  }
+
+  // Plan operations
+  async getPlans(): Promise<Plan[]> {
+    return Array.from(this.plans.values()).filter(plan => plan.isActive);
+  }
+
+  async getPlan(id: number): Promise<Plan | undefined> {
+    return this.plans.get(id);
+  }
+
+  async createPlan(insertPlan: InsertPlan): Promise<Plan> {
+    const id = this.currentPlanId++;
+    const now = new Date();
+    const plan: Plan = {
+      ...insertPlan,
+      id,
+      createdAt: now,
+    };
+    this.plans.set(id, plan);
+    return plan;
+  }
+
+  // Payment operations
+  async createPayment(insertPayment: InsertPayment): Promise<Payment> {
+    const id = this.currentPaymentId++;
+    const now = new Date();
+    const payment: Payment = {
+      ...insertPayment,
+      id,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.payments.set(id, payment);
+    return payment;
+  }
+
+  async getPayment(id: number): Promise<Payment | undefined> {
+    return this.payments.get(id);
+  }
+
+  async getPaymentsByUser(userId: number): Promise<Payment[]> {
+    return Array.from(this.payments.values()).filter(payment => payment.userId === userId);
+  }
+
+  async updatePaymentStatus(id: number, status: string, metadata?: any): Promise<Payment | undefined> {
+    const payment = this.payments.get(id);
+    if (!payment) return undefined;
+
+    const updatedPayment: Payment = {
+      ...payment,
+      status: status as any,
+      metadata: metadata || payment.metadata,
+      updatedAt: new Date(),
+    };
+    this.payments.set(id, updatedPayment);
+    return updatedPayment;
+  }
+
+  // Plan verification and access control
+  async checkUserPlanAccess(userId: number): Promise<{ hasAccess: boolean; plan: string; remainingSimulations?: number }> {
+    const user = await this.getUser(userId);
+    if (!user) return { hasAccess: false, plan: "gratuito" };
+
+    const now = new Date();
+    let userPlan = user.plan || "gratuito";
+
+    // Check if premium plan is expired
+    if (userPlan === "premium" && user.planExpiresAt && user.planExpiresAt < now) {
+      // Downgrade to free plan
+      await this.upgradeUserPlan(userId, "gratuito");
+      userPlan = "gratuito";
+    }
+
+    if (userPlan === "premium") {
+      return { hasAccess: true, plan: "premium" };
+    }
+
+    // For free plan, check simulation count
+    const userSimulations = await this.getSimulationsByUser(userId);
+    const maxSimulations = user.maxSimulations || 5;
+    const remainingSimulations = Math.max(0, maxSimulations - userSimulations.length);
+
+    return {
+      hasAccess: remainingSimulations > 0,
+      plan: "gratuito",
+      remainingSimulations
+    };
+  }
+
+  async upgradeUserPlan(userId: number, plan: string, expiresAt?: Date): Promise<User | undefined> {
+    const maxSimulations = plan === "premium" ? -1 : 5;
+    return this.updateUser(userId, {
+      plan: plan as any,
+      planExpiresAt: expiresAt || null,
+      maxSimulations,
+    });
   }
 
   async getSimulation(id: number): Promise<Simulation | undefined> {

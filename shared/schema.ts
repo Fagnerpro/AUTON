@@ -10,8 +10,13 @@ export const users = pgTable("users", {
   company: text("company"),
   phone: text("phone"),
   role: text("role", { enum: ["admin", "user", "manager"] }).notNull().default("user"),
+  plan: text("plan", { enum: ["gratuito", "premium"] }).notNull().default("gratuito"),
+  planExpiresAt: timestamp("plan_expires_at"),
+  maxSimulations: integer("max_simulations").default(5), // 5 for free, -1 for unlimited
   isActive: boolean("is_active").notNull().default(true),
   isVerified: boolean("is_verified").notNull().default(false),
+  resetToken: text("reset_token"),
+  resetTokenExpiresAt: timestamp("reset_token_expires_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   lastLogin: timestamp("last_login"),
@@ -48,6 +53,39 @@ export const organizations = pgTable("organizations", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const plans = pgTable("plans", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  displayName: text("display_name").notNull(),
+  price: real("price").notNull(),
+  currency: text("currency").default("BRL"),
+  maxSimulations: integer("max_simulations").default(-1), // -1 for unlimited
+  features: jsonb("features").$type<string[]>(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const payments = pgTable("payments", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  planId: integer("plan_id").notNull().references(() => plans.id),
+  amount: real("amount").notNull(),
+  currency: text("currency").default("BRL"),
+  provider: text("provider", { enum: ["stripe", "mercadopago", "test"] }).notNull(),
+  providerId: text("provider_id").notNull(),
+  status: text("status", { enum: ["pending", "completed", "failed", "refunded"] }).notNull(),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const sessions = pgTable("sessions", {
+  id: text("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -67,6 +105,21 @@ export const insertOrganizationSchema = createInsertSchema(organizations).omit({
   updatedAt: true,
 });
 
+export const insertPlanSchema = createInsertSchema(plans).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPaymentSchema = createInsertSchema(payments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSessionSchema = createInsertSchema(sessions).omit({
+  createdAt: true,
+});
+
 export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
@@ -78,11 +131,34 @@ export const registerSchema = insertUserSchema.extend({
   hashedPassword: true,
 });
 
+export const resetPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+export const updatePasswordSchema = z.object({
+  token: z.string(),
+  password: z.string().min(6),
+});
+
+export const upgradeToPremiumumSchema = z.object({
+  planId: z.number(),
+  paymentMethod: z.enum(["stripe", "mercadopago"]),
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Simulation = typeof simulations.$inferSelect;
 export type InsertSimulation = z.infer<typeof insertSimulationSchema>;
 export type Organization = typeof organizations.$inferSelect;
 export type InsertOrganization = z.infer<typeof insertOrganizationSchema>;
+export type Plan = typeof plans.$inferSelect;
+export type InsertPlan = z.infer<typeof insertPlanSchema>;
+export type Payment = typeof payments.$inferSelect;
+export type InsertPayment = z.infer<typeof insertPaymentSchema>;
+export type Session = typeof sessions.$inferSelect;
+export type InsertSession = z.infer<typeof insertSessionSchema>;
 export type LoginRequest = z.infer<typeof loginSchema>;
 export type RegisterRequest = z.infer<typeof registerSchema>;
+export type ResetPasswordRequest = z.infer<typeof resetPasswordSchema>;
+export type UpdatePasswordRequest = z.infer<typeof updatePasswordSchema>;
+export type UpgradeToPremiumRequest = z.infer<typeof upgradeToPremiumumSchema>;
