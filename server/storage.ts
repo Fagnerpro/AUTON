@@ -127,7 +127,6 @@ export class MemStorage implements IStorage {
     this.currentPaymentId = 1;
     
     this.initializeDefaultPlans();
-    this.createDemoUser();
   }
 
   private async initializeDefaultPlans() {
@@ -163,22 +162,7 @@ export class MemStorage implements IStorage {
     });
   }
 
-  private async createDemoUser() {
-    // Create demo user
-    await this.createUser({
-      email: "demo@auton.com",
-      hashedPassword: await this.hashPassword("demo123"),
-      name: "Usuário Demo",
-      company: "USINA I.A.",
-      phone: "(62) 99999-9999",
-      role: "admin",
-      plan: "premium",
-      planExpiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
-      maxSimulations: -1,
-      isActive: true,
-      isVerified: true,
-    });
-  }
+
 
   async getUser(id: number): Promise<User | undefined> {
     return this.users.get(id);

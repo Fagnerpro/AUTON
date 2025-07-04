@@ -126,9 +126,11 @@ Localizado em `shared/simulation-config.ts`:
 - ✅ **NOVO**: Interface de relatórios otimizada e intuitiva
 - ✅ **NOVO**: Visualização aprimorada com abas organizadas
 
-## Testing Credentials
-- Email: demo@auton.com
-- Senha: demo123
+## Sistema de Autenticação
+- Landing page profissional com registro e login
+- Sistema JWT completo implementado
+- Planos Gratuito (5 simulações) e Premium (R$ 24,90/mês)
+- Sem dados de demonstração - sistema limpo para produção
 
 ## Next Steps
 - Implementar backup automático de dados

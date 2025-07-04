@@ -742,9 +742,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Reset token for ${email}: ${resetToken}`);
       
       res.json({ 
-        message: "Se o email estiver em nosso sistema, você receberá instruções de recuperação.",
-        // For demo purposes only - remove in production
-        debug_token: resetToken
+        message: "Se o email estiver em nosso sistema, você receberá instruções de recuperação."
       });
     } catch (error) {
       res.status(400).json({ message: "Email inválido" });
@@ -878,41 +876,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Simulate payment completion for demo
-  app.post("/api/payments/:id/complete", authenticateToken, async (req: AuthRequest, res) => {
-    try {
-      const paymentId = parseInt(req.params.id);
-      const payment = await storage.getPayment(paymentId);
-      
-      if (!payment || payment.userId !== req.user!.id) {
-        return res.status(404).json({ message: "Pagamento não encontrado" });
-      }
 
-      if (payment.status !== "pending") {
-        return res.status(400).json({ message: "Pagamento já processado" });
-      }
-
-      // Complete payment
-      await storage.updatePaymentStatus(paymentId, "completed", { simulatedAt: new Date() });
-      
-      // Upgrade user plan
-      const plan = await storage.getPlan(payment.planId);
-      if (plan) {
-        const expiresAt = new Date();
-        expiresAt.setFullYear(expiresAt.getFullYear() + 1);
-        
-        await storage.upgradeUserPlan(payment.userId, plan.name, expiresAt);
-      }
-
-      res.json({ 
-        message: "Pagamento processado com sucesso!",
-        newPlan: plan?.name,
-        access: await storage.checkUserPlanAccess(req.user!.id)
-      });
-    } catch (error) {
-      res.status(500).json({ message: "Erro ao processar pagamento" });
-    }
-  });
 
   // USER DASHBOARD ROUTES
   app.get("/api/user/dashboard", authenticateToken, async (req: AuthRequest, res) => {

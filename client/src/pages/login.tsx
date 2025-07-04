@@ -112,23 +112,13 @@ export default function Login() {
               </Button>
             </form>
 
-            {/* Demo Info */}
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <h3 className="font-semibold text-blue-900 mb-2">Acesso Demo</h3>
-              <p className="text-sm text-blue-700 mb-2">
-                Use as credenciais abaixo para testar o sistema:
-              </p>
-              <div className="text-sm text-blue-600 space-y-1">
-                <p><strong>Email:</strong> demo@auton.com</p>
-                <p><strong>Senha:</strong> demo123</p>
-              </div>
-            </div>
+
           </CardContent>
         </Card>
 
         {/* Footer */}
         <div className="text-center mt-8 text-sm text-gray-600">
-          <p>Powered by USINA I.A.</p>
+          <p>&copy; 2025 AUTON®. Todos os direitos reservados.</p>
         </div>
       </div>
     </div>
