@@ -126,7 +126,7 @@ export default function ReportsEnhanced() {
   const getSimulationBadge = (simulation: Simulation) => {
     if (!simulation.results) return <Badge variant="outline">Sem cálculo</Badge>;
     
-    const payback = simulation.results?.financial_analysis?.payback_years;
+    const payback = (simulation.results as any)?.payback_years;
     if (payback <= 5) return <Badge className="bg-green-100 text-green-800">Viável</Badge>;
     if (payback <= 8) return <Badge className="bg-amber-100 text-amber-800">Moderado</Badge>;
     return <Badge className="bg-orange-100 text-orange-800">Avaliar</Badge>;

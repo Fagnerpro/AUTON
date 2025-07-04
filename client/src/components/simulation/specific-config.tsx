@@ -22,37 +22,33 @@ export default function SpecificConfig({ type, parameters, onChange }: SpecificC
 
   const renderResidentialConfig = () => (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+        <p className="text-sm text-blue-800">
+          <strong>Aviso:</strong> Use o formulário "Informações Básicas" para definir o número de unidades. 
+          Aqui você define apenas os parâmetros por unidade individual.
+        </p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="num_units">Número de Unidades</Label>
+          <Label htmlFor="monthlyConsumption">Consumo Mensal por Unidade (kWh)</Label>
           <Input
-            id="num_units"
+            id="monthlyConsumption"
             type="number"
-            placeholder="Ex: 24"
-            value={parameters.num_units || ''}
-            onChange={(e) => handleChange('num_units', e.target.value)}
+            placeholder="Ex: 350"
+            value={parameters.monthlyConsumption || ''}
+            onChange={(e) => handleChange('monthlyConsumption', e.target.value)}
           />
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="consumption_per_unit">Consumo por Unidade (kWh/mês)</Label>
+          <Label htmlFor="roofArea">Área do Telhado por Unidade (m²)</Label>
           <Input
-            id="consumption_per_unit"
+            id="roofArea"
             type="number"
-            placeholder="Ex: 250"
-            value={parameters.consumption_per_unit || ''}
-            onChange={(e) => handleChange('consumption_per_unit', e.target.value)}
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="available_area">Área Disponível (m²)</Label>
-          <Input
-            id="available_area"
-            type="number"
-            placeholder="Ex: 500"
-            value={parameters.available_area || ''}
-            onChange={(e) => handleChange('available_area', e.target.value)}
+            placeholder="Ex: 50"
+            value={parameters.roofArea || ''}
+            onChange={(e) => handleChange('roofArea', e.target.value)}
           />
         </div>
       </div>

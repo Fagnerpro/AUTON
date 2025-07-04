@@ -458,7 +458,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(updatedSimulation);
     } catch (error) {
-      res.status(400).json({ message: "Dados inválidos" });
+      console.error('Erro ao atualizar simulação:', error);
+      res.status(400).json({ message: "Dados inválidos: " + (error as Error).message });
     }
   });
 
@@ -557,7 +558,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Simulação não encontrada" });
       }
 
-      if (simulation.status !== 'calculated' && simulation.status !== 'completed') {
+      if (!simulation.results) {
         return res.status(400).json({ message: "Simulação deve estar calculada para gerar relatório" });
       }
 

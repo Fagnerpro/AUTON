@@ -20,6 +20,8 @@ Sistema completo de simulação solar para empresas com React frontend, FastAPI 
 ✓ **CORREÇÃO**: Formatação monetária com casas decimais adequadas (R$ 1.316.340,00)
 ✓ **CORREÇÃO**: Valores técnicos (irradiação 5,8 kWh/m², eficiência 78%) agora exibidos
 ✓ **CORREÇÃO**: Erro React DOM na página Reports corrigido - checkboxes funcionando
+✓ **OTIMIZAÇÃO**: Formulário simplificado removendo campos redundantes
+✓ **CORREÇÃO**: Melhor tratamento de erros na API de simulações e relatórios
 
 ## Project Architecture
 
