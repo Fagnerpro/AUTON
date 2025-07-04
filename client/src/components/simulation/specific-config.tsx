@@ -147,7 +147,7 @@ export default function SpecificConfig({ type, parameters, onChange }: SpecificC
             id="energy_per_charge"
             type="number"
             placeholder="50"
-            value={parameters.energy_per_charge || '50'}
+            value={parameters.energy_per_charge || ''}
             onChange={(e) => handleChange('energy_per_charge', e.target.value)}
             className="text-base"
           />
@@ -165,7 +165,7 @@ export default function SpecificConfig({ type, parameters, onChange }: SpecificC
             id="charges_per_day"
             type="number"
             placeholder="1"
-            value={parameters.charges_per_day || '1'}
+            value={parameters.charges_per_day || ''}
             onChange={(e) => handleChange('charges_per_day', e.target.value)}
             className="text-base"
           />
