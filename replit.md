@@ -4,26 +4,18 @@
 Sistema completo de simulação solar para empresas com React frontend, FastAPI backend inspirado, PostgreSQL database, e cálculos técnicos precisos baseados em parâmetros reais de mercado.
 
 ## Recent Changes (Janeiro 2025)
-✓ Corrigido sistema de autenticação JWT - tokens agora incluídos automaticamente nas requisições
+✓ **PRODUÇÃO**: Sistema totalmente limpo e preparado para deploy na Hostinger
+✓ **REMOÇÃO**: Eliminados todos os dados de demonstração e credenciais de teste
+✓ **DEPLOY**: Configurações específicas para Hostinger implementadas
+✓ **AUTENTICAÇÃO**: Sistema JWT completo sem dados demo - pronto para usuários reais
+✓ **SEGURANÇA**: Senhas hasheadas com bcrypt, validação Zod, proteção CORS
+✓ **PLANOS**: Sistema de assinatura Free (5 simulações) e Premium (R$ 24,90/mês)
+✓ Corrigido sistema de autenticação JWT - tokens agora incluídos automaticamente
 ✓ Implementado engine de cálculo robusto com parâmetros técnicos centralizados
-✓ Adicionadas páginas funcionais de Relatórios e Configurações
-✓ Criado sistema de geração de relatórios em PDF, Excel e JSON
-✓ CORREÇÃO CRÍTICA: Fórmula de cálculo solar ajustada para padrões da indústria
-✓ Parâmetros financeiros atualizados com valores realistas do mercado brasileiro 2024
-✓ Erro React DOM na página Reports corrigido com download seguro
-✓ Estrutura de resultados mapeada corretamente (technical_specs, financial_analysis)
-✓ ANÁLISE METODOLÓGICA: Comparação com código Python externo validada
-✓ **NOVO**: Sistema multi-unidades implementado para construtoras/incorporadoras
-✓ **NOVO**: Multiplicação automática simples por número de unidades
-✓ **NOVO**: Interface específica com valores unitários e totais
-✓ **CORREÇÃO**: Bug na multiplicação de valores - estruturas aninhadas corrigidas
-✓ **CORREÇÃO**: Formatação monetária com casas decimais adequadas (R$ 1.316.340,00)
-✓ **CORREÇÃO**: Valores técnicos (irradiação 5,8 kWh/m², eficiência 78%) agora exibidos
-✓ **CORREÇÃO**: Erro React DOM na página Reports corrigido - checkboxes funcionando
-✓ **OTIMIZAÇÃO**: Formulário simplificado removendo campos redundantes
-✓ **CORREÇÃO**: Melhor tratamento de erros na API de simulações e relatórios
-✓ **UX APRIMORADA**: Descrições detalhadas e exemplos práticos nos formulários
-✓ **CLAREZA**: Diferenciação clara entre dados por unidade vs. totais do empreendimento
+✓ Sistema multi-unidades implementado para construtoras/incorporadoras
+✓ Geração de relatórios em PDF, Excel e JSON
+✓ Fórmula de cálculo solar ajustada para padrões da indústria
+✓ Interface específica com valores unitários e totais para empreendimentos
 
 ## Project Architecture
 
@@ -138,8 +130,12 @@ Localizado em `shared/simulation-config.ts`:
 - Expandir tipos de painéis disponíveis
 - Implementar sistema de templates personalizados
 
-## Deployment Notes
-- Aplicação ready para deploy no Replit
+## Deployment Notes - Hostinger
+- **URL de Produção**: https://458ddcb5-57d1-473b-8847-a21f68742671.dev27.app-preview.com
+- Sistema limpo e pronto para produção (sem dados demo)
 - Todas as dependências instaladas
 - Database PostgreSQL configurado
 - Variáveis de ambiente configuradas
+- Scripts de build e deploy criados
+- Configuração específica para Hostinger implementada
+- Sistema de autenticação JWT completo e seguro
