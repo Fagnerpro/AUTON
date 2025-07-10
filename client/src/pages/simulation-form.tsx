@@ -99,8 +99,21 @@ export default function SimulationForm() {
       console.error('Erro ao salvar:', error);
       
       // Check if it's a plan limit error
-      if (error.message?.includes('Limite de simulações atingido')) {
-        setLocation('/upgrade');
+      if (error.message?.includes('Limite de simulações atingido') || error.status === 403) {
+        toast({
+          variant: "destructive",
+          title: "Limite Atingido",
+          description: "Você atingiu o limite de simulações do plano demo. Faça upgrade para Premium.",
+          action: (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLocation('/upgrade')}
+            >
+              Fazer Upgrade
+            </Button>
+          ),
+        });
         return;
       }
       
@@ -209,6 +222,24 @@ export default function SimulationForm() {
           <span>Voltar</span>
         </Button>
       </div>
+
+      {/* Plan Warning for Demo Users */}
+      {user?.plan === 'demo' && planAccess?.remainingSimulations === 0 && !simulationId && (
+        <Alert className="border-red-200 bg-red-50">
+          <Crown className="h-4 w-4 text-red-600" />
+          <AlertTitle className="text-red-800">Limite de Demo Atingido</AlertTitle>
+          <AlertDescription className="text-red-700">
+            Você atingiu o limite de 1 simulação do plano demo. Para criar novas simulações, faça upgrade para Premium.
+            <Button
+              variant="link"
+              className="p-0 text-red-600 underline ml-1"
+              onClick={() => setLocation('/upgrade')}
+            >
+              Fazer Upgrade Agora
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Simulation Form - Interface Simplificada */}
       <Card>

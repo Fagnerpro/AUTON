@@ -14,10 +14,16 @@ import { formatCurrency } from '@/lib/utils';
 
 // Make sure to call `loadStripe` outside of a component's render to avoid
 // recreating the `Stripe` object on every render.
-if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
-  throw new Error('Missing required Stripe key: VITE_STRIPE_PUBLIC_KEY');
+let stripePromise: Promise<any> | null = null;
+
+if (import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
+  stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY).catch((error) => {
+    console.warn('Stripe loading failed:', error);
+    return null;
+  });
+} else {
+  console.warn('Missing Stripe public key');
 }
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 const CheckoutForm = ({ customAmount, isSystemPurchase }: { customAmount?: number | null, isSystemPurchase?: boolean }) => {
   const stripe = useStripe();
@@ -239,9 +245,27 @@ export default function Upgrade() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Elements stripe={stripePromise} options={{ clientSecret }}>
-                <CheckoutForm customAmount={null} isSystemPurchase={false} />
-              </Elements>
+              {stripePromise ? (
+                <Elements stripe={stripePromise} options={{ clientSecret }}>
+                  <CheckoutForm customAmount={null} isSystemPurchase={false} />
+                </Elements>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="text-red-600 mb-4">
+                    ⚠️ Serviço de pagamento temporariamente indisponível
+                  </div>
+                  <p className="text-gray-600 text-sm">
+                    Por favor, tente novamente em alguns instantes ou entre em contato com o suporte.
+                  </p>
+                  <Button 
+                    onClick={() => window.location.reload()} 
+                    variant="outline" 
+                    className="mt-4"
+                  >
+                    Tentar Novamente
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
