@@ -306,6 +306,17 @@ function calculateCommonAreasSystem(params: any) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint
+  app.get("/api/health", async (req, res) => {
+    res.json({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      version: "1.0.0",
+      environment: process.env.NODE_ENV || "development"
+    });
+  });
+
   // Auth routes
   app.post("/api/auth/login", async (req, res) => {
     try {
@@ -316,8 +327,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Email ou senha incorretos" });
       }
       
-      // In production, use proper bcrypt comparison
-      const validPassword = password === "demo123" && email === "demo@auton.com";
+      // Verify password using bcrypt
+      const validPassword = await storage.verifyPassword(password, user.hashedPassword);
       if (!validPassword) {
         return res.status(401).json({ message: "Email ou senha incorretos" });
       }
@@ -352,8 +363,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const hashedPassword = await bcrypt.hash(userData.password, 10);
       
+      // Create user with only the fields needed for InsertUser
       const user = await storage.createUser({
-        ...userData,
+        email: userData.email,
+        name: userData.name,
+        company: userData.company,
+        phone: userData.phone,
+        role: "user",
+        plan: "gratuito",
+        maxSimulations: 5,
+        isActive: true,
+        isVerified: false,
         hashedPassword,
       });
       
@@ -551,64 +571,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Reports route
-  app.post("/api/reports/generate", authenticateToken, async (req: AuthRequest, res) => {
+  // Plan routes
+  app.get("/api/plans", async (req, res) => {
     try {
-      const { simulationId, format } = req.body;
-      
-      if (!simulationId || !format) {
-        return res.status(400).json({ message: "simulationId e format são obrigatórios" });
-      }
-
-      const simulation = await storage.getSimulation(simulationId);
-      
-      if (!simulation || simulation.userId !== req.user!.id) {
-        return res.status(404).json({ message: "Simulação não encontrada" });
-      }
-
-      if (!simulation.results) {
-        return res.status(400).json({ message: "Simulação deve estar calculada para gerar relatório" });
-      }
-
-      const reportData = await generateReport(simulation, format);
-      
-      let contentType: string;
-      let filename: string;
-      
-      switch (format) {
-        case 'pdf':
-          contentType = 'text/plain';
-          filename = `relatorio-${simulation.name}-${simulation.id}.txt`;
-          break;
-        case 'excel':
-          contentType = 'text/csv';
-          filename = `relatorio-${simulation.name}-${simulation.id}.csv`;
-          break;
-        case 'json':
-          contentType = 'application/json';
-          filename = `relatorio-${simulation.name}-${simulation.id}.json`;
-          break;
-        default:
-          return res.status(400).json({ message: "Formato não suportado" });
-      }
-
-      res.setHeader('Content-Type', contentType);
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      
-      if (typeof reportData === 'string') {
-        res.send(reportData);
-      } else {
-        res.send(reportData);
-      }
+      const plans = await storage.getPlans();
+      res.json(plans);
     } catch (error) {
-      console.error('Erro ao gerar relatório:', error);
-      res.status(500).json({ message: "Erro ao gerar relatório: " + (error as Error).message });
+      res.status(500).json({ message: "Erro ao buscar planos" });
     }
   });
-
-  // ==========================================
-  // SISTEMA COMPLETO DE AUTENTICAÇÃO E PLANOS
-  // ==========================================
 
   // Middleware para verificar acesso de plano
   const checkPlanAccess = async (req: AuthRequest, res: any, next: any) => {
@@ -628,102 +599,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
 
-  // AUTH ROUTES - Conecta com a landing page
-  app.post("/api/auth/register", async (req, res) => {
+  // Plan access check
+  app.get("/api/users/plan-access", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      const userData = registerSchema.parse(req.body);
-      
-      // Check if user already exists
-      const existingUser = await storage.getUserByEmail(userData.email);
-      if (existingUser) {
-        return res.status(400).json({ message: "Email já está em uso" });
-      }
-
-      // Hash password and create user
-      const hashedPassword = await storage.hashPassword(userData.password);
-      const user = await storage.createUser({
-        ...userData,
-        hashedPassword,
-        plan: "gratuito",
-        maxSimulations: 5,
-        isActive: true,
-        isVerified: false
-      });
-
-      // Create session and generate token
-      const session = await storage.createSession(user.id);
-      const token = jwt.sign({ userId: user.id, sessionId: session.id }, JWT_SECRET, { expiresIn: '7d' });
-
-      res.status(201).json({
-        message: "Usuário criado com sucesso",
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          plan: user.plan,
-          company: user.company
-        },
-        token,
-        access: await storage.checkUserPlanAccess(user.id)
-      });
+      const access = await storage.checkUserPlanAccess(req.user!.id);
+      res.json(access);
     } catch (error) {
-      console.error('Erro no registro:', error);
-      res.status(400).json({ message: "Dados inválidos: " + (error as Error).message });
-    }
-  });
-
-  app.post("/api/auth/login", async (req, res) => {
-    try {
-      const { email, password } = loginSchema.parse(req.body);
-      
-      // Find user
-      const user = await storage.getUserByEmail(email);
-      if (!user || !user.isActive) {
-        return res.status(401).json({ message: "Credenciais inválidas" });
-      }
-
-      // Verify password
-      const isValidPassword = await storage.verifyPassword(password, user.hashedPassword);
-      if (!isValidPassword) {
-        return res.status(401).json({ message: "Credenciais inválidas" });
-      }
-
-      // Create session and generate token
-      const session = await storage.createSession(user.id);
-      const token = jwt.sign({ userId: user.id, sessionId: session.id }, JWT_SECRET, { expiresIn: '7d' });
-
-      res.json({
-        message: "Login realizado com sucesso",
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          plan: user.plan,
-          company: user.company,
-          planExpiresAt: user.planExpiresAt
-        },
-        token,
-        access: await storage.checkUserPlanAccess(user.id)
-      });
-    } catch (error) {
-      console.error('Erro no login:', error);
-      res.status(400).json({ message: "Dados inválidos" });
-    }
-  });
-
-  app.post("/api/auth/logout", authenticateToken, async (req: AuthRequest, res) => {
-    try {
-      const authHeader = req.headers['authorization'];
-      const token = authHeader && authHeader.split(' ')[1];
-      
-      if (token) {
-        const decoded = jwt.verify(token, JWT_SECRET) as any;
-        await storage.deleteSession(decoded.sessionId);
-      }
-
-      res.json({ message: "Logout realizado com sucesso" });
-    } catch (error) {
-      res.json({ message: "Logout realizado com sucesso" });
+      res.status(500).json({ message: "Erro ao verificar acesso" });
     }
   });
 
@@ -734,18 +616,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const resetToken = await storage.createResetToken(email);
       if (!resetToken) {
-        // Don't reveal if email exists or not for security
-        return res.json({ message: "Se o email estiver em nosso sistema, você receberá instruções de recuperação." });
+        // Don't reveal if email exists or not
+        return res.json({ message: "Se o email existir, um link de reset será enviado" });
       }
 
-      // In a real app, send email here
-      console.log(`Reset token for ${email}: ${resetToken}`);
-      
+      // In production, send email with reset link
+      // For now, just return success
       res.json({ 
-        message: "Se o email estiver em nosso sistema, você receberá instruções de recuperação."
+        message: "Link de reset enviado para o email",
+        resetToken // In production, this would be sent via email
       });
     } catch (error) {
-      res.status(400).json({ message: "Email inválido" });
+      res.status(400).json({ message: "Erro ao solicitar reset de senha" });
     }
   });
 
@@ -767,52 +649,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(500).json({ message: "Erro ao atualizar senha" });
       }
     } catch (error) {
-      res.status(400).json({ message: "Dados inválidos" });
+      res.status(400).json({ message: "Erro ao resetar senha" });
     }
   });
 
-  // PLAN ROUTES - Conecta com a seção de planos da landing page
-  app.get("/api/plans", async (req, res) => {
+  app.post("/api/auth/logout", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      const plans = await storage.getPlans();
-      res.json(plans);
+      // For now, just return success - in production, you'd invalidate the token
+      res.json({ message: "Logout realizado com sucesso" });
     } catch (error) {
-      res.status(500).json({ message: "Erro ao buscar planos" });
+      res.status(500).json({ message: "Erro no logout" });
     }
   });
 
-  app.get("/api/user/plan-status", authenticateToken, async (req: AuthRequest, res) => {
-    try {
-      const access = await storage.checkUserPlanAccess(req.user!.id);
-      const user = req.user!;
-      
-      res.json({
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          plan: user.plan,
-          planExpiresAt: user.planExpiresAt,
-          maxSimulations: user.maxSimulations
-        },
-        access,
-        simulations: {
-          count: (await storage.getSimulationsByUser(user.id)).length,
-          limit: user.maxSimulations
-        }
-      });
-    } catch (error) {
-      res.status(500).json({ message: "Erro ao verificar status do plano" });
-    }
-  });
-
-  // PAYMENT ROUTES - Integração com gateways
-  app.post("/api/payments/create-checkout", authenticateToken, async (req: AuthRequest, res) => {
+  // Payment upgrade route
+  app.post("/api/payments/upgrade", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const { planId, paymentMethod } = upgradeToPremiumumSchema.parse(req.body);
       
       const plan = await storage.getPlan(planId);
-      if (!plan || !plan.isActive) {
+      if (!plan) {
         return res.status(404).json({ message: "Plano não encontrado" });
       }
 
@@ -823,112 +679,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         amount: plan.price,
         currency: plan.currency || "BRL",
         provider: paymentMethod,
-        providerId: `checkout_${Date.now()}`, // In real implementation, use actual provider ID
-        status: "pending",
-        metadata: { planName: plan.name, userEmail: req.user!.email }
+        providerId: `test_${Date.now()}`,
+        status: "completed",
+        metadata: { upgrade: true }
       });
 
-      // In a real implementation, integrate with Stripe/MercadoPago here
-      const checkoutUrl = paymentMethod === "stripe" 
-        ? `https://checkout.stripe.com/demo/${payment.id}`
-        : `https://mercadopago.com.br/checkout/${payment.id}`;
-
-      res.json({
-        checkoutUrl,
-        paymentId: payment.id,
-        plan: {
-          name: plan.displayName,
-          price: plan.price,
-          currency: plan.currency
-        }
-      });
-    } catch (error) {
-      console.error('Erro ao criar checkout:', error);
-      res.status(400).json({ message: "Erro ao processar pagamento" });
-    }
-  });
-
-  app.post("/api/payments/webhook", async (req, res) => {
-    try {
-      // This would be called by payment providers (Stripe/MercadoPago)
-      const { paymentId, status, metadata } = req.body;
+      // Upgrade user plan
+      const expiresAt = new Date();
+      expiresAt.setMonth(expiresAt.getMonth() + 1);
       
-      const payment = await storage.updatePaymentStatus(paymentId, status, metadata);
-      if (!payment) {
-        return res.status(404).json({ message: "Pagamento não encontrado" });
+      const updatedUser = await storage.upgradeUserPlan(req.user!.id, plan.name, expiresAt);
+      
+      if (updatedUser) {
+        const { hashedPassword, ...userWithoutPassword } = updatedUser;
+        res.json({
+          message: "Plano atualizado com sucesso",
+          user: userWithoutPassword,
+          payment
+        });
+      } else {
+        res.status(500).json({ message: "Erro ao atualizar plano" });
       }
-
-      // If payment successful, upgrade user plan
-      if (status === "completed") {
-        const plan = await storage.getPlan(payment.planId);
-        if (plan) {
-          const expiresAt = new Date();
-          expiresAt.setFullYear(expiresAt.getFullYear() + 1); // 1 year from now
-          
-          await storage.upgradeUserPlan(payment.userId, plan.name, expiresAt);
-        }
-      }
-
-      res.json({ message: "Webhook processado" });
     } catch (error) {
-      console.error('Erro no webhook:', error);
-      res.status(500).json({ message: "Erro no processamento" });
-    }
-  });
-
-
-
-  // USER DASHBOARD ROUTES
-  app.get("/api/user/dashboard", authenticateToken, async (req: AuthRequest, res) => {
-    try {
-      const user = req.user!;
-      const simulations = await storage.getSimulationsByUser(user.id);
-      const payments = await storage.getPaymentsByUser(user.id);
-      const access = await storage.checkUserPlanAccess(user.id);
-
-      res.json({
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          company: user.company,
-          plan: user.plan,
-          planExpiresAt: user.planExpiresAt,
-          maxSimulations: user.maxSimulations,
-          memberSince: user.createdAt
-        },
-        stats: {
-          totalSimulations: simulations.length,
-          completedSimulations: simulations.filter(s => s.results).length,
-          remainingSimulations: access.remainingSimulations
-        },
-        recentSimulations: simulations.slice(0, 5),
-        recentPayments: payments.slice(0, 3),
-        access
-      });
-    } catch (error) {
-      res.status(500).json({ message: "Erro ao carregar dashboard" });
-    }
-  });
-
-  // Apply plan access check to simulation creation
-  const originalSimulationPost = app._router.stack.find((layer: any) => 
-    layer.route?.path === '/api/simulations' && layer.route.methods.post
-  );
-  
-  // Override simulation creation to check plan access
-  app.post("/api/simulations", authenticateToken, checkPlanAccess, async (req: AuthRequest, res) => {
-    // Continue with original simulation logic but now with plan validation
-    try {
-      const simulationData = insertSimulationSchema.parse(req.body);
-      const simulation = await storage.createSimulation({
-        ...simulationData,
-        userId: req.user!.id,
-      });
-      res.status(201).json(simulation);
-    } catch (error) {
-      console.error('Erro ao criar simulação:', error);
-      res.status(400).json({ message: "Dados inválidos: " + (error as Error).message });
+      console.error('Erro no upgrade:', error);
+      res.status(400).json({ message: "Erro ao fazer upgrade" });
     }
   });
 
