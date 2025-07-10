@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useRoute, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { ArrowLeft, Crown } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TypeSelector from '@/components/simulation/type-selector';
@@ -11,16 +12,18 @@ import ResultsDisplayEnhanced from '@/components/simulation/results-display-enha
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
 import type { Simulation, InsertSimulation } from '@shared/schema';
 
 export default function SimulationForm() {
   const [, params] = useRoute('/simulation/:id');
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   
-  const [activeTab, setActiveTab] = useState('type');
-  const [simulationType, setSimulationType] = useState('');
+  const [activeTab, setActiveTab] = useState('form');
+  const [simulationType, setSimulationType] = useState('residential');
   const [formData, setFormData] = useState<Partial<InsertSimulation>>({
     name: '',
     description: '',
@@ -34,11 +37,24 @@ export default function SimulationForm() {
 
   const simulationId = params?.id ? parseInt(params.id) : null;
 
+  // Check plan access
+  const { data: planAccess } = useQuery({
+    queryKey: ['/api/users/plan-access'],
+    enabled: !!user,
+  });
+
   // Fetch existing simulation if editing
   const { data: simulation, isLoading } = useQuery({
     queryKey: ['/api/simulations', simulationId],
     enabled: !!simulationId,
   });
+
+  // Redirect to upgrade if no access and not editing existing
+  useEffect(() => {
+    if (planAccess && !planAccess.hasAccess && !simulationId) {
+      setLocation('/upgrade');
+    }
+  }, [planAccess, simulationId, setLocation]);
 
   // Load simulation data when editing
   useEffect(() => {
@@ -79,8 +95,15 @@ export default function SimulationForm() {
         description: "Dados salvos com sucesso.",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Erro ao salvar:', error);
+      
+      // Check if it's a plan limit error
+      if (error.message?.includes('Limite de simulações atingido')) {
+        setLocation('/upgrade');
+        return;
+      }
+      
       toast({
         variant: "destructive",
         title: "Erro ao salvar",
@@ -187,86 +210,66 @@ export default function SimulationForm() {
         </Button>
       </div>
 
-      {/* Simulation Form */}
+      {/* Simulation Form - Interface Simplificada */}
       <Card>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="type">Tipo de Simulação</TabsTrigger>
-            <TabsTrigger value="basic">Dados Básicos</TabsTrigger>
-            <TabsTrigger value="specific">Configuração</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="form">Configuração</TabsTrigger>
             <TabsTrigger value="results" disabled={!formData.results}>
               Resultados
             </TabsTrigger>
           </TabsList>
 
           <div className="p-6">
-            <TabsContent value="type" className="space-y-6">
-              <TypeSelector
-                selectedType={simulationType}
-                onTypeSelect={(type) => {
-                  setSimulationType(type);
-                  updateFormData({ type: type as any });
-                }}
-              />
+            <TabsContent value="form" className="space-y-8">
               
-              {simulationType && (
-                <div className="flex justify-end">
-                  <Button onClick={() => setActiveTab('basic')}>
-                    Próximo
-                  </Button>
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="basic" className="space-y-6">
-              <BasicForm
-                data={formData}
-                onChange={updateFormData}
-              />
-              
-              <div className="flex justify-between">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setActiveTab('type')}
-                >
-                  Anterior
-                </Button>
-                <Button onClick={() => setActiveTab('specific')}>
-                  Próximo
-                </Button>
+              {/* Seleção de Tipo Simplificada */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">Tipo de Simulação</h3>
+                <TypeSelector
+                  selectedType={simulationType}
+                  onTypeSelect={(type) => {
+                    setSimulationType(type);
+                    updateFormData({ type: type as any });
+                  }}
+                />
               </div>
-            </TabsContent>
 
-            <TabsContent value="specific" className="space-y-6">
-              <SpecificConfig
-                type={simulationType}
-                parameters={formData.parameters || {}}
-                onChange={updateParameters}
-              />
+              {/* Dados Básicos */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">Informações do Projeto</h3>
+                <BasicForm
+                  data={formData}
+                  onChange={updateFormData}
+                />
+              </div>
+
+              {/* Configuração Específica */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">Parâmetros Técnicos</h3>
+                <SpecificConfig
+                  type={simulationType}
+                  parameters={formData.parameters || {}}
+                  onChange={updateParameters}
+                />
+              </div>
               
-              <div className="flex justify-between">
+              {/* Ações */}
+              <div className="flex justify-end space-x-3 pt-6 border-t">
                 <Button 
                   variant="outline" 
-                  onClick={() => setActiveTab('basic')}
+                  onClick={handleSave}
+                  disabled={saveMutation.isPending}
                 >
-                  Anterior
+                  {saveMutation.isPending ? 'Salvando...' : 'Salvar'}
                 </Button>
-                <div className="flex space-x-3">
-                  <Button 
-                    variant="outline" 
-                    onClick={handleSave}
-                    disabled={saveMutation.isPending}
-                  >
-                    {saveMutation.isPending ? 'Salvando...' : 'Salvar'}
-                  </Button>
-                  <Button 
-                    onClick={handleCalculate}
-                    disabled={calculateMutation.isPending}
-                    className="bg-solar-orange hover:bg-orange-600"
-                  >
-                    {calculateMutation.isPending ? 'Calculando...' : 'Calcular Simulação'}
-                  </Button>
-                </div>
+                <Button 
+                  onClick={handleCalculate}
+                  disabled={calculateMutation.isPending}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  {calculateMutation.isPending ? 'Calculando...' : 'Calcular Simulação'}
+                </Button>
               </div>
             </TabsContent>
 
@@ -279,25 +282,17 @@ export default function SimulationForm() {
                 />
               )}
               
-              <div className="flex justify-between">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setActiveTab('specific')}
-                >
-                  Anterior
+              <div className="flex justify-end space-x-3 pt-6 border-t">
+                <Button variant="outline">
+                  Baixar Relatório
                 </Button>
-                <div className="flex space-x-3">
-                  <Button variant="outline">
-                    Baixar Relatório
-                  </Button>
-                  <Button 
-                    onClick={handleSave}
-                    disabled={saveMutation.isPending}
-                    className="bg-solar-orange hover:bg-orange-600"
-                  >
-                    {saveMutation.isPending ? 'Salvando...' : 'Salvar Simulação'}
-                  </Button>
-                </div>
+                <Button 
+                  onClick={handleSave}
+                  disabled={saveMutation.isPending}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  {saveMutation.isPending ? 'Salvando...' : 'Salvar Simulação'}
+                </Button>
               </div>
             </TabsContent>
           </div>

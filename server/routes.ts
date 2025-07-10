@@ -12,6 +12,15 @@ import {
 } from "@shared/schema";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import Stripe from "stripe";
+
+// Initialize Stripe only if secret is available
+let stripe: Stripe | null = null;
+if (process.env.STRIPE_SECRET_KEY) {
+  stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: "2023-10-16",
+  });
+}
 
 const JWT_SECRET = process.env.JWT_SECRET || "auton-solar-secret-key";
 
@@ -333,9 +342,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: "Usuário Demo",
         company: "Demonstração AUTON®",
         phone: null,
-        role: "user",
-        plan: "gratuito",
-        maxSimulations: 5,
+        role: "demo",
+        plan: "demo",
+        maxSimulations: 1,
         isActive: true,
         isVerified: true,
         hashedPassword: await bcrypt.hash("demo123", 10),
@@ -476,7 +485,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/simulations", authenticateToken, async (req: AuthRequest, res) => {
+  // Middleware para verificar acesso de plano
+  const checkPlanAccess = async (req: AuthRequest, res: any, next: any) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Usuário não autenticado" });
+    }
+
+    const access = await storage.checkUserPlanAccess(req.user.id);
+    if (!access.hasAccess) {
+      return res.status(403).json({ 
+        message: "Limite de simulações atingido. Faça upgrade para o plano Premium.",
+        plan: access.plan,
+        remainingSimulations: access.remainingSimulations
+      });
+    }
+
+    next();
+  };
+
+  app.post("/api/simulations", authenticateToken, checkPlanAccess, async (req: AuthRequest, res) => {
     try {
       const simulationData = insertSimulationSchema.parse({
         ...req.body,
@@ -613,6 +640,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Stripe payment routes
+  app.post("/api/create-payment-intent", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!stripe) {
+        return res.status(500).json({ message: "Stripe não configurado" });
+      }
+      
+      const { amount } = req.body;
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: "brl",
+        metadata: {
+          userId: req.user!.id.toString(),
+          plan: "premium"
+        }
+      });
+      res.json({ clientSecret: paymentIntent.client_secret });
+    } catch (error: any) {
+      console.error('Stripe payment intent error:', error);
+      res.status(500).json({ message: "Erro ao criar pagamento: " + error.message });
+    }
+  });
+
+  // Upgrade to premium route
+  app.post("/api/upgrade-to-premium", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!stripe) {
+        return res.status(500).json({ message: "Stripe não configurado" });
+      }
+      
+      const { paymentIntentId } = req.body;
+      
+      // Verify payment with Stripe
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      
+      if (paymentIntent.status === 'succeeded' && 
+          paymentIntent.metadata.userId === req.user!.id.toString()) {
+        
+        // Upgrade user to premium
+        const updatedUser = await storage.updateUser(req.user!.id, {
+          plan: "premium",
+          maxSimulations: 999,
+          stripeCustomerId: paymentIntent.customer as string,
+        });
+
+        if (updatedUser) {
+          const { hashedPassword, ...userWithoutPassword } = updatedUser;
+          res.json({
+            success: true,
+            user: userWithoutPassword,
+            message: "Upgrade realizado com sucesso!"
+          });
+        } else {
+          res.status(500).json({ message: "Erro ao atualizar usuário" });
+        }
+      } else {
+        res.status(400).json({ message: "Pagamento não foi processado corretamente" });
+      }
+    } catch (error: any) {
+      console.error('Upgrade error:', error);
+      res.status(500).json({ message: "Erro no upgrade: " + error.message });
+    }
+  });
+
   // Plan routes
   app.get("/api/plans", async (req, res) => {
     try {
@@ -622,24 +713,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Erro ao buscar planos" });
     }
   });
-
-  // Middleware para verificar acesso de plano
-  const checkPlanAccess = async (req: AuthRequest, res: any, next: any) => {
-    if (!req.user) {
-      return res.status(401).json({ message: "Usuário não autenticado" });
-    }
-
-    const access = await storage.checkUserPlanAccess(req.user.id);
-    if (!access.hasAccess) {
-      return res.status(403).json({ 
-        message: "Limite de simulações atingido. Faça upgrade para o plano Premium.",
-        plan: access.plan,
-        remainingSimulations: access.remainingSimulations
-      });
-    }
-
-    next();
-  };
 
   // Plan access check
   app.get("/api/users/plan-access", authenticateToken, async (req: AuthRequest, res) => {
