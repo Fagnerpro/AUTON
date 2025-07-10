@@ -93,17 +93,19 @@ export default function Dashboard() {
           <span>🆕 Novo: Assistente Solar IA</span>
           <Badge variant="secondary" className="bg-purple-100 text-purple-700">BETA</Badge>
         </AlertTitle>
-        <AlertDescription className="text-purple-700 flex items-center justify-between">
-          <span>
-            Receba orientações personalizadas e insights inteligentes sobre seus projetos solares. 
-            O assistente IA analisa suas simulações e fornece recomendações técnicas e financeiras.
-          </span>
-          <Link href="/ai-advisor">
-            <Button variant="outline" size="sm" className="border-purple-600 text-purple-600 hover:bg-purple-50">
-              <Brain className="w-4 h-4 mr-2" />
-              Experimentar IA
-            </Button>
-          </Link>
+        <AlertDescription className="text-purple-700">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-2 md:space-y-0">
+            <span>
+              Receba orientações personalizadas e insights inteligentes sobre seus projetos solares. 
+              O assistente IA analisa suas simulações e fornece recomendações técnicas e financeiras.
+            </span>
+            <Link href="/ai-advisor">
+              <Button variant="outline" size="sm" className="border-purple-600 text-purple-600 hover:bg-purple-50 flex-shrink-0">
+                <Brain className="w-4 h-4 mr-2" />
+                Experimentar IA
+              </Button>
+            </Link>
+          </div>
         </AlertDescription>
       </Alert>
 

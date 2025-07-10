@@ -129,28 +129,33 @@ export default function RecentSimulations() {
               const power = results?.total_power || 0;
               
               return (
-                <div key={simulation.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                <div key={simulation.id} className="flex flex-col md:flex-row md:items-center md:justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors space-y-3 md:space-y-0">
                   <div className="flex items-center space-x-4">
                     <div className={`p-2 rounded-lg ${getTypeColor(simulation.type)}`}>
                       {getTypeIcon(simulation.type)}
                     </div>
                     <div>
-                      <h3 className="font-semibold">{simulation.name}</h3>
+                      <h3 className="font-semibold">
+                        {simulation.name || `Simulação ${simulation.type === 'residential' ? 'Residencial' : simulation.type === 'commercial' ? 'Comercial' : simulation.type === 'ev_charging' ? 'Recarga VE' : 'Áreas Comuns'}`}
+                      </h3>
                       <p className="text-sm text-gray-600">
                         {power > 0 && `${power.toFixed(1)} kWp`}
                         {power > 0 && savings > 0 && ' • '}
                         {savings > 0 && `${formatCurrency(savings)} economia/ano`}
-                        {!power && !savings && 'Aguardando cálculo'}
+                        {(!power && !savings) && simulation.address && `${simulation.address}, ${simulation.city || ''}`}
+                        {(!power && !savings && !simulation.address) && 'Aguardando configuração'}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-4">
-                    {getStatusBadge(simulation.status)}
-                    <span className="text-sm text-gray-500">
-                      {formatDate(simulation.createdAt)}
-                    </span>
+                  <div className="flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-4">
+                    <div className="flex items-center space-x-2">
+                      {getStatusBadge(simulation.status)}
+                      <span className="text-sm text-gray-500">
+                        {formatDate(simulation.createdAt)}
+                      </span>
+                    </div>
                     <Link href={`/simulation/${simulation.id}`}>
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" className="w-full md:w-auto">
                         Ver Detalhes
                       </Button>
                     </Link>

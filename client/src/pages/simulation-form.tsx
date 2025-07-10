@@ -85,6 +85,9 @@ export default function SimulationForm() {
     onSuccess: async (savedSimulation) => {
       queryClient.invalidateQueries({ queryKey: ['/api/simulations'] });
       
+      // Update current form data with saved simulation
+      setFormData(savedSimulation);
+      
       if (!simulationId) {
         // Redirect to edit mode after creating
         setLocation(`/simulation/${savedSimulation.id}`);
@@ -92,7 +95,7 @@ export default function SimulationForm() {
       
       toast({
         title: "Simulação salva",
-        description: "Dados salvos com sucesso.",
+        description: "Dados salvos com sucesso. Agora você pode calcular os resultados.",
       });
     },
     onError: (error: any) => {
@@ -136,11 +139,12 @@ export default function SimulationForm() {
     onSuccess: async (calculatedSimulation) => {
       setFormData(calculatedSimulation);
       queryClient.invalidateQueries({ queryKey: ['/api/simulations'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/simulations/${calculatedSimulation.id}`] });
       setActiveTab('results');
       
       toast({
         title: "Simulação calculada",
-        description: "Cálculos realizados com sucesso.",
+        description: "Cálculos realizados com sucesso. Você pode visualizar os resultados agora.",
       });
     },
     onError: (error) => {
