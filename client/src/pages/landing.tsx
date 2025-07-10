@@ -92,6 +92,31 @@ export default function LandingPage() {
     },
   });
 
+  const demoMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("/api/auth/demo", {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+    },
+    onSuccess: (data) => {
+      localStorage.setItem("token", data.token);
+      toast({
+        title: "Modo demonstração ativado!",
+        description: "Explore o AUTON® com acesso completo por 1 hora.",
+      });
+      setIsAuthOpen(false);
+      setLocation("/dashboard");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro no modo demo",
+        description: error.message || "Tente novamente.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -221,9 +246,15 @@ export default function LandingPage() {
                 </Button>
               </DialogTrigger>
             </Dialog>
-            <Button size="lg" variant="outline" className="text-lg px-8">
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="text-lg px-8"
+              onClick={() => demoMutation.mutate()}
+              disabled={demoMutation.isPending}
+            >
               <FileText className="mr-2 h-5 w-5" />
-              Ver Demonstração
+              {demoMutation.isPending ? "Carregando Demo..." : "Ver Demonstração"}
             </Button>
           </div>
           

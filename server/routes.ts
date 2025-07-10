@@ -317,6 +317,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Demo route - creates a temporary demo user
+  app.post("/api/auth/demo", async (req, res) => {
+    try {
+      // Create temporary demo user
+      const demoEmail = `demo_${Date.now()}@auton.demo`;
+      const demoUser = await storage.createUser({
+        email: demoEmail,
+        name: "Usuário Demo",
+        company: "Demonstração AUTON®",
+        phone: null,
+        role: "user",
+        plan: "gratuito",
+        maxSimulations: 5,
+        isActive: true,
+        isVerified: true,
+        hashedPassword: await bcrypt.hash("demo123", 10),
+      });
+
+      const token = jwt.sign(
+        { userId: demoUser.id, email: demoUser.email },
+        JWT_SECRET,
+        { expiresIn: "1h" } // Demo token expires in 1 hour
+      );
+
+      const { hashedPassword, ...userWithoutPassword } = demoUser;
+
+      res.json({
+        token,
+        user: userWithoutPassword,
+        isDemoUser: true
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao criar usuário demo" });
+    }
+  });
+
   // Auth routes
   app.post("/api/auth/login", async (req, res) => {
     try {
