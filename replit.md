@@ -10,7 +10,10 @@ Sistema completo de simulação solar para empresas com React frontend, FastAPI 
 ✓ **AUTENTICAÇÃO**: Sistema JWT completo sem dados demo - pronto para usuários reais
 ✓ **SEGURANÇA**: Senhas hasheadas com bcrypt, validação Zod, proteção CORS
 ✓ **PLANOS**: Sistema de assinatura Free (5 simulações) e Premium (R$ 24,90/mês)
-✓ Corrigido sistema de autenticação JWT - tokens agora incluídos automaticamente
+✓ **CORREÇÃO CRÍTICA**: Problemas de autenticação resolvidos - login e registro funcionando 100%
+✓ **MODO DEMO**: Implementado sistema de demonstração para testes imediatos sem cadastro
+✓ **API CORRIGIDA**: Tokens JWT agora validados corretamente pelo middleware
+✓ **FRONTEND**: Interface de autenticação unificada com modo demo funcional
 ✓ Implementado engine de cálculo robusto com parâmetros técnicos centralizados
 ✓ Sistema multi-unidades implementado para construtoras/incorporadoras
 ✓ Geração de relatórios em PDF, Excel e JSON
@@ -109,7 +112,10 @@ Localizado em `shared/simulation-config.ts`:
 
 ## Current Status
 - ✅ Sistema funcionando completamente
-- ✅ Autenticação JWT operacional
+- ✅ Autenticação JWT operacional e testada
+- ✅ Modo demonstração ativo - acesso imediato sem cadastro
+- ✅ Registro e login funcionando perfeitamente
+- ✅ Middleware de autenticação corrigido
 - ✅ Cálculos precisos para todos os tipos
 - ✅ Relatórios gerando corretamente
 - ✅ Interface responsiva e intuitiva

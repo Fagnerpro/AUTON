@@ -16,13 +16,15 @@ export class AuthError extends Error {
 export const authService = {
   async login(credentials: LoginRequest): Promise<AuthResponse> {
     try {
-      const response = await apiRequest('POST', '/api/auth/login', credentials);
-      const data = await response.json();
+      const response = await apiRequest('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(credentials),
+      });
       
       // Store token in localStorage
-      localStorage.setItem('auth_token', data.token);
+      localStorage.setItem('token', response.token);
       
-      return data;
+      return response;
     } catch (error: any) {
       if (error.message.includes('401')) {
         throw new AuthError('Email ou senha incorretos', 401);
@@ -33,13 +35,15 @@ export const authService = {
 
   async register(userData: RegisterRequest): Promise<AuthResponse> {
     try {
-      const response = await apiRequest('POST', '/api/auth/register', userData);
-      const data = await response.json();
+      const response = await apiRequest('/api/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(userData),
+      });
       
       // Store token in localStorage
-      localStorage.setItem('auth_token', data.token);
+      localStorage.setItem('token', response.token);
       
-      return data;
+      return response;
     } catch (error: any) {
       if (error.message.includes('409')) {
         throw new AuthError('Email já cadastrado', 409);
@@ -49,7 +53,7 @@ export const authService = {
   },
 
   async getCurrentUser(): Promise<Omit<User, 'hashedPassword'> | null> {
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('token');
     if (!token) return null;
 
     try {
@@ -75,11 +79,11 @@ export const authService = {
   },
 
   logout() {
-    localStorage.removeItem('auth_token');
+    localStorage.removeItem('token');
   },
 
   getToken(): string | null {
-    return localStorage.getItem('auth_token');
+    return localStorage.getItem('token');
   },
 
   isAuthenticated(): boolean {

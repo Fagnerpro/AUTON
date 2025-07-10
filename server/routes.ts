@@ -136,21 +136,27 @@ function authenticateToken(req: AuthRequest, res: Express.Response, next: Expres
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
-    return res.status(401).json({ message: 'Access token required' });
+    return res.status(401).json({ message: 'Token de acesso requerido' });
   }
 
   jwt.verify(token, JWT_SECRET, async (err: any, decoded: any) => {
     if (err) {
-      return res.status(403).json({ message: 'Invalid token' });
+      console.error('Token verification error:', err);
+      return res.status(403).json({ message: 'Token inválido' });
     }
 
-    const user = await storage.getUser(decoded.userId);
-    if (!user || !user.isActive) {
-      return res.status(403).json({ message: 'User not found or inactive' });
-    }
+    try {
+      const user = await storage.getUser(decoded.userId);
+      if (!user || !user.isActive) {
+        return res.status(403).json({ message: 'Usuário não encontrado ou inativo' });
+      }
 
-    req.user = user;
-    next();
+      req.user = user;
+      next();
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      return res.status(500).json({ message: 'Erro interno do servidor' });
+    }
   });
 }
 
