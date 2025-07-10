@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { aiAdvisor } from "./services/ai-advisor";
 import { 
   loginSchema, 
   registerSchema, 
@@ -774,6 +775,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Logout realizado com sucesso" });
     } catch (error) {
       res.status(500).json({ message: "Erro no logout" });
+    }
+  });
+
+  // AI Advisor routes
+  app.post("/api/ai/advice", authenticateToken, async (req: AuthRequest, res) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Usuário não autenticado" });
+    }
+
+    try {
+      const { 
+        context, 
+        simulationData, 
+        systemConfiguration, 
+        specificQuestion 
+      } = req.body;
+
+      // Validate context
+      const validContexts = ['simulation_analysis', 'pricing_guidance', 'technical_question', 'general_advice'];
+      if (context && !validContexts.includes(context)) {
+        return res.status(400).json({ message: "Contexto inválido" });
+      }
+
+      // Get user's simulations if not provided
+      let userSimulations = simulationData;
+      if (!userSimulations && (context === 'simulation_analysis' || !context)) {
+        userSimulations = await storage.getUserSimulations(req.user.id);
+      }
+
+      // Prepare AI advisor request
+      const adviceRequest = {
+        context: context || 'general_advice',
+        simulationData: userSimulations,
+        userProfile: {
+          name: req.user.name,
+          company: req.user.company,
+          plan: req.user.plan
+        },
+        specificQuestion,
+        systemConfiguration
+      };
+
+      // Get advice from AI advisor
+      const advice = await aiAdvisor.getContextualAdvice(adviceRequest);
+
+      res.json(advice);
+    } catch (error) {
+      console.error('AI advice error:', error);
+      res.status(500).json({ 
+        message: "Erro ao gerar orientações IA",
+        advice: "Desculpe, não foi possível gerar orientações no momento. Tente novamente em alguns instantes.",
+        recommendations: ["Verifique sua conexão com a internet", "Tente refazer a pergunta de forma mais específica"],
+        technicalTips: ["Entre em contato com suporte se o problema persistir"],
+        nextSteps: ["Aguarde alguns instantes e tente novamente"],
+        confidence: 0.1
+      });
+    }
+  });
+
+  // Specific AI analysis for simulations
+  app.post("/api/ai/analyze-simulation/:id", authenticateToken, async (req: AuthRequest, res) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Usuário não autenticado" });
+    }
+
+    try {
+      const simulationId = parseInt(req.params.id);
+      const simulation = await storage.getSimulation(simulationId);
+
+      if (!simulation || simulation.userId !== req.user.id) {
+        return res.status(404).json({ message: "Simulação não encontrada" });
+      }
+
+      const advice = await aiAdvisor.analyzeSimulationOptimization(simulation);
+      res.json(advice);
+    } catch (error) {
+      console.error('AI simulation analysis error:', error);
+      res.status(500).json({ message: "Erro ao analisar simulação" });
+    }
+  });
+
+  // AI pricing insights
+  app.post("/api/ai/pricing-insights", authenticateToken, async (req: AuthRequest, res) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Usuário não autenticado" });
+    }
+
+    try {
+      const { systemConfiguration, budget } = req.body;
+      
+      if (!systemConfiguration) {
+        return res.status(400).json({ message: "Configuração do sistema é obrigatória" });
+      }
+
+      const advice = await aiAdvisor.getPricingInsights(systemConfiguration, budget);
+      res.json(advice);
+    } catch (error) {
+      console.error('AI pricing insights error:', error);
+      res.status(500).json({ message: "Erro ao gerar insights de preço" });
     }
   });
 

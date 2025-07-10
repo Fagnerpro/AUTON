@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Plus, Crown, AlertTriangle, Calculator } from 'lucide-react';
+import { Plus, Crown, AlertTriangle, Calculator, Brain } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import StatsCards from '@/components/dashboard/stats-cards';
 import Charts from '@/components/dashboard/charts';
@@ -84,6 +85,27 @@ export default function Dashboard() {
           Nova Simulação
         </Button>
       </div>
+
+      {/* AI Advisor Promotion */}
+      <Alert className="border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50">
+        <Brain className="h-4 w-4 text-purple-600" />
+        <AlertTitle className="text-purple-800 flex items-center space-x-2">
+          <span>🆕 Novo: Assistente Solar IA</span>
+          <Badge variant="secondary" className="bg-purple-100 text-purple-700">BETA</Badge>
+        </AlertTitle>
+        <AlertDescription className="text-purple-700 flex items-center justify-between">
+          <span>
+            Receba orientações personalizadas e insights inteligentes sobre seus projetos solares. 
+            O assistente IA analisa suas simulações e fornece recomendações técnicas e financeiras.
+          </span>
+          <Link href="/ai-advisor">
+            <Button variant="outline" size="sm" className="border-purple-600 text-purple-600 hover:bg-purple-50">
+              <Brain className="w-4 h-4 mr-2" />
+              Experimentar IA
+            </Button>
+          </Link>
+        </AlertDescription>
+      </Alert>
 
       {/* Stats Cards */}
       <StatsCards />

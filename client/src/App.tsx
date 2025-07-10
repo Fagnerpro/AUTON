@@ -11,6 +11,7 @@ import ReportsEnhanced from "@/pages/reports-enhanced";
 import Settings from "@/pages/settings";
 import Upgrade from "@/pages/upgrade";
 import Pricing from "@/pages/pricing";
+import AIAdvisorPage from "@/pages/ai-advisor";
 import NotFound from "@/pages/not-found";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
@@ -47,6 +48,7 @@ function Router() {
         <Route path="/settings" component={Settings} />
         <Route path="/upgrade" component={Upgrade} />
         <Route path="/pricing" component={Pricing} />
+        <Route path="/ai-advisor" component={AIAdvisorPage} />
         <Route component={NotFound} />
       </Switch>
     </AuthenticatedLayout>

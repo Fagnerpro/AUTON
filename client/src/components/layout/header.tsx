@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Sun, Users } from 'lucide-react';
+import { Sun, Users, Brain } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Link, useLocation } from 'wouter';
 
@@ -64,6 +64,17 @@ export default function Header() {
                   : 'text-gray-700 hover:text-solar-orange'
               }`}>
                 Preços
+              </span>
+            </Link>
+            <Link href="/ai-advisor">
+              <span className={`px-3 py-2 text-sm font-medium transition-colors cursor-pointer flex items-center space-x-1 ${
+                isActive('/ai-advisor') 
+                  ? 'text-solar-orange border-b-2 border-solar-orange' 
+                  : 'text-gray-700 hover:text-solar-orange'
+              }`}>
+                <Brain className="h-4 w-4" />
+                <span>IA Advisor</span>
+                <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">BETA</Badge>
               </span>
             </Link>
             <Link href="/settings">

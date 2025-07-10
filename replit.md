@@ -4,6 +4,10 @@
 Sistema completo de simulação solar para empresas com React frontend, FastAPI backend inspirado, PostgreSQL database, e cálculos técnicos precisos baseados em parâmetros reais de mercado.
 
 ## Recent Changes (Janeiro 2025)
+✓ **ASSISTENTE IA**: Sistema completo de orientações contextuais com OpenAI GPT-4o
+✓ **SUPORTE CONTEXTUAL**: IA analisa simulações e fornece recomendações personalizadas
+✓ **INTEGRAÇÃO INTELIGENTE**: Respostas técnicas baseadas em dados reais dos projetos
+✓ **INTERFACE IA**: Página dedicada com multiple contextos (análise, preços, técnico)
 ✓ **CALCULADORA INTERATIVA**: Implementada calculadora de preços em tempo real com integração Stripe
 ✓ **PREÇOS DINÂMICOS**: Sistema de precificação baseado em configuração de sistema solar
 ✓ **STRIPE AVANÇADO**: Pagamentos customizados para sistemas solares além do plano Premium
@@ -120,6 +124,11 @@ Localizado em `shared/simulation-config.ts`:
 - `POST /api/create-payment-intent` - Cria intenção de pagamento (Premium ou sistemas customizados)
 - `POST /api/upgrade-to-premium` - Processa upgrade após pagamento bem-sucedido
 
+### Assistente IA (OpenAI)
+- `POST /api/ai/advice` - Orientações contextuais personalizadas
+- `POST /api/ai/analyze-simulation/:id` - Análise específica de simulação
+- `POST /api/ai/pricing-insights` - Insights financeiros e de precificação
+
 ## Current Status
 - ✅ Sistema funcionando completamente
 - ✅ Autenticação JWT operacional e testada
@@ -130,6 +139,10 @@ Localizado em `shared/simulation-config.ts`:
 - ✅ Relatórios gerando corretamente
 - ✅ Interface responsiva e intuitiva
 - ✅ Navegação completa entre páginas
+- ✅ **ASSISTENTE IA**: Sistema completo de orientações contextuais implementado
+- ✅ **OPENAI INTEGRAÇÃO**: GPT-4o fornece suporte técnico e análise de simulações
+- ✅ **INTERFACE IA**: Página dedicada com contextos múltiplos e perguntas rápidas
+- ✅ **RECOMENDAÇÕES PERSONALIZADAS**: IA analisa dados do usuário e fornece insights
 - ✅ **CALCULADORA INTERATIVA**: Sistema de preços em tempo real implementado
 - ✅ **STRIPE INTEGRADO**: Pagamentos customizados para sistemas solares
 - ✅ **FLUXO COMPLETO**: Demo → Calculadora → Personalização → Pagamento
