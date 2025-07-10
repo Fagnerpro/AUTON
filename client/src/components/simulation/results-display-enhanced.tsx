@@ -24,7 +24,12 @@ interface ResultsDisplayProps {
 }
 
 export default function ResultsDisplayEnhanced({ type, results, simulation }: ResultsDisplayProps) {
+  // Debug para verificar estrutura dos dados
+  console.log('ResultsDisplayEnhanced - dados recebidos:', { type, results, simulation });
+  
   const formatCurrency = (value: number, decimals: number = 2) => {
+    if (!value || isNaN(value)) return 'R$ 0,00';
+    
     // Para valores grandes (milhões), sempre mostrar 2 casas decimais
     // Para valores menores, usar formatação padrão
     const adjustedDecimals = value >= 1000000 ? 2 : decimals;
@@ -38,6 +43,8 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
   };
 
   const formatNumber = (value: number, decimals = 0) => {
+    if (!value || isNaN(value)) return '0';
+    
     return value.toLocaleString('pt-BR', { 
       minimumFractionDigits: decimals, 
       maximumFractionDigits: decimals 
@@ -46,24 +53,24 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
 
   // Adaptar para a nova estrutura de resultados
   const technicalSpecs = {
-    installed_power: results.system_power,
-    panel_count: results.num_panels,
-    monthly_generation: results.monthly_generation,
-    annual_generation: results.annual_generation,
-    used_area: results.required_area,
-    coverage_percentage: results.coverage_percentage,
-    irradiation: results.irradiation || results.technical_specs?.irradiation,
-    system_efficiency: results.system_efficiency || results.technical_specs?.system_efficiency
+    installed_power: results.system_power || results.total_power || results.installed_power,
+    panel_count: results.num_panels || results.panel_count || results.panels,
+    monthly_generation: results.monthly_generation || results.monthly_kwh,
+    annual_generation: results.annual_generation || results.annual_kwh,
+    used_area: results.required_area || results.used_area || results.area,
+    coverage_percentage: results.coverage_percentage || results.coverage,
+    irradiation: results.irradiation || results.technical_specs?.irradiation || 5.8,
+    system_efficiency: results.system_efficiency || results.technical_specs?.system_efficiency || 0.78
   };
   
   const financialAnalysis = {
-    total_investment: results.total_investment,
-    monthly_savings: results.monthly_savings,
-    annual_savings: results.annual_savings,
-    payback_years: results.payback_years,
-    roi_25_years: results.roi_percentage,
-    net_profit_25_years: (results.annual_savings * 25) - results.total_investment,
-    total_savings_25_years: results.annual_savings * 25,
+    total_investment: results.total_investment || results.investment,
+    monthly_savings: results.monthly_savings || results.savings_monthly,
+    annual_savings: results.annual_savings || results.savings_annual,
+    payback_years: results.payback_years || results.payback,
+    roi_25_years: results.roi_percentage || results.roi,
+    net_profit_25_years: ((results.annual_savings || results.savings_annual || 0) * 25) - (results.total_investment || results.investment || 0),
+    total_savings_25_years: (results.annual_savings || results.savings_annual || 0) * 25,
     investment_scenarios: results.financial_analysis?.investment_scenarios || {}
   };
   
