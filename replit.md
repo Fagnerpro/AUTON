@@ -4,6 +4,11 @@
 Sistema completo de simulação solar para empresas com React frontend, FastAPI backend inspirado, PostgreSQL database, e cálculos técnicos precisos baseados em parâmetros reais de mercado.
 
 ## Recent Changes (Janeiro 2025)
+✓ **CALCULADORA INTERATIVA**: Implementada calculadora de preços em tempo real com integração Stripe
+✓ **PREÇOS DINÂMICOS**: Sistema de precificação baseado em configuração de sistema solar
+✓ **STRIPE AVANÇADO**: Pagamentos customizados para sistemas solares além do plano Premium
+✓ **NAVEGAÇÃO APRIMORADA**: Página de preços integrada ao menu principal
+✓ **UX MELHORADA**: Fluxo completo Demo → Calculadora → Pagamento → Sistema
 ✓ **PRODUÇÃO**: Sistema totalmente limpo e preparado para deploy na Hostinger
 ✓ **REMOÇÃO**: Eliminados todos os dados de demonstração e credenciais de teste
 ✓ **DEPLOY**: Configurações específicas para Hostinger implementadas
@@ -111,6 +116,10 @@ Localizado em `shared/simulation-config.ts`:
 - `PUT /api/users/preferences` - Salva preferências
 - `GET /api/users/stats` - Estatísticas do usuário
 
+### Pagamentos (Stripe)
+- `POST /api/create-payment-intent` - Cria intenção de pagamento (Premium ou sistemas customizados)
+- `POST /api/upgrade-to-premium` - Processa upgrade após pagamento bem-sucedido
+
 ## Current Status
 - ✅ Sistema funcionando completamente
 - ✅ Autenticação JWT operacional e testada
@@ -121,9 +130,11 @@ Localizado em `shared/simulation-config.ts`:
 - ✅ Relatórios gerando corretamente
 - ✅ Interface responsiva e intuitiva
 - ✅ Navegação completa entre páginas
-- ✅ **NOVO**: Cenários modulares de investimento implementados
-- ✅ **NOVO**: Interface de relatórios otimizada e intuitiva
-- ✅ **NOVO**: Visualização aprimorada com abas organizadas
+- ✅ **CALCULADORA INTERATIVA**: Sistema de preços em tempo real implementado
+- ✅ **STRIPE INTEGRADO**: Pagamentos customizados para sistemas solares
+- ✅ **FLUXO COMPLETO**: Demo → Calculadora → Personalização → Pagamento
+- ✅ **DUAL MODE**: Planos Premium (R$ 24,90/mês) + Sistemas solares personalizados
+- ✅ **UX OTIMIZADA**: Múltiplas opções de entrada para diferentes necessidades
 
 ## Sistema de Autenticação
 - Interface de login simples e direta (sem landing page)

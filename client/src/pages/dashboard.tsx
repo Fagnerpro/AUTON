@@ -3,7 +3,7 @@ import { Link, useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Plus, Crown, AlertTriangle } from 'lucide-react';
+import { Plus, Crown, AlertTriangle, Calculator } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import StatsCards from '@/components/dashboard/stats-cards';
 import Charts from '@/components/dashboard/charts';
@@ -35,14 +35,22 @@ export default function Dashboard() {
             <Alert className="border-orange-200 bg-orange-50">
               <Crown className="h-4 w-4 text-orange-600" />
               <AlertTitle className="text-orange-800">Limite de Demo Atingido</AlertTitle>
-              <AlertDescription className="text-orange-700">
-                Você atingiu o limite de 1 simulação do plano demo. 
-                <Link href="/upgrade">
-                  <Button variant="link" className="p-0 text-orange-600 underline ml-1">
-                    Faça upgrade para Premium
+              <AlertDescription className="text-orange-700 flex items-center justify-between">
+                <span>
+                  Você atingiu o limite de 1 simulação do plano demo. 
+                  <Link href="/upgrade">
+                    <Button variant="link" className="p-0 text-orange-600 underline ml-1">
+                      Faça upgrade para Premium
+                    </Button>
+                  </Link>
+                  {' '}para acesso ilimitado.
+                </span>
+                <Link href="/pricing">
+                  <Button variant="outline" size="sm" className="border-blue-600 text-blue-600 hover:bg-blue-50">
+                    <Calculator className="w-4 h-4 mr-2" />
+                    Ver Calculadora de Preços
                   </Button>
                 </Link>
-                {' '}para acesso ilimitado.
               </AlertDescription>
             </Alert>
           )}

@@ -57,6 +57,15 @@ export default function Header() {
                 Relatórios
               </span>
             </Link>
+            <Link href="/pricing">
+              <span className={`px-3 py-2 text-sm font-medium transition-colors cursor-pointer ${
+                isActive('/pricing') 
+                  ? 'text-solar-orange border-b-2 border-solar-orange' 
+                  : 'text-gray-700 hover:text-solar-orange'
+              }`}>
+                Preços
+              </span>
+            </Link>
             <Link href="/settings">
               <span className={`px-3 py-2 text-sm font-medium transition-colors cursor-pointer ${
                 isActive('/settings') 

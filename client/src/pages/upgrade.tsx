@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStripe, Elements, PaymentElement, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import { useEffect } from 'react';
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, Crown, Zap } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Check, Crown, Zap, Calculator, ArrowLeft } from 'lucide-react';
 import { useLocation } from 'wouter';
+import { formatCurrency } from '@/lib/utils';
 
 // Make sure to call `loadStripe` outside of a component's render to avoid
 // recreating the `Stripe` object on every render.
@@ -17,7 +19,7 @@ if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
 }
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
-const CheckoutForm = () => {
+const CheckoutForm = ({ customAmount, isSystemPurchase }: { customAmount?: number | null, isSystemPurchase?: boolean }) => {
   const stripe = useStripe();
   const elements = useElements();
   const { toast } = useToast();
@@ -56,9 +58,16 @@ const CheckoutForm = () => {
         });
 
         toast({
-          title: "Upgrade Realizado!",
-          description: "Bem-vindo ao plano Premium! Agora você tem acesso ilimitado.",
+          title: isSystemPurchase ? "Compra Realizada!" : "Upgrade Realizado!",
+          description: isSystemPurchase 
+            ? "Seu sistema solar foi adquirido com sucesso! Entraremos em contato para agendamento."
+            : "Bem-vindo ao plano Premium! Agora você tem acesso ilimitado.",
         });
+
+        // Clear pricing config if it was a system purchase
+        if (isSystemPurchase) {
+          localStorage.removeItem('pricingConfig');
+        }
 
         // Redirect to dashboard
         setLocation('/dashboard');
@@ -91,7 +100,12 @@ const CheckoutForm = () => {
         ) : (
           <div className="flex items-center space-x-2">
             <Crown className="w-5 h-5" />
-            <span>Confirmar Upgrade - R$ 24,90/mês</span>
+            <span>
+              {isSystemPurchase && customAmount
+                ? `Confirmar Compra - ${formatCurrency(customAmount)}`
+                : 'Confirmar Upgrade - R$ 24,90/mês'
+              }
+            </span>
           </div>
         )}
       </Button>
@@ -226,7 +240,7 @@ export default function Upgrade() {
             </CardHeader>
             <CardContent>
               <Elements stripe={stripePromise} options={{ clientSecret }}>
-                <CheckoutForm />
+                <CheckoutForm customAmount={null} isSystemPurchase={false} />
               </Elements>
             </CardContent>
           </Card>

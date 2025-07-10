@@ -10,6 +10,7 @@ import SimulationForm from "@/pages/simulation-form";
 import ReportsEnhanced from "@/pages/reports-enhanced";
 import Settings from "@/pages/settings";
 import Upgrade from "@/pages/upgrade";
+import Pricing from "@/pages/pricing";
 import NotFound from "@/pages/not-found";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
@@ -45,6 +46,7 @@ function Router() {
         <Route path="/reports" component={ReportsEnhanced} />
         <Route path="/settings" component={Settings} />
         <Route path="/upgrade" component={Upgrade} />
+        <Route path="/pricing" component={Pricing} />
         <Route component={NotFound} />
       </Switch>
     </AuthenticatedLayout>
