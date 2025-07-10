@@ -55,13 +55,18 @@ export default function SimulationForm() {
   const saveMutation = useMutation({
     mutationFn: async (data: Partial<InsertSimulation>) => {
       if (simulationId) {
-        return apiRequest('PUT', `/api/simulations/${simulationId}`, data);
+        return apiRequest(`/api/simulations/${simulationId}`, {
+          method: 'PUT',
+          body: JSON.stringify(data)
+        });
       } else {
-        return apiRequest('POST', '/api/simulations', data);
+        return apiRequest('/api/simulations', {
+          method: 'POST',
+          body: JSON.stringify(data)
+        });
       }
     },
-    onSuccess: async (response) => {
-      const savedSimulation = await response.json();
+    onSuccess: async (savedSimulation) => {
       queryClient.invalidateQueries({ queryKey: ['/api/simulations'] });
       
       if (!simulationId) {
@@ -75,10 +80,11 @@ export default function SimulationForm() {
       });
     },
     onError: (error) => {
+      console.error('Erro ao salvar:', error);
       toast({
         variant: "destructive",
         title: "Erro ao salvar",
-        description: "Não foi possível salvar a simulação.",
+        description: error.message || "Não foi possível salvar a simulação.",
       });
     },
   });
@@ -86,10 +92,12 @@ export default function SimulationForm() {
   // Calculate simulation mutation
   const calculateMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest('POST', `/api/simulations/${id}/calculate`);
+      return apiRequest(`/api/simulations/${id}/calculate`, {
+        method: 'POST',
+        body: JSON.stringify({})
+      });
     },
-    onSuccess: async (response) => {
-      const calculatedSimulation = await response.json();
+    onSuccess: async (calculatedSimulation) => {
       setFormData(calculatedSimulation);
       queryClient.invalidateQueries({ queryKey: ['/api/simulations'] });
       setActiveTab('results');
@@ -100,10 +108,11 @@ export default function SimulationForm() {
       });
     },
     onError: (error) => {
+      console.error('Erro no cálculo:', error);
       toast({
         variant: "destructive",
         title: "Erro no cálculo",
-        description: "Não foi possível calcular a simulação.",
+        description: error.message || "Não foi possível calcular a simulação.",
       });
     },
   });
@@ -116,8 +125,10 @@ export default function SimulationForm() {
     if (!simulationId) {
       // Save first, then calculate
       try {
-        const response = await apiRequest('POST', '/api/simulations', formData);
-        const savedSimulation = await response.json();
+        const savedSimulation = await apiRequest('/api/simulations', {
+          method: 'POST',
+          body: JSON.stringify(formData)
+        });
         calculateMutation.mutate(savedSimulation.id);
       } catch (error) {
         toast({

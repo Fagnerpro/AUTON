@@ -344,7 +344,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const token = jwt.sign(
         { userId: demoUser.id, email: demoUser.email },
         JWT_SECRET,
-        { expiresIn: "1h" } // Demo token expires in 1 hour
+        { expiresIn: "24h" } // Demo token expires in 24 hours
       );
 
       const { hashedPassword, ...userWithoutPassword } = demoUser;
