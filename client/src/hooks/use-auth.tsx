@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authService, type AuthError } from '@/lib/auth';
+import { apiRequest } from '@/lib/queryClient';
 import type { LoginRequest, RegisterRequest, User } from '@shared/schema';
 import { useToast } from '@/hooks/use-toast';
 
@@ -19,51 +19,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  const isAuthenticated = !!user && !!authService.getToken();
+  const isAuthenticated = !!user && !!localStorage.getItem('token');
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const token = authService.getToken();
+      const token = localStorage.getItem('token');
       if (token) {
         try {
-          const currentUser = await authService.getCurrentUser();
-          setUser(currentUser);
-        } catch (error: any) {
-          console.error('Failed to initialize auth:', error);
-          // Se o token é inválido ou expirou, limpa o estado
-          if (error.message?.includes('403') || error.message?.includes('Invalid token')) {
-            authService.logout();
+          const response = await fetch('/api/auth/me', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+
+          if (response.ok) {
+            const currentUser = await response.json();
+            setUser(currentUser);
+          } else {
+            // Token inválido, limpar
+            localStorage.removeItem('token');
             setUser(null);
-            toast({
-              variant: "destructive",
-              title: "Sessão expirada",
-              description: "Por favor, faça login novamente.",
-            });
           }
+        } catch (error) {
+          console.error('Failed to initialize auth:', error);
+          localStorage.removeItem('token');
+          setUser(null);
         }
       }
       setIsLoading(false);
     };
 
     initializeAuth();
-  }, [toast]);
+  }, []);
 
   const login = async (credentials: LoginRequest) => {
     try {
       setIsLoading(true);
-      const { user: loggedInUser } = await authService.login(credentials);
-      setUser(loggedInUser);
+      const response = await apiRequest('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(credentials),
+      });
+      
+      localStorage.setItem('token', response.token);
+      setUser(response.user);
       
       toast({
         title: "Login realizado com sucesso",
-        description: `Bem-vindo(a), ${loggedInUser.name}!`,
+        description: `Bem-vindo(a), ${response.user.name}!`,
       });
-    } catch (error) {
-      const authError = error as AuthError;
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Erro no login",
-        description: authError.message,
+        description: error.message || "Credenciais inválidas",
       });
       throw error;
     } finally {
@@ -74,19 +82,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (userData: RegisterRequest) => {
     try {
       setIsLoading(true);
-      const { user: newUser } = await authService.register(userData);
-      setUser(newUser);
+      const response = await apiRequest('/api/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(userData),
+      });
+      
+      localStorage.setItem('token', response.token);
+      setUser(response.user);
       
       toast({
         title: "Conta criada com sucesso",
-        description: `Bem-vindo(a), ${newUser.name}!`,
+        description: `Bem-vindo(a), ${response.user.name}!`,
       });
-    } catch (error) {
-      const authError = error as AuthError;
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Erro ao criar conta",
-        description: authError.message,
+        description: error.message || "Erro no registro",
       });
       throw error;
     } finally {
@@ -95,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    authService.logout();
+    localStorage.removeItem('token');
     setUser(null);
     toast({
       title: "Logout realizado",

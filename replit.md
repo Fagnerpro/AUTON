@@ -13,7 +13,8 @@ Sistema completo de simulação solar para empresas com React frontend, FastAPI 
 ✓ **CORREÇÃO CRÍTICA**: Problemas de autenticação resolvidos - login e registro funcionando 100%
 ✓ **MODO DEMO**: Implementado sistema de demonstração para testes imediatos sem cadastro
 ✓ **API CORRIGIDA**: Tokens JWT agora validados corretamente pelo middleware
-✓ **FRONTEND**: Interface de autenticação unificada com modo demo funcional
+✓ **FRONTEND SIMPLIFICADO**: Landing page removida - sistema vai direto para login/dashboard
+✓ **INTERFACE UNIFICADA**: Login, registro e demo em uma única página limpa
 ✓ Implementado engine de cálculo robusto com parâmetros técnicos centralizados
 ✓ Sistema multi-unidades implementado para construtoras/incorporadoras
 ✓ Geração de relatórios em PDF, Excel e JSON
@@ -125,10 +126,12 @@ Localizado em `shared/simulation-config.ts`:
 - ✅ **NOVO**: Visualização aprimorada com abas organizadas
 
 ## Sistema de Autenticação
-- Landing page profissional com registro e login
+- Interface de login simples e direta (sem landing page)
 - Sistema JWT completo implementado
+- Página única com login, registro e modo demo
 - Planos Gratuito (5 simulações) e Premium (R$ 24,90/mês)
 - Sem dados de demonstração - sistema limpo para produção
+- Fluxo otimizado: Landing Page Externa → Login → Dashboard
 
 ## Next Steps
 - Implementar backup automático de dados

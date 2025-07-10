@@ -6,7 +6,6 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { queryClient } from "./lib/queryClient";
 import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
-import LandingPage from "@/pages/landing";
 import SimulationForm from "@/pages/simulation-form";
 import ReportsEnhanced from "@/pages/reports-enhanced";
 import Settings from "@/pages/settings";
@@ -30,9 +29,9 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
-  // Show landing page for non-authenticated users or while loading
+  // Show login page for non-authenticated users or while loading
   if (!isAuthenticated || isLoading) {
-    return <LandingPage />;
+    return <Login />;
   }
 
   return (
