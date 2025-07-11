@@ -329,24 +329,36 @@ export class DatabaseStorage implements IStorage {
       return { hasAccess: false, plan: "none" };
     }
 
-    // Check if user has active premium plan
-    if (user.plan === "premium" && user.planExpiresAt && user.planExpiresAt > new Date()) {
-      return { hasAccess: true, plan: "premium" };
-    }
+    // Contagem de simulações do usuário
+    const userSimulations = await this.getSimulationsByUser(userId);
+    const simulationCount = userSimulations.length;
 
-    // For demo/free users, check simulation count
-    if (user.plan === "gratuito") {
-      const userSimulations = await this.getSimulationsByUser(userId);
-      const remainingSimulations = Math.max(0, (user.maxSimulations || 5) - userSimulations.length);
+    // Lógica de acesso por plano
+    switch (user.plan) {
+      case "demo":
+        return {
+          hasAccess: true, // Demo sempre tem acesso para tentar criar
+          plan: "demo",
+          remainingSimulations: Math.max(0, 1 - simulationCount)
+        };
       
-      return { 
-        hasAccess: remainingSimulations > 0, 
-        plan: "gratuito",
-        remainingSimulations 
-      };
+      case "gratuito":
+        return {
+          hasAccess: simulationCount < (user.maxSimulations || 5),
+          plan: "gratuito",
+          remainingSimulations: Math.max(0, (user.maxSimulations || 5) - simulationCount)
+        };
+      
+      case "premium":
+        return {
+          hasAccess: true,
+          plan: "premium",
+          remainingSimulations: -1 // Ilimitado
+        };
+      
+      default:
+        return { hasAccess: false, plan: user.plan };
     }
-
-    return { hasAccess: false, plan: user.plan };
   }
 
   async upgradeUserPlan(userId: number, plan: string, expiresAt?: Date): Promise<User | undefined> {

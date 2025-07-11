@@ -49,9 +49,9 @@ export default function SimulationForm() {
     enabled: !!simulationId,
   });
 
-  // Redirect to upgrade if no access and not editing existing
+  // Redirect to upgrade if no access and not editing existing (except demo)
   useEffect(() => {
-    if (planAccess && !planAccess.hasAccess && !simulationId) {
+    if (planAccess && !planAccess.hasAccess && !simulationId && planAccess.plan !== "demo") {
       setLocation('/upgrade');
     }
   }, [planAccess, simulationId, setLocation]);
