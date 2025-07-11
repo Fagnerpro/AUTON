@@ -530,16 +530,61 @@ export class DatabaseStorage implements IStorage {
   }
 
   private calculateEvCharging(params: any): any {
-    const monthlyKm = params.monthlyKm || 0;
-    const vehicleEfficiency = params.vehicleEfficiency || 6; // km/kWh
-    const chargingHours = params.chargingHours || 8;
-
-    const monthlyConsumption = monthlyKm / vehicleEfficiency;
+    const numSpots = parseInt(params.num_parking_spots) || 0;
+    const chargingPercentage = parseFloat(params.charging_points_percentage) || 0;
+    const energyPerCharge = parseFloat(params.energy_per_charge) || 18;
+    const chargesPerDay = parseFloat(params.charges_per_day) || 1;
+    const state = params.state || 'GO';
     
-    return this.calculateResidential({ 
-      ...params, 
-      monthlyConsumption 
-    });
+    const chargingPoints = Math.floor(numSpots * chargingPercentage / 100);
+    const dailyConsumption = chargingPoints * energyPerCharge * chargesPerDay;
+    const annualConsumption = dailyConsumption * 365;
+    const monthlyConsumption = dailyConsumption * 30;
+    
+    const irradiation = getSolarIrradiation(state);
+    const regionalFactor = getRegionalFactor(state);
+    
+    const sunHours = 5.5;
+    const systemEfficiency = SOLAR_SIMULATION_CONFIG.SYSTEM_EFFICIENCY.overall;
+    const requiredPower = (dailyConsumption / (sunHours * systemEfficiency)) * 1000;
+    const panelPower = SOLAR_SIMULATION_CONFIG.PANEL_SPECS.power;
+    const numPanels = Math.ceil(requiredPower / panelPower);
+    const actualPower = numPanels * panelPower / 1000;
+    
+    const batteryCapacity = dailyConsumption * 1.2; // 20% extra capacity
+    const costPerWatt = SOLAR_SIMULATION_CONFIG.FINANCIAL.installation_cost_per_wp * regionalFactor.cost;
+    const batteryCostPerKWh = 800;
+    const totalInvestment = (actualPower * 1000 * costPerWatt) + (batteryCapacity * batteryCostPerKWh);
+    
+    const currentTariff = SOLAR_SIMULATION_CONFIG.FINANCIAL.tariff_kwh;
+    const chargingRevenue = 0.15; // R$ per kWh charging fee
+    const annualSavings = annualConsumption * chargingRevenue;
+    const paybackYears = totalInvestment / annualSavings;
+
+    return {
+      systemPower: actualPower * 1000, // in Wp
+      panelCount: numPanels,
+      usedArea: numPanels * SOLAR_SIMULATION_CONFIG.PANEL_SPECS.area,
+      monthlyGeneration: monthlyConsumption,
+      annualGeneration: annualConsumption,
+      totalInvestment,
+      annualSavings,
+      paybackYears,
+      roi: (annualSavings / totalInvestment) * 100,
+      co2Reduction: annualConsumption * 0.084, // kg CO2/year
+      coveragePercentage: 100, // EV charging system is designed to cover demand
+      irradiation,
+      regionalFactor,
+      // EV-specific data
+      num_charging_points: chargingPoints,
+      num_panels: numPanels,
+      total_power: actualPower,
+      daily_consumption: dailyConsumption,
+      annual_consumption: annualConsumption,
+      battery_capacity: batteryCapacity,
+      charging_revenue: chargingRevenue,
+      roi_percentage: ((annualSavings * 25) / totalInvestment) * 100
+    };
   }
 
   private calculateCommonAreas(params: any): any {
