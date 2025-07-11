@@ -504,7 +504,7 @@ export class DatabaseStorage implements IStorage {
     const annualSavings = monthlyGeneration * 12 * currentTariff * 0.95; // 95% considering compensation
     const paybackYears = totalInvestment / annualSavings;
     
-    const scenarios = getInvestmentScenarios(totalInvestment);
+    const scenarios = getInvestmentScenarios(systemPower / 1000); // Convert Wp to kW
 
     return {
       systemPower,

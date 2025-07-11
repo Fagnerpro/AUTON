@@ -145,7 +145,8 @@ export function calculateModularInvestment(
   panelsCost: number;
   invertersCost: number;
   installationCost: number;
-  totalCost: number;
+  total_cost: number;
+  payback_years: number;
   costBreakdown: string[];
 } {
   const params = {
@@ -167,6 +168,13 @@ export function calculateModularInvestment(
   
   const totalCost = panelsCost + invertersCost + installationCost;
   
+  // Calculate payback based on system generation and savings
+  const irradiation = SOLAR_SIMULATION_CONFIG.SOLAR_IRRADIATION.default;
+  const monthlyGeneration = systemPowerKw * irradiation * 30 * SOLAR_SIMULATION_CONFIG.SYSTEM_EFFICIENCY.overall;
+  const annualGeneration = monthlyGeneration * 12;
+  const annualSavings = annualGeneration * SOLAR_SIMULATION_CONFIG.FINANCIAL.tariff_kwh * 0.95;
+  const paybackYears = annualSavings > 0 ? totalCost / annualSavings : 0;
+  
   const costBreakdown = [
     `Painéis: R$ ${panelsCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
     `Inversores: R$ ${invertersCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
@@ -178,7 +186,8 @@ export function calculateModularInvestment(
     panelsCost,
     invertersCost,
     installationCost,
-    totalCost,
+    total_cost: totalCost,
+    payback_years: paybackYears,
     costBreakdown
   };
 }
