@@ -276,17 +276,19 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createPlan(plan: InsertPlan): Promise<Plan> {
+    const planData: any = {
+      name: plan.name,
+      displayName: plan.displayName,
+      price: plan.price,
+      currency: plan.currency || "BRL",
+      maxSimulations: plan.maxSimulations || -1,
+      features: plan.features || [],
+      isActive: plan.isActive ?? true
+    };
+    
     const [newPlan] = await db
       .insert(plans)
-      .values({
-        name: plan.name,
-        displayName: plan.displayName,
-        price: plan.price,
-        currency: plan.currency,
-        maxSimulations: plan.maxSimulations,
-        features: plan.features,
-        isActive: plan.isActive
-      })
+      .values(planData)
       .returning();
     return newPlan;
   }
