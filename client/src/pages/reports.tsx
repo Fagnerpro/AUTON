@@ -16,8 +16,10 @@ export default function Reports() {
   const { toast } = useToast();
 
   // Fetch user simulations
-  const { data: simulations = [], isLoading } = useQuery<Simulation[]>({
+  const { data: simulations = [], isLoading, error } = useQuery<Simulation[]>({
     queryKey: ['/api/simulations'],
+    retry: 3,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Generate report mutation with scenarios
@@ -132,6 +134,62 @@ export default function Reports() {
     );
   }
 
+  // Show error state
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Relatórios</h1>
+          <p className="text-gray-600">
+            Gere relatórios detalhados das suas simulações em diferentes formatos
+          </p>
+        </div>
+        <Card>
+          <CardContent className="p-8 text-center">
+            <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Erro ao carregar simulações
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Não foi possível carregar suas simulações. Verifique sua conexão e tente novamente.
+            </p>
+            <Button onClick={() => window.location.reload()}>
+              Tentar Novamente
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show empty state if no simulations
+  if (!simulations || simulations.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Relatórios</h1>
+          <p className="text-gray-600">
+            Gere relatórios detalhados das suas simulações em diferentes formatos
+          </p>
+        </div>
+        <Card>
+          <CardContent className="p-8 text-center">
+            <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Nenhuma simulação encontrada
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Você precisa criar e calcular simulações antes de gerar relatórios.
+            </p>
+            <Button onClick={() => window.location.href = '/simulation-form'}>
+              Criar Simulação
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
@@ -161,7 +219,9 @@ export default function Reports() {
                   <SelectValue placeholder="Selecione uma simulação" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Array.isArray(simulations) && simulations.map((sim: Simulation) => (
+                  {Array.isArray(simulations) && simulations
+                    .filter((sim: Simulation) => sim.results && (sim.status === 'calculated' || sim.status === 'completed'))
+                    .map((sim: Simulation) => (
                     <SelectItem key={sim.id} value={sim.id.toString()}>
                       <div className="flex items-center justify-between w-full">
                         <span className="font-medium">{sim.name}</span>
@@ -171,6 +231,11 @@ export default function Reports() {
                       </div>
                     </SelectItem>
                   ))}
+                  {Array.isArray(simulations) && simulations
+                    .filter((sim: Simulation) => sim.results && (sim.status === 'calculated' || sim.status === 'completed'))
+                    .length === 0 && (
+                    <SelectItem value="" disabled>Nenhuma simulação calculada disponível</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>

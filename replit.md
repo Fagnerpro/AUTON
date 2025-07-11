@@ -4,6 +4,12 @@
 Sistema completo de simulação solar para empresas com React frontend, FastAPI backend inspirado, PostgreSQL database, e cálculos técnicos precisos baseados em parâmetros reais de mercado.
 
 ## Recent Changes (Janeiro 2025)
+✓ **BUG CRÍTICO CORRIGIDO**: Sistema de recarga veicular (EV charging) 100% funcional (11/07/2025)
+✓ **RELATÓRIOS VAZIOS RESOLVIDOS**: Dados EV agora aparecem corretamente em todos os relatórios 
+✓ **CÁLCULO EV CORRIGIDO**: Engine substituído por lógica específica de recarga veicular
+✓ **DADOS EV COMPLETOS**: Pontos de recarga, consumo diário/anual, capacidade bateria incluídos
+✓ **REPORTS FUNCIONAIS**: PDF, Excel e JSON gerando dados reais EV sem falhas
+✓ **UI REPORTS MELHORADA**: Estados de erro, loading e vazio implementados com feedback claro
 ✓ **ACESSO RESTRITO**: Sistema implementado para permitir login apenas para usuários com assinatura
 ✓ **IA PREMIUM**: Assistente IA disponível exclusivamente para assinantes Premium
 ✓ **CONTROLE DE ACESSO**: Usuários com plano gratuito não podem fazer login - apenas modo demo
