@@ -25,7 +25,7 @@ interface ResultsDisplayProps {
 
 export default function ResultsDisplayEnhanced({ type, results, simulation }: ResultsDisplayProps) {
   // Debug para verificar estrutura dos dados
-  console.log('ResultsDisplayEnhanced - dados recebidos:', { type, results, simulation });
+  console.log('🔍 ResultsDisplayEnhanced - dados recebidos:', { type, results, simulation });
   
   const formatCurrency = (value: number, decimals: number = 2) => {
     if (!value || isNaN(value)) return 'R$ 0,00';
@@ -252,16 +252,11 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
 
         {/* Tab: Cenários de Investimento */}
         <TabsContent value="scenarios" className="space-y-4">
-          {financialAnalysis?.investment_scenarios ? (
-            <InvestmentScenarios scenarios={financialAnalysis.investment_scenarios} />
-          ) : (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Cenários de investimento não disponíveis. Execute o cálculo para visualizar as opções.
-              </AlertDescription>
-            </Alert>
-          )}
+          <InvestmentScenarios 
+            scenarios={financialAnalysis?.investment_scenarios} 
+            results={results}
+            simulationType={type}
+          />
         </TabsContent>
 
         {/* Tab: Análise Financeira */}
