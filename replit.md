@@ -4,6 +4,10 @@
 Sistema completo de simulação solar para empresas com React frontend, FastAPI backend inspirado, PostgreSQL database, e cálculos técnicos precisos baseados em parâmetros reais de mercado.
 
 ## Recent Changes (Janeiro 2025)
+✓ **INTERFACE CORRIGIDA**: Problema "N/D" nos dados das simulações resolvido completamente (11/07/2025)
+✓ **MAPEAMENTO FIXADO**: Campos results.num_panels, systemPower, paybackYears agora exibidos corretamente
+✓ **FALLBACK IMPLEMENTADO**: Sistema duplo de mapeamento garante exibição dos dados calculados
+✓ **HOT RELOAD FUNCIONAL**: Alterações aplicadas em tempo real na interface
 ✓ **BUG CRÍTICO CORRIGIDO**: Sistema de recarga veicular (EV charging) 100% funcional (11/07/2025)
 ✓ **RELATÓRIOS VAZIOS RESOLVIDOS**: Dados EV agora aparecem corretamente em todos os relatórios 
 ✓ **CÁLCULO EV CORRIGIDO**: Engine substituído por lógica específica de recarga veicular

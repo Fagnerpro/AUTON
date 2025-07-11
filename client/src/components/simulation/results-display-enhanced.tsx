@@ -26,9 +26,6 @@ interface ResultsDisplayProps {
 export default function ResultsDisplayEnhanced({ type, results, simulation }: ResultsDisplayProps) {
   // Debug para verificar estrutura dos dados
   console.log('ResultsDisplayEnhanced - dados recebidos:', { type, results, simulation });
-  console.log('Technical specs:', results.technical_specs);
-  console.log('Financial analysis:', results.financial_analysis);
-  console.log('Environmental impact:', results.environmental_impact);
   
   const formatCurrency = (value: number, decimals: number = 2) => {
     if (!value || isNaN(value)) return 'R$ 0,00';
@@ -172,7 +169,7 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
               </div>
               <div>
                 <p className="text-2xl font-bold text-blue-600">
-                  {technicalSpecs?.panel_count || 'N/A'}
+                  {technicalSpecs?.panel_count ? technicalSpecs.panel_count : (results?.num_panels || results?.panelCount || 'N/D')}
                 </p>
                 <p className="text-sm text-gray-600">Painéis</p>
               </div>
@@ -188,7 +185,8 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
               </div>
               <div>
                 <p className="text-2xl font-bold text-green-600">
-                  {technicalSpecs?.installed_power ? `${formatNumber(technicalSpecs.installed_power, 1)}` : 'N/A'}
+                  {technicalSpecs?.installed_power ? `${formatNumber(technicalSpecs.installed_power, 1)}` : 
+                   (results?.systemPower ? `${formatNumber((results.systemPower / 1000), 1)}` : 'N/D')}
                 </p>
                 <p className="text-sm text-gray-600">kWp</p>
               </div>
@@ -204,7 +202,8 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
               </div>
               <div>
                 <p className="text-2xl font-bold text-purple-600">
-                  {financialAnalysis?.payback_years ? `${formatNumber(financialAnalysis.payback_years, 1)}` : 'N/A'}
+                  {financialAnalysis?.payback_years ? `${formatNumber(financialAnalysis.payback_years, 1)}` : 
+                   (results?.paybackYears ? `${formatNumber(results.paybackYears, 1)}` : 'N/D')}
                 </p>
                 <p className="text-sm text-gray-600">anos</p>
               </div>
@@ -220,7 +219,8 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
               </div>
               <div>
                 <p className="text-2xl font-bold text-orange-600">
-                  {technicalSpecs?.coverage_percentage ? `${technicalSpecs.coverage_percentage}%` : 'N/A'}
+                  {technicalSpecs?.coverage_percentage ? `${technicalSpecs.coverage_percentage}%` : 
+                   (results?.coveragePercentage ? `${results.coveragePercentage}%` : '100%')}
                 </p>
                 <p className="text-sm text-gray-600">Cobertura</p>
               </div>
