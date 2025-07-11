@@ -74,12 +74,54 @@ export default function AIAdvisorPage() {
         </Card>
       </div>
 
-      {/* AI Advisor Component */}
-      <AIAdvisor 
-        context="general_advice"
-        simulationData={userSimulations}
-        className="max-w-5xl mx-auto"
-      />
+      {/* Premium Access Check */}
+      {user && (user.plan === "gratuito" || user.plan === "demo") && (
+        <div className="max-w-5xl mx-auto">
+          <Card className="border-yellow-200 bg-yellow-50">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2 text-yellow-800">
+                <Brain className="h-5 w-5" />
+                <span>🔒 Recurso Premium</span>
+              </CardTitle>
+              <CardDescription className="text-yellow-700">
+                As recomendações de IA são disponibilizadas no plano Premium. 
+                Faça upgrade para ter acesso completo ao Assistente Solar IA com análises personalizadas e insights avançados.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col space-y-3">
+                <div className="text-sm text-yellow-700">
+                  <strong>O que você ganha com o Premium:</strong>
+                  <ul className="list-disc ml-5 mt-2 space-y-1">
+                    <li>Análise automática de simulações existentes</li>
+                    <li>Respostas baseadas em dados técnicos reais</li>
+                    <li>Recomendações personalizadas por região</li>
+                    <li>Suporte contextual por tipo de projeto</li>
+                  </ul>
+                </div>
+                <div className="flex space-x-3">
+                  <Button className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600">
+                    <Target className="w-4 h-4 mr-2" />
+                    Upgrade para Premium
+                  </Button>
+                  <Button variant="outline" onClick={() => window.history.back()}>
+                    Voltar ao Dashboard
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* AI Advisor Component - Only for Premium */}
+      {user && user.plan !== "gratuito" && user.plan !== "demo" && (
+        <AIAdvisor 
+          context="general_advice"
+          simulationData={userSimulations}
+          className="max-w-5xl mx-auto"
+        />
+      )}
 
       {/* Usage Guidelines */}
       <Card className="bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-200">

@@ -39,7 +39,7 @@ export default function Login() {
       localStorage.setItem("token", data.token);
       toast({
         title: "Modo demonstração ativado!",
-        description: "Explore o AUTON® com acesso completo por 1 hora.",
+        description: "Explore o AUTON® com 1 simulação gratuita para teste.",
       });
       window.location.reload(); // Force reload to update auth state
     },
@@ -268,7 +268,7 @@ export default function Login() {
                 {demoMutation.isPending ? 'Carregando Demo...' : 'Testar Sistema (Demo)'}
               </Button>
               <p className="text-xs text-gray-500 text-center mt-2">
-                Acesso completo por 1 hora sem necessidade de cadastro
+                1 simulação gratuita para teste - sem necessidade de cadastro
               </p>
             </div>
           </CardContent>
