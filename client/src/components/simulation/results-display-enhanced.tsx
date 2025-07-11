@@ -50,27 +50,27 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
     });
   };
 
-  // Estrutura correta dos dados vindos do backend - baseado no método calculateResidential
+  // Estrutura correta dos dados vindos do backend - baseado na API real
   const technicalSpecs = {
-    installed_power: results.systemPower || results.total_power || results.system_power || 0,
-    panel_count: results.panelCount || results.num_panels || results.panel_count || 0,
-    monthly_generation: results.monthlyGeneration || results.monthly_generation || (results.annualGeneration || 0) / 12 || 0,
-    annual_generation: results.annualGeneration || results.annual_generation || 0,
-    used_area: results.usedArea || results.required_area || results.used_area || 0,
-    coverage_percentage: results.coveragePercentage || results.coverage_percentage || 100,
+    installed_power: (results.systemPower || 0) / 1000, // Convertendo W para kW
+    panel_count: results.num_panels || results.panelCount || 0,
+    monthly_generation: results.monthlyGeneration || 0,
+    annual_generation: results.annualGeneration || 0,
+    used_area: results.usedArea || 0,
+    coverage_percentage: results.coveragePercentage || 100,
     irradiation: results.irradiation || 5.8,
     system_efficiency: 0.78
   };
   
   const financialAnalysis = {
-    total_investment: results.totalInvestment || results.total_investment || 0,
-    monthly_savings: (results.annualSavings || 0) / 12 || results.monthly_savings || 0,
-    annual_savings: results.annualSavings || results.annual_savings || 0,
-    payback_years: results.paybackYears || results.payback_years || 0,
-    roi_25_years: results.roi || results.roi_percentage || 0,
-    net_profit_25_years: ((results.annualSavings || 0) * 25 - (results.totalInvestment || 0)) || 0,
-    total_savings_25_years: (results.annualSavings || 0) * 25 || 0,
-    investment_scenarios: results.scenarios || results.investment_scenarios || {}
+    total_investment: results.totalInvestment || 0,
+    monthly_savings: (results.annualSavings || 0) / 12,
+    annual_savings: results.annualSavings || 0,
+    payback_years: results.paybackYears || 0,
+    roi_25_years: results.roi_percentage || 0,
+    net_profit_25_years: ((results.annualSavings || 0) * 25 - (results.totalInvestment || 0)),
+    total_savings_25_years: (results.annualSavings || 0) * 25,
+    investment_scenarios: results.scenarios || {}
   };
   
   const environmentalImpact = {
@@ -101,7 +101,13 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
               <div>
                 <CardTitle className="text-green-800">✅ Sistema Solar Dimensionado</CardTitle>
                 <p className="text-sm text-green-600 mt-1">
-                  Simulação tipo: <span className="font-medium">{type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Residencial'}</span>
+                  Simulação tipo: <span className="font-medium">{
+                    type === 'ev_charging' ? 'Recarga Veicular' :
+                    type === 'common_areas' ? 'Áreas Comuns' :
+                    type === 'commercial' ? 'Comercial' :
+                    type === 'residential' ? 'Residencial' :
+                    type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Residencial'
+                  }</span>
                 </p>
               </div>
             </div>
