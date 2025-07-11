@@ -105,7 +105,7 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
               <div>
                 <CardTitle className="text-green-800">✅ Sistema Solar Dimensionado</CardTitle>
                 <p className="text-sm text-green-600 mt-1">
-                  Simulação tipo: <span className="font-medium">{type.charAt(0).toUpperCase() + type.slice(1)}</span>
+                  Simulação tipo: <span className="font-medium">{type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Residencial'}</span>
                 </p>
               </div>
             </div>

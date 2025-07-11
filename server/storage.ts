@@ -282,10 +282,10 @@ export class DatabaseStorage implements IStorage {
         name: plan.name,
         displayName: plan.displayName,
         price: plan.price,
-        currency: plan.currency || "BRL",
-        maxSimulations: plan.maxSimulations || -1,
-        features: plan.features || [],
-        isActive: plan.isActive ?? true
+        currency: plan.currency,
+        maxSimulations: plan.maxSimulations,
+        features: plan.features,
+        isActive: plan.isActive
       })
       .returning();
     return newPlan;
