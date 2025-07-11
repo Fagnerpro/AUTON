@@ -119,8 +119,7 @@ export function getRegionalFactor(state: string): { cost: number; labor: number 
  * Calcula potência necessária baseada no consumo
  * METODOLOGIA HÍBRIDA: Combina nossa fórmula com validação externa
  */
-export function calculateRequiredPower(monthlyConsumption: number, state: string): number {
-  const irradiation = getSolarIrradiation(state);
+export function calculateRequiredPower(monthlyConsumption: number, irradiation: number): number {
   const efficiency = SOLAR_SIMULATION_CONFIG.SYSTEM_EFFICIENCY.overall;
   
   // Fórmula principal (nossa metodologia)
