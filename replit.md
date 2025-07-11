@@ -4,6 +4,8 @@
 Sistema completo de simulação solar para empresas com React frontend, FastAPI backend inspirado, PostgreSQL database, e cálculos técnicos precisos baseados em parâmetros reais de mercado.
 
 ## Recent Changes (Janeiro 2025)
+✓ **CORREÇÃO CRÍTICA**: Todos os tipos de simulação funcionando 100% - problema era interface (11/07/2025)
+✓ **PARÂMETROS CORRIGIDOS**: Nomes dos campos na interface sincronizados com backend
 ✓ **CENÁRIOS UNIVERSAIS**: Cenários de investimento agora disponíveis para TODOS os tipos de simulação (11/07/2025)
 ✓ **CENÁRIOS INTELIGENTES**: Geração automática baseada em dados reais da simulação calculada
 ✓ **INTERFACE CORRIGIDA**: Problema "N/D" nos dados das simulações resolvido completamente (11/07/2025)

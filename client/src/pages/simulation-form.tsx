@@ -35,6 +35,13 @@ export default function SimulationForm() {
     status: 'draft',
   });
 
+  // Sync simulationType with formData.type
+  useEffect(() => {
+    if (formData.type && formData.type !== simulationType) {
+      setSimulationType(formData.type);
+    }
+  }, [formData.type, simulationType]);
+
   const simulationId = params?.id ? parseInt(params.id) : null;
 
   // Check plan access

@@ -53,33 +53,65 @@ export default function SpecificConfig({ type, parameters, onChange }: SpecificC
   );
 
   const renderEVChargingConfig = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div className="space-y-2">
-        <Label htmlFor="chargingStations">Pontos de Recarga</Label>
-        <Input
-          id="chargingStations"
-          type="number"
-          placeholder="4"
-          value={parameters.chargingStations || ''}
-          onChange={(e) => handleChange('chargingStations', e.target.value)}
-        />
-        <p className="text-sm text-gray-600">
-          Número de carregadores a instalar
-        </p>
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="num_parking_spots">Número de Vagas</Label>
+          <Input
+            id="num_parking_spots"
+            type="number"
+            placeholder="20"
+            value={parameters.num_parking_spots || ''}
+            onChange={(e) => handleChange('num_parking_spots', e.target.value)}
+          />
+          <p className="text-sm text-gray-600">
+            Total de vagas de estacionamento
+          </p>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="charging_points_percentage">% com Recarga</Label>
+          <Input
+            id="charging_points_percentage"
+            type="number"
+            placeholder="25"
+            value={parameters.charging_points_percentage || ''}
+            onChange={(e) => handleChange('charging_points_percentage', e.target.value)}
+          />
+          <p className="text-sm text-gray-600">
+            Porcentagem de vagas com carregador
+          </p>
+        </div>
       </div>
       
-      <div className="space-y-2">
-        <Label htmlFor="powerPerStation">Potência por Ponto (kW)</Label>
-        <Input
-          id="powerPerStation"
-          type="number"
-          placeholder="22"
-          value={parameters.powerPerStation || ''}
-          onChange={(e) => handleChange('powerPerStation', e.target.value)}
-        />
-        <p className="text-sm text-gray-600">
-          Potência de cada carregador (7kW, 11kW, 22kW)
-        </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="energy_per_charge">Energia por Carga (kWh)</Label>
+          <Input
+            id="energy_per_charge"
+            type="number"
+            placeholder="18"
+            value={parameters.energy_per_charge || ''}
+            onChange={(e) => handleChange('energy_per_charge', e.target.value)}
+          />
+          <p className="text-sm text-gray-600">
+            Energia média por recarga completa
+          </p>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="charges_per_day">Cargas por Dia</Label>
+          <Input
+            id="charges_per_day"
+            type="number"
+            placeholder="1"
+            value={parameters.charges_per_day || ''}
+            onChange={(e) => handleChange('charges_per_day', e.target.value)}
+          />
+          <p className="text-sm text-gray-600">
+            Número de cargas por dia por ponto
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -88,25 +120,31 @@ export default function SpecificConfig({ type, parameters, onChange }: SpecificC
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="monthly_consumption">Consumo Mensal (kWh)</Label>
+          <Label htmlFor="monthlyConsumption">Consumo Mensal (kWh)</Label>
           <Input
-            id="monthly_consumption"
+            id="monthlyConsumption"
             type="number"
             placeholder="Ex: 2500"
-            value={parameters.monthly_consumption || ''}
-            onChange={(e) => handleChange('monthly_consumption', e.target.value)}
+            value={parameters.monthlyConsumption || ''}
+            onChange={(e) => handleChange('monthlyConsumption', e.target.value)}
           />
+          <p className="text-sm text-gray-600">
+            Consumo mensal médio da empresa
+          </p>
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="available_area">Área Disponível (m²)</Label>
+          <Label htmlFor="availableArea">Área Disponível (m²)</Label>
           <Input
-            id="available_area"
+            id="availableArea"
             type="number"
             placeholder="Ex: 800"
-            value={parameters.available_area || ''}
-            onChange={(e) => handleChange('available_area', e.target.value)}
+            value={parameters.availableArea || ''}
+            onChange={(e) => handleChange('availableArea', e.target.value)}
           />
+          <p className="text-sm text-gray-600">
+            Área de telhado disponível para painéis
+          </p>
         </div>
       </div>
     </div>
