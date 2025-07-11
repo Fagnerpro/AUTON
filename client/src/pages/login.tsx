@@ -52,6 +52,33 @@ export default function Login() {
     },
   });
 
+  const adminMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("/api/auth/admin", {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+    },
+    onSuccess: (data) => {
+      localStorage.setItem("token", data.token);
+      toast({
+        title: "Acesso Admin Ativado!",
+        description: "Modo Premium desbloqueado para testes.",
+      });
+      window.location.reload(); // Force reload to update auth state
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro no modo admin",
+        description: error.message || "Tente novamente.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDemo = () => demoMutation.mutate();
+  const handleAdmin = () => adminMutation.mutate();
+
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -257,18 +284,26 @@ export default function Login() {
             </Tabs>
             
             {/* Modo Demo */}
-            <div className="mt-6 pt-6 border-t">
+            <div className="mt-6 pt-6 border-t space-y-3">
               <Button 
                 variant="outline" 
                 className="w-full" 
-                onClick={() => demoMutation.mutate()}
+                onClick={handleDemo}
                 disabled={demoMutation.isPending}
               >
                 <TestTube className="mr-2 h-4 w-4" />
                 {demoMutation.isPending ? 'Carregando Demo...' : 'Testar Sistema (Demo)'}
               </Button>
-              <p className="text-xs text-gray-500 text-center mt-2">
-                1 simulação gratuita para teste - sem necessidade de cadastro
+              <Button 
+                variant="secondary" 
+                className="w-full text-xs bg-blue-50 text-blue-700 hover:bg-blue-100" 
+                onClick={handleAdmin}
+                disabled={adminMutation.isPending}
+              >
+                {adminMutation.isPending ? 'Ativando...' : 'Acesso Admin (Premium)'}
+              </Button>
+              <p className="text-xs text-gray-500 text-center">
+                Demo: 1 simulação | Admin: Acesso completo para testes
               </p>
             </div>
           </CardContent>

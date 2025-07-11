@@ -369,6 +369,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin route - creates admin user with premium access for testing
+  app.post("/api/auth/admin", async (req, res) => {
+    try {
+      // Create admin user with premium access
+      const adminEmail = `admin_${Date.now()}@auton.admin`;
+      const adminUser = await storage.createUser({
+        email: adminEmail,
+        name: "Administrador AUTON",
+        company: "AUTON® Administração",
+        phone: null,
+        role: "admin",
+        plan: "premium",
+        maxSimulations: -1,
+        planExpiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 ano
+        isActive: true,
+        isVerified: true,
+        hashedPassword: await bcrypt.hash("admin123", 10),
+      });
+
+      const token = jwt.sign(
+        { userId: adminUser.id, email: adminUser.email },
+        JWT_SECRET,
+        { expiresIn: "24h" }
+      );
+
+      const { hashedPassword, ...userWithoutPassword } = adminUser;
+
+      res.json({
+        token,
+        user: userWithoutPassword,
+        isAdminUser: true
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao criar usuário admin" });
+    }
+  });
+
   // Auth routes - apenas usuários com assinatura podem fazer login
   app.post("/api/auth/login", async (req, res) => {
     try {
