@@ -185,11 +185,20 @@ export default function ReportsEnhanced() {
                     <SelectValue placeholder="Selecione uma simulação..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {simulations.map((simulation) => (
-                      <SelectItem key={simulation.id} value={simulation.id.toString()}>
-                        {simulation.name}
+                    {simulations.length > 0 ? (
+                      simulations.map((simulation) => (
+                        <SelectItem 
+                          key={simulation.id} 
+                          value={simulation.id.toString()}
+                        >
+                          {simulation.name || `Simulação ${simulation.id}`}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="empty" disabled>
+                        Nenhuma simulação encontrada
                       </SelectItem>
-                    ))}
+                    )}
                   </SelectContent>
                 </Select>
 

@@ -101,19 +101,36 @@ export default function SimulationForm() {
     onError: (error: any) => {
       console.error('Erro ao salvar:', error);
       
-      // Check if it's a plan limit error
-      if (error.message?.includes('Limite de simulações atingido') || error.status === 403) {
+      // Parse error message properly
+      let errorMessage = "Não foi possível salvar a simulação.";
+      let isLimitError = false;
+      
+      try {
+        if (error.message) {
+          if (error.message.includes('Limite de simulações atingido') || 
+              error.message.includes('403:')) {
+            isLimitError = true;
+            errorMessage = "Você atingiu o limite de simulações do plano demo.";
+          } else {
+            errorMessage = error.message;
+          }
+        }
+      } catch (e) {
+        console.error('Error parsing error message:', e);
+      }
+      
+      if (isLimitError) {
         toast({
           variant: "destructive",
-          title: "Limite Atingido",
-          description: "Você atingiu o limite de simulações do plano demo. Faça upgrade para Premium.",
+          title: "🔒 Limite Atingido",
+          description: "Plano demo permite apenas 1 simulação. Faça upgrade para continuar.",
           action: (
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setLocation('/upgrade')}
+              onClick={() => setLocation('/pricing')}
             >
-              Fazer Upgrade
+              Ver Planos
             </Button>
           ),
         });
@@ -123,7 +140,7 @@ export default function SimulationForm() {
       toast({
         variant: "destructive",
         title: "Erro ao salvar",
-        description: error.message || "Não foi possível salvar a simulação.",
+        description: errorMessage,
       });
     },
   });
