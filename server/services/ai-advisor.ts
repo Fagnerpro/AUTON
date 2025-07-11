@@ -38,13 +38,25 @@ export class AIAdvisorService {
         max_tokens: 1500
       });
 
-      const result = JSON.parse(response.choices[0].message.content || '{}');
+      const content = response.choices[0].message.content;
+      if (!content) {
+        throw new Error("Resposta vazia da API OpenAI");
+      }
+
+      let result;
+      try {
+        result = JSON.parse(content);
+      } catch (parseError) {
+        console.error('Erro ao fazer parse da resposta JSON:', parseError);
+        console.error('Conteúdo recebido:', content);
+        throw new Error("Resposta da IA não está no formato JSON válido");
+      }
       
       return {
         advice: result.advice || "Não foi possível gerar orientações específicas.",
-        recommendations: result.recommendations || [],
-        technicalTips: result.technicalTips || [],
-        nextSteps: result.nextSteps || [],
+        recommendations: Array.isArray(result.recommendations) ? result.recommendations : [],
+        technicalTips: Array.isArray(result.technicalTips) ? result.technicalTips : [],
+        nextSteps: Array.isArray(result.nextSteps) ? result.nextSteps : [],
         confidence: Math.max(0, Math.min(1, result.confidence || 0.5))
       };
 

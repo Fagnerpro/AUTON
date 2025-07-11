@@ -66,8 +66,6 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
     system_efficiency: results.technical_specs?.system_efficiency || results.system_efficiency || 0.78
   };
   
-  console.log('Mapped technicalSpecs:', technicalSpecs);
-  
   const financialAnalysis = {
     total_investment: results.financial_analysis?.total_investment || results.total_investment,
     monthly_savings: results.financial_analysis?.monthly_savings || results.monthly_savings,
@@ -78,8 +76,6 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
     total_savings_25_years: results.financial_analysis?.total_savings_25_years || 0,
     investment_scenarios: results.financial_analysis?.investment_scenarios || {}
   };
-  
-  console.log('Mapped financialAnalysis:', financialAnalysis);
   
   const environmentalImpact = {
     co2_avoided_annually: results.environmental_impact?.co2_avoided_annually ? (results.environmental_impact.co2_avoided_annually / 1000) : 0,

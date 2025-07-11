@@ -4,6 +4,13 @@
 Sistema completo de simulação solar para empresas com React frontend, FastAPI backend inspirado, PostgreSQL database, e cálculos técnicos precisos baseados em parâmetros reais de mercado.
 
 ## Recent Changes (Janeiro 2025)
+✓ **ACESSO RESTRITO**: Sistema implementado para permitir login apenas para usuários com assinatura
+✓ **IA PREMIUM**: Assistente IA disponível exclusivamente para assinantes Premium
+✓ **CONTROLE DE ACESSO**: Usuários com plano gratuito não podem fazer login - apenas modo demo
+✓ **MENSAGENS PERSONALIZADAS**: Feedback específico para usuários sem assinatura
+✓ **CORREÇÃO CRÍTICA**: Mapeamento de dados para estrutura aninhada do backend corrigido
+✓ **DADOS TÉCNICOS**: Correção do display "N/D" - agora mostra valores reais das simulações
+✓ **TRATAMENTO DE ERROS**: Sistema robusto de erro para API da IA com fallbacks
 ✓ **ASSISTENTE IA**: Sistema completo de orientações contextuais com OpenAI GPT-4o
 ✓ **SUPORTE CONTEXTUAL**: IA analisa simulações e fornece recomendações personalizadas
 ✓ **INTEGRAÇÃO INTELIGENTE**: Respostas técnicas baseadas em dados reais dos projetos

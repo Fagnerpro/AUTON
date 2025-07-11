@@ -47,7 +47,7 @@ export default function AIAdvisor({
   const { toast } = useToast();
 
   // Auto-generate advice when component loads with simulation data
-  const { data: autoAdvice, isLoading: isAutoLoading } = useQuery({
+  const { data: autoAdvice, isLoading: isAutoLoading, error: autoError } = useQuery({
     queryKey: ['ai-advice', context, simulationData?.length, systemConfiguration],
     queryFn: async () => {
       if (context === 'general_advice' && !simulationData?.length && !systemConfiguration) {
@@ -59,21 +59,35 @@ export default function AIAdvisor({
         simulationData,
         systemConfiguration
       });
-      return response;
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erro desconhecido');
+      }
+      
+      return response.json();
     },
     enabled: !!(simulationData?.length || systemConfiguration || context !== 'general_advice'),
-    staleTime: 5 * 60 * 1000 // 5 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: false // Don't retry on subscription errors
   });
 
   // Manual question asking
   const askQuestionMutation = useMutation({
     mutationFn: async (specificQuestion: string) => {
-      return apiRequest('POST', '/api/ai/advice', {
+      const response = await apiRequest('POST', '/api/ai/advice', {
         context: 'technical_question',
         specificQuestion,
         simulationData,
         systemConfiguration
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erro desconhecido');
+      }
+      
+      return response.json();
     },
     onSuccess: (data) => {
       setCurrentAdvice(data);
@@ -84,11 +98,20 @@ export default function AIAdvisor({
       });
     },
     onError: (error: any) => {
-      toast({
-        title: "Erro",
-        description: error.message || "Erro ao processar sua pergunta.",
-        variant: "destructive"
-      });
+      const message = error.message;
+      if (message.includes("restrito para assinantes")) {
+        toast({
+          title: "🔒 Recurso Premium",
+          description: "O Assistente IA está disponível apenas para assinantes Premium. Faça upgrade para ter acesso completo!",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: message || "Erro ao processar sua pergunta.",
+          variant: "destructive"
+        });
+      }
     }
   });
 
@@ -124,6 +147,7 @@ export default function AIAdvisor({
 
   const displayAdvice = currentAdvice || autoAdvice;
   const isLoading = isAutoLoading || askQuestionMutation.isPending;
+  const hasSubscriptionError = autoError?.message?.includes("restrito para assinantes");
 
   return (
     <div className={`space-y-6 ${className}`}>
@@ -143,6 +167,21 @@ export default function AIAdvisor({
           </CardDescription>
         </CardHeader>
       </Card>
+
+      {/* Subscription Required Alert */}
+      {hasSubscriptionError && (
+        <Alert className="border-amber-200 bg-amber-50">
+          <MessageSquare className="h-4 w-4 text-amber-600" />
+          <AlertDescription className="text-amber-700">
+            <div className="flex items-center justify-between">
+              <span>🔒 <strong>Recurso Premium:</strong> O Assistente IA está disponível apenas para assinantes Premium.</span>
+              <Button size="sm" variant="outline" className="border-amber-600 text-amber-600 hover:bg-amber-100">
+                Fazer Upgrade
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Question Input */}
       <Card>

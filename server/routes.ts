@@ -369,7 +369,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Auth routes
+  // Auth routes - apenas usuários com assinatura podem fazer login
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { email, password } = loginSchema.parse(req.body);
@@ -377,6 +377,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUserByEmail(email);
       if (!user || !user.isActive) {
         return res.status(401).json({ message: "Email ou senha incorretos" });
+      }
+      
+      // Verificar se o usuário tem plano pago (apenas usuários com assinatura podem fazer login)
+      if (user.plan === "gratuito" || user.plan === "demo") {
+        return res.status(403).json({ 
+          message: "Acesso restrito. É necessário uma assinatura ativa para fazer login.",
+          requiresSubscription: true
+        });
       }
       
       // Verify password using bcrypt
@@ -778,10 +786,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI Advisor routes
+  // AI Advisor routes - ACESSO RESTRITO APENAS PARA ASSINANTES
   app.post("/api/ai/advice", authenticateToken, async (req: AuthRequest, res) => {
     if (!req.user) {
       return res.status(401).json({ message: "Usuário não autenticado" });
+    }
+
+    // Verificar se o usuário tem plano pago para acessar IA
+    if (req.user.plan === "gratuito" || req.user.plan === "demo") {
+      return res.status(403).json({ 
+        message: "Acesso ao Assistente IA restrito para assinantes Premium.",
+        requiresSubscription: true,
+        feature: "ai_advisor"
+      });
     }
 
     try {
@@ -834,10 +851,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Specific AI analysis for simulations
+  // Specific AI analysis for simulations - ACESSO RESTRITO APENAS PARA ASSINANTES
   app.post("/api/ai/analyze-simulation/:id", authenticateToken, async (req: AuthRequest, res) => {
     if (!req.user) {
       return res.status(401).json({ message: "Usuário não autenticado" });
+    }
+
+    // Verificar se o usuário tem plano pago para acessar IA
+    if (req.user.plan === "gratuito" || req.user.plan === "demo") {
+      return res.status(403).json({ 
+        message: "Análise IA restrita para assinantes Premium.",
+        requiresSubscription: true,
+        feature: "ai_analysis"
+      });
     }
 
     try {
