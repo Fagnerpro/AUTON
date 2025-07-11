@@ -33,19 +33,15 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
   const formatCurrency = (value: number, decimals: number = 2) => {
     if (!value || isNaN(value)) return 'R$ 0,00';
     
-    // Para valores grandes (milhões), sempre mostrar 2 casas decimais
-    // Para valores menores, usar formatação padrão
-    const adjustedDecimals = value >= 1000000 ? 2 : decimals;
-    
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
-      minimumFractionDigits: adjustedDecimals,
-      maximumFractionDigits: adjustedDecimals,
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
     }).format(value);
   };
 
-  const formatNumber = (value: number, decimals = 0) => {
+  const formatNumber = (value: number, decimals = 1) => {
     if (!value || isNaN(value)) return '0';
     
     return value.toLocaleString('pt-BR', { 
@@ -186,7 +182,7 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
               </div>
               <div>
                 <p className="text-2xl font-bold text-green-600">
-                  {technicalSpecs?.installed_power ? `${technicalSpecs.installed_power.toFixed(1)}` : 'N/A'}
+                  {technicalSpecs?.installed_power ? `${formatNumber(technicalSpecs.installed_power, 1)}` : 'N/A'}
                 </p>
                 <p className="text-sm text-gray-600">kWp</p>
               </div>
@@ -202,7 +198,7 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
               </div>
               <div>
                 <p className="text-2xl font-bold text-purple-600">
-                  {financialAnalysis?.payback_years ? `${financialAnalysis.payback_years}` : 'N/A'}
+                  {financialAnalysis?.payback_years ? `${formatNumber(financialAnalysis.payback_years, 1)}` : 'N/A'}
                 </p>
                 <p className="text-sm text-gray-600">anos</p>
               </div>
@@ -309,7 +305,7 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
                 <div className="flex justify-between">
                   <span className="text-gray-600">ROI Total:</span>
                   <span className="font-bold text-green-600">
-                    {financialAnalysis?.roi_25_years || 0}%
+                    {formatNumber(financialAnalysis?.roi_25_years || 0, 1)}%
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -347,13 +343,13 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-gray-600">Potência Instalada</p>
                   <p className="text-xl font-bold">
-                    {technicalSpecs?.installed_power ? `${technicalSpecs.installed_power.toFixed(2)} kWp` : 'N/A'}
+                    {technicalSpecs?.installed_power ? `${formatNumber(technicalSpecs.installed_power, 2)} kWp` : 'N/A'}
                   </p>
                 </div>
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-gray-600">Área Utilizada</p>
                   <p className="text-xl font-bold">
-                    {technicalSpecs?.used_area ? `${technicalSpecs.used_area.toFixed(1)} m²` : 'N/A'}
+                    {technicalSpecs?.used_area ? `${formatNumber(technicalSpecs.used_area, 1)} m²` : 'N/A'}
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -365,13 +361,13 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-gray-600">Irradiação Solar</p>
                   <p className="text-xl font-bold">
-                    {technicalSpecs?.irradiation ? `${technicalSpecs.irradiation} kWh/m²/dia` : 'N/A'}
+                    {technicalSpecs?.irradiation ? `${formatNumber(technicalSpecs.irradiation, 1)} kWh/m²/dia` : 'N/A'}
                   </p>
                 </div>
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-gray-600">Eficiência</p>
                   <p className="text-xl font-bold">
-                    {technicalSpecs?.system_efficiency ? `${(technicalSpecs.system_efficiency * 100).toFixed(1)}%` : 'N/A'}
+                    {technicalSpecs?.system_efficiency ? `${formatNumber(technicalSpecs.system_efficiency * 100, 1)}%` : 'N/A'}
                   </p>
                 </div>
               </div>
@@ -393,7 +389,7 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
                 <div className="text-center p-6 bg-green-50 rounded-xl">
                   <Leaf className="h-12 w-12 text-green-600 mx-auto mb-3" />
                   <p className="text-3xl font-bold text-green-600">
-                    {formatNumber(environmentalImpact?.co2_avoided_annually || 0)}
+                    {formatNumber(environmentalImpact?.co2_avoided_annually || 0, 1)}
                   </p>
                   <p className="text-sm text-green-700 font-medium">kg CO₂ evitados/ano</p>
                 </div>

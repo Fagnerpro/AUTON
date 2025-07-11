@@ -5,6 +5,7 @@ import {
   plans,
   payments,
   sessions,
+  demoSimulations,
   type User, 
   type InsertUser, 
   type Simulation, 
@@ -16,7 +17,9 @@ import {
   type Payment,
   type InsertPayment,
   type Session,
-  type InsertSession
+  type InsertSession,
+  type DemoSimulation,
+  type InsertDemoSimulation
 } from "@shared/schema";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
@@ -90,6 +93,10 @@ export interface IStorage {
   
   // Calculate simulation with improved algorithm
   calculateSimulationResults(simulation: Simulation): Promise<any>;
+  
+  // Demo simulation control
+  checkDemoSimulationLimit(ipAddress: string, userAgent?: string): Promise<{ canCreate: boolean; count: number }>;
+  recordDemoSimulation(ipAddress: string, userAgent?: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -586,6 +593,66 @@ export class DatabaseStorage implements IStorage {
         totalConsumption
       }
     };
+  }
+
+  // Demo simulation control methods
+  async checkDemoSimulationLimit(ipAddress: string, userAgent?: string): Promise<{ canCreate: boolean; count: number }> {
+    // Busca registro existente para este IP nas últimas 24 horas
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    
+    const [existingRecord] = await db
+      .select()
+      .from(demoSimulations)
+      .where(
+        and(
+          eq(demoSimulations.ipAddress, ipAddress),
+          gte(demoSimulations.lastSimulationAt, twentyFourHoursAgo)
+        )
+      )
+      .limit(1);
+    
+    const currentCount = existingRecord?.simulationCount || 0;
+    const canCreate = currentCount < 1; // Máximo 1 simulação demo por IP em 24h
+    
+    return { canCreate, count: currentCount };
+  }
+  
+  async recordDemoSimulation(ipAddress: string, userAgent?: string): Promise<void> {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    
+    // Verifica se já existe um registro para este IP nas últimas 24 horas
+    const [existingRecord] = await db
+      .select()
+      .from(demoSimulations)
+      .where(
+        and(
+          eq(demoSimulations.ipAddress, ipAddress),
+          gte(demoSimulations.lastSimulationAt, twentyFourHoursAgo)
+        )
+      )
+      .limit(1);
+    
+    if (existingRecord) {
+      // Atualiza o registro existente
+      await db
+        .update(demoSimulations)
+        .set({
+          simulationCount: (existingRecord.simulationCount || 0) + 1,
+          lastSimulationAt: new Date(),
+          userAgent: userAgent || existingRecord.userAgent
+        })
+        .where(eq(demoSimulations.id, existingRecord.id));
+    } else {
+      // Cria novo registro
+      await db
+        .insert(demoSimulations)
+        .values({
+          ipAddress,
+          userAgent,
+          simulationCount: 1,
+          lastSimulationAt: new Date()
+        });
+    }
   }
 }
 

@@ -549,6 +549,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
 
+  // Endpoint para simulações demo (sem autenticação)
+  app.post("/api/simulations/demo", async (req, res) => {
+    try {
+      // Obter IP do cliente de forma robusta
+      const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || 
+                       req.headers['x-real-ip'] as string ||
+                       req.socket.remoteAddress || 
+                       req.ip || 
+                       'unknown';
+      const userAgent = req.headers['user-agent'];
+      
+      // Verificar limite de simulações demo
+      const demoLimit = await storage.checkDemoSimulationLimit(clientIp, userAgent);
+      if (!demoLimit.canCreate) {
+        return res.status(429).json({ 
+          message: "Limite de simulação demo atingido. Uma simulação demo por IP nas últimas 24 horas.",
+          count: demoLimit.count
+        });
+      }
+      
+      // Criar simulação demo sem userId
+      const simulationData = insertSimulationSchema.omit({ userId: true }).parse(req.body);
+      const simulation = await storage.createSimulation({
+        ...simulationData,
+        userId: null, // Simulação demo não tem usuário
+      });
+      
+      // Registrar a simulação demo
+      await storage.recordDemoSimulation(clientIp, userAgent);
+      
+      res.status(201).json(simulation);
+    } catch (error) {
+      console.error('Erro ao criar simulação demo:', error);
+      res.status(400).json({ message: "Dados inválidos" });
+    }
+  });
+
   app.post("/api/simulations", authenticateToken, checkPlanAccess, async (req: AuthRequest, res) => {
     try {
       const simulationData = insertSimulationSchema.parse({
@@ -560,6 +597,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(simulation);
     } catch (error) {
       res.status(400).json({ message: "Dados inválidos" });
+    }
+  });
+
+  // Endpoint para calcular simulações demo (sem autenticação)
+  app.post("/api/simulations/demo/:id/calculate", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const simulation = await storage.getSimulation(id);
+      
+      if (!simulation || simulation.userId !== null) {
+        return res.status(404).json({ message: "Simulação demo não encontrada" });
+      }
+      
+      // Use the new calculation engine
+      const results = await storage.calculateSimulationResults(simulation);
+      
+      const updatedSimulation = await storage.updateSimulation(id, {
+        results,
+        status: 'calculated',
+      });
+      
+      res.json(updatedSimulation);
+    } catch (error) {
+      console.error('Erro ao calcular simulação demo:', error);
+      res.status(500).json({ message: "Erro ao calcular simulação: " + (error as Error).message });
     }
   });
 

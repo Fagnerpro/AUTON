@@ -24,7 +24,7 @@ export const users = pgTable("users", {
 
 export const simulations = pgTable("simulations", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").references(() => users.id), // Nullable para simulações demo
   name: text("name").notNull(),
   description: text("description"),
   address: text("address"),
@@ -86,6 +86,16 @@ export const sessions = pgTable("sessions", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Tabela para controle de simulações demo por IP
+export const demoSimulations = pgTable("demo_simulations", {
+  id: serial("id").primaryKey(),
+  ipAddress: text("ip_address").notNull(),
+  userAgent: text("user_agent"),
+  simulationCount: integer("simulation_count").default(1),
+  lastSimulationAt: timestamp("last_simulation_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -117,6 +127,11 @@ export const insertPaymentSchema = createInsertSchema(payments).omit({
 });
 
 export const insertSessionSchema = createInsertSchema(sessions).omit({
+  createdAt: true,
+});
+
+export const insertDemoSimulationSchema = createInsertSchema(demoSimulations).omit({
+  id: true,
   createdAt: true,
 });
 
@@ -157,6 +172,8 @@ export type Payment = typeof payments.$inferSelect;
 export type InsertPayment = z.infer<typeof insertPaymentSchema>;
 export type Session = typeof sessions.$inferSelect;
 export type InsertSession = z.infer<typeof insertSessionSchema>;
+export type DemoSimulation = typeof demoSimulations.$inferSelect;
+export type InsertDemoSimulation = z.infer<typeof insertDemoSimulationSchema>;
 export type LoginRequest = z.infer<typeof loginSchema>;
 export type RegisterRequest = z.infer<typeof registerSchema>;
 export type ResetPasswordRequest = z.infer<typeof resetPasswordSchema>;

@@ -76,7 +76,9 @@ export default function SimulationForm() {
           body: JSON.stringify(data)
         });
       } else {
-        return apiRequest('/api/simulations', {
+        // Use demo endpoint if user is not logged in
+        const endpoint = user ? '/api/simulations' : '/api/simulations/demo';
+        return apiRequest(endpoint, {
           method: 'POST',
           body: JSON.stringify(data)
         });
@@ -111,6 +113,10 @@ export default function SimulationForm() {
               error.message.includes('403:')) {
             isLimitError = true;
             errorMessage = "Você atingiu o limite de simulações do plano demo.";
+          } else if (error.message.includes('Limite de simulação demo atingido') ||
+                     error.message.includes('429:')) {
+            isLimitError = true;
+            errorMessage = "Limite demo: 1 simulação por IP nas últimas 24 horas.";
           } else {
             errorMessage = error.message;
           }
@@ -148,7 +154,9 @@ export default function SimulationForm() {
   // Calculate simulation mutation
   const calculateMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/simulations/${id}/calculate`, {
+      // Use demo endpoint if user is not logged in
+      const endpoint = user ? `/api/simulations/${id}/calculate` : `/api/simulations/demo/${id}/calculate`;
+      return apiRequest(endpoint, {
         method: 'POST',
         body: JSON.stringify({})
       });
@@ -182,7 +190,8 @@ export default function SimulationForm() {
     if (!simulationId) {
       // Save first, then calculate
       try {
-        const savedSimulation = await apiRequest('/api/simulations', {
+        const endpoint = user ? '/api/simulations' : '/api/simulations/demo';
+        const savedSimulation = await apiRequest(endpoint, {
           method: 'POST',
           body: JSON.stringify(formData)
         });
