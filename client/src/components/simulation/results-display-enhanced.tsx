@@ -54,32 +54,32 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
     });
   };
 
-  // Estrutura correta dos dados vindos do backend
+  // Estrutura correta dos dados vindos do backend - baseado no método calculateResidential
   const technicalSpecs = {
-    installed_power: results.technical_specs?.installed_power || results.system_power || results.total_power || 0,
-    panel_count: results.technical_specs?.panel_count || results.num_panels || results.panel_count || 0,
-    monthly_generation: results.technical_specs?.monthly_generation || results.monthly_generation || (results.annual_generation || 0) / 12,
-    annual_generation: results.technical_specs?.annual_generation || results.annual_generation || 0,
-    used_area: results.technical_specs?.used_area || results.required_area || results.used_area || 0,
-    coverage_percentage: results.technical_specs?.coverage_percentage || results.coverage_percentage || 100,
-    irradiation: results.technical_specs?.irradiation || results.irradiation || 5.8,
-    system_efficiency: results.technical_specs?.system_efficiency || results.system_efficiency || 0.78
+    installed_power: results.systemPower || results.total_power || results.system_power || 0,
+    panel_count: results.panelCount || results.num_panels || results.panel_count || 0,
+    monthly_generation: results.monthlyGeneration || results.monthly_generation || (results.annualGeneration || 0) / 12 || 0,
+    annual_generation: results.annualGeneration || results.annual_generation || 0,
+    used_area: results.usedArea || results.required_area || results.used_area || 0,
+    coverage_percentage: results.coveragePercentage || results.coverage_percentage || 100,
+    irradiation: results.irradiation || 5.8,
+    system_efficiency: 0.78
   };
   
   const financialAnalysis = {
-    total_investment: results.financial_analysis?.total_investment || results.total_investment || 0,
-    monthly_savings: results.financial_analysis?.monthly_savings || results.monthly_savings || (results.annual_savings || 0) / 12,
-    annual_savings: results.financial_analysis?.annual_savings || results.annual_savings || 0,
-    payback_years: results.financial_analysis?.payback_years || results.payback_years || 0,
-    roi_25_years: results.financial_analysis?.roi_25_years || results.roi_percentage || 0,
-    net_profit_25_years: results.financial_analysis?.net_profit_25_years || ((results.annual_savings || 0) * 25 - (results.total_investment || 0)),
-    total_savings_25_years: results.financial_analysis?.total_savings_25_years || 0,
-    investment_scenarios: results.financial_analysis?.investment_scenarios || {}
+    total_investment: results.totalInvestment || results.total_investment || 0,
+    monthly_savings: (results.annualSavings || 0) / 12 || results.monthly_savings || 0,
+    annual_savings: results.annualSavings || results.annual_savings || 0,
+    payback_years: results.paybackYears || results.payback_years || 0,
+    roi_25_years: results.roi || results.roi_percentage || 0,
+    net_profit_25_years: ((results.annualSavings || 0) * 25 - (results.totalInvestment || 0)) || 0,
+    total_savings_25_years: (results.annualSavings || 0) * 25 || 0,
+    investment_scenarios: results.scenarios || results.investment_scenarios || {}
   };
   
   const environmentalImpact = {
-    co2_avoided_annually: results.environmental_impact?.co2_avoided_annually ? (results.environmental_impact.co2_avoided_annually / 1000) : 0,
-    trees_equivalent: results.environmental_impact?.trees_equivalent || 0,
+    co2_avoided_annually: (results.co2Reduction || 0) / 1000, // convertendo de kg para toneladas
+    trees_equivalent: Math.round((results.co2Reduction || 0) / 22), // 22 kg CO2 por árvore/ano
     oil_saved_annually: (technicalSpecs.annual_generation || 0) * 0.00043 // barris de petróleo
   };
 
