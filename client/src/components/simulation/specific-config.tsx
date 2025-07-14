@@ -12,6 +12,8 @@ export default function SpecificConfig({ type, parameters, onChange }: SpecificC
     onChange({ [field]: value });
   };
 
+  // Debug removed for production
+
   if (!type) {
     return (
       <div className="text-center py-8">

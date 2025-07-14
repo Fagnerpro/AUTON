@@ -35,12 +35,12 @@ export default function SimulationForm() {
     status: 'draft',
   });
 
-  // Sync simulationType with formData.type
+  // Sync simulationType with formData.type - ensure they stay in sync
   useEffect(() => {
     if (formData.type && formData.type !== simulationType) {
       setSimulationType(formData.type);
     }
-  }, [formData.type, simulationType]);
+  }, [formData.type]);
 
   const simulationId = params?.id ? parseInt(params.id) : null;
 
@@ -68,8 +68,11 @@ export default function SimulationForm() {
   // Load simulation data when editing
   useEffect(() => {
     if (simulation) {
+      // Loading simulation data for editing
+      
       setFormData(simulation);
       setSimulationType(simulation.type);
+      
       // If simulation has results, show results tab by default
       if (simulation.results && Object.keys(simulation.results).length > 0) {
         setActiveTab('results');
@@ -330,7 +333,7 @@ export default function SimulationForm() {
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-900">Parâmetros Técnicos</h3>
                 <SpecificConfig
-                  type={simulationType}
+                  type={formData.type || simulationType}
                   parameters={formData.parameters || {}}
                   onChange={updateParameters}
                 />

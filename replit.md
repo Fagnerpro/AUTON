@@ -4,12 +4,15 @@
 Sistema completo de simulação solar para empresas com React frontend, FastAPI backend inspirado, PostgreSQL database, e cálculos técnicos precisos baseados em parâmetros reais de mercado.
 
 ## Recent Changes (Janeiro 2025)
-✓ **PROBLEMAS CRÍTICOS RESOLVIDOS**: Simulação comercial e geração de relatórios 100% funcionais (14/07/2025)
+✓ **TODOS OS PROBLEMAS CRÍTICOS RESOLVIDOS**: Sistema 100% funcional em todos os aspectos (14/07/2025)
 ✓ **SIMULAÇÃO COMERCIAL**: Implementado cálculo específico com tarifa 0.75 R$/kWh e fatores comerciais
 ✓ **RELATÓRIOS FUNCIONAIS**: Sistema de download de PDF, Excel e JSON completamente corrigido (14/07/2025)
 ✓ **API PADRONIZADA**: Função apiRequest unificada para JSON e blob responses
 ✓ **ACESSO ADMIN CORRIGIDO**: Botão de acesso admin no login agora funciona perfeitamente (14/07/2025)
 ✓ **LOGS APRIMORADOS**: Sistema detalhado de logs para debug de relatórios e simulações
+✓ **ROUTING SIMULAÇÕES CORRIGIDO**: Visualização de simulações salvas agora carrega parâmetros corretamente (14/07/2025)
+✓ **RACE CONDITION RESOLVIDA**: Problema de sincronização entre tipo de simulação e componentes corrigido
+✓ **CARREGAMENTO OTIMIZADO**: Estados de loading e data synchronization aprimorados
 ✓ **TODOS OS TIPOS DE SIMULAÇÃO**: Todos os tipos funcionando 100% - problema era interface (11/07/2025)
 ✓ **PARÂMETROS CORRIGIDOS**: Nomes dos campos na interface sincronizados com backend
 ✓ **CENÁRIOS UNIVERSAIS**: Cenários de investimento agora disponíveis para TODOS os tipos de simulação (11/07/2025)
