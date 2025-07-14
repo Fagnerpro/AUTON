@@ -74,10 +74,14 @@ export default function ReportsEnhanced() {
         a.click();
         
         setTimeout(() => {
-          if (document.body.contains(a)) {
-            document.body.removeChild(a);
+          try {
+            if (a.parentNode) {
+              a.parentNode.removeChild(a);
+            }
+            window.URL.revokeObjectURL(url);
+          } catch (e) {
+            // Ignore cleanup errors
           }
-          window.URL.revokeObjectURL(url);
         }, 100);
         
         toast({

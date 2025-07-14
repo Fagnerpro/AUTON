@@ -24,8 +24,7 @@ interface ResultsDisplayProps {
 }
 
 export default function ResultsDisplayEnhanced({ type, results, simulation }: ResultsDisplayProps) {
-  // Debug para verificar estrutura dos dados
-  console.log('🔍 ResultsDisplayEnhanced - dados recebidos:', { type, results, simulation });
+  // Debug removed for production
   
   const formatCurrency = (value: number, decimals: number = 2) => {
     if (!value || isNaN(value)) return 'R$ 0,00';
