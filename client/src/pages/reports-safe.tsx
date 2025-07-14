@@ -1,54 +1,96 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 import type { Simulation } from '@shared/schema';
 
 export default function ReportsSafe() {
   const [selectedSimulation, setSelectedSimulation] = useState<string>('');
   const [reportFormat, setReportFormat] = useState<string>('pdf');
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info' | null; text: string }>({ type: null, text: '' });
+  const [isComponentMounted, setIsComponentMounted] = useState(false);
+  const downloadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch user simulations
+  // Component mount tracking
+  useEffect(() => {
+    setIsComponentMounted(true);
+    console.log('ReportsSafe component mounted');
+    
+    return () => {
+      setIsComponentMounted(false);
+      if (downloadTimeoutRef.current) {
+        clearTimeout(downloadTimeoutRef.current);
+      }
+      console.log('ReportsSafe component unmounted');
+    };
+  }, []);
+
+  // Fetch user simulations with error handling
   const { data: simulations = [], isLoading, error } = useQuery<Simulation[]>({
     queryKey: ['/api/simulations'],
+    enabled: isComponentMounted,
+    retry: 2,
+    staleTime: 5 * 60 * 1000,
   });
 
   const showMessage = useCallback((type: 'success' | 'error' | 'info', text: string) => {
+    if (!isComponentMounted) return;
+    
     setMessage({ type, text });
-    const timer = setTimeout(() => setMessage({ type: null, text: '' }), 5000);
+    const timer = setTimeout(() => {
+      if (isComponentMounted) {
+        setMessage({ type: null, text: '' });
+      }
+    }, 5000);
+    
     return () => clearTimeout(timer);
-  }, []);
+  }, [isComponentMounted]);
 
-  // Safe download function without DOM manipulation during React lifecycle
+  // Safe download function with proper DOM cleanup
   const downloadFile = useCallback(async (blob: Blob, filename: string) => {
+    if (!isComponentMounted) {
+      console.warn('Download attempted on unmounted component');
+      return false;
+    }
+
     try {
-      // Use the URL API for download without direct DOM manipulation
+      console.log('Starting download:', filename);
       const url = URL.createObjectURL(blob);
       
-      // Create download using window.open - safer for React reconciliation
+      // Create download link with unique ID for tracking
+      const linkId = `download-link-${Date.now()}`;
       const link = document.createElement('a');
+      link.id = linkId;
       link.href = url;
       link.download = filename;
-      link.style.display = 'none';
+      link.style.cssText = 'position: fixed; top: -9999px; left: -9999px; opacity: 0; pointer-events: none;';
       
-      // Use a detached approach that doesn't interfere with React
+      // Safely append to body
       document.body.appendChild(link);
+      
+      // Trigger download
       link.click();
       
-      // Clean up after a short delay to avoid race conditions
-      setTimeout(() => {
-        if (link.parentNode) {
-          link.parentNode.removeChild(link);
+      // Schedule cleanup with component mount check
+      downloadTimeoutRef.current = setTimeout(() => {
+        try {
+          const elementToRemove = document.getElementById(linkId);
+          if (elementToRemove && elementToRemove.parentNode === document.body) {
+            document.body.removeChild(elementToRemove);
+            console.log('Download link cleaned up:', linkId);
+          }
+          URL.revokeObjectURL(url);
+        } catch (cleanupError) {
+          console.warn('Download cleanup error:', cleanupError);
         }
-        URL.revokeObjectURL(url);
-      }, 1000);
+      }, 2000);
       
       return true;
     } catch (error) {
       console.error('Download error:', error);
       return false;
     }
-  }, []);
+  }, [isComponentMounted]);
 
   // Generate report mutation
   const generateReportMutation = useMutation({
@@ -134,12 +176,13 @@ export default function ReportsSafe() {
   const selectedSim = simulations.find(s => s.id.toString() === selectedSimulation);
 
   return (
-    <div style={{ 
-      padding: '24px', 
-      maxWidth: '1000px', 
-      margin: '0 auto',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-    }}>
+    <ErrorBoundary>
+      <div style={{ 
+        padding: '24px', 
+        maxWidth: '1000px', 
+        margin: '0 auto',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      }}>
       {/* Message Display - Fixed positioning to avoid React reconciliation issues */}
       {message.type && (
         <div style={{
@@ -410,10 +453,11 @@ export default function ReportsSafe() {
             {simulations.map((simulation) => {
               const viability = getViabilityInfo(simulation);
               const isSelected = selectedSimulation === simulation.id.toString();
+              const simulationKey = `simulation-${simulation.id}-${simulation.updatedAt || simulation.createdAt}`;
               
               return (
                 <div
-                  key={simulation.id}
+                  key={simulationKey}
                   style={{
                     padding: '16px 20px',
                     border: isSelected ? '2px solid #3b82f6' : '1px solid #e5e7eb',
@@ -434,22 +478,25 @@ export default function ReportsSafe() {
                       {simulation.type} • {new Date(simulation.createdAt).toLocaleDateString('pt-BR')}
                     </div>
                   </div>
-                  <span style={{ 
-                    background: viability.color, 
-                    color: 'white', 
-                    padding: '4px 8px', 
-                    borderRadius: '12px', 
-                    fontSize: '12px',
-                    fontWeight: '500'
-                  }}>
-                    {viability.emoji} {viability.text}
-                  </span>
+                  {viability && (
+                    <span style={{ 
+                      background: viability.color, 
+                      color: 'white', 
+                      padding: '4px 8px', 
+                      borderRadius: '12px', 
+                      fontSize: '12px',
+                      fontWeight: '500'
+                    }}>
+                      {viability.emoji} {viability.text}
+                    </span>
+                  )}
                 </div>
               );
             })}
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }
