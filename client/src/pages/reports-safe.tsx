@@ -8,16 +8,17 @@ export default function ReportsSafe() {
   const [selectedSimulation, setSelectedSimulation] = useState<string>('');
   const [reportFormat, setReportFormat] = useState<string>('pdf');
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info' | null; text: string }>({ type: null, text: '' });
-  const [isComponentMounted, setIsComponentMounted] = useState(false);
+  const isMounted = useRef(true);
   const downloadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastDownloadTime = useRef<number>(0);
 
   // Component mount tracking
   useEffect(() => {
-    setIsComponentMounted(true);
+    isMounted.current = true;
     console.log('ReportsSafe component mounted');
     
     return () => {
-      setIsComponentMounted(false);
+      isMounted.current = false;
       if (downloadTimeoutRef.current) {
         clearTimeout(downloadTimeoutRef.current);
         console.log('Download timeout cleared on unmount');
@@ -29,42 +30,50 @@ export default function ReportsSafe() {
   // Fetch user simulations with error handling
   const { data: simulations = [], isLoading, error } = useQuery<Simulation[]>({
     queryKey: ['/api/simulations'],
-    enabled: isComponentMounted,
+    enabled: isMounted.current,
     retry: 2,
     staleTime: 5 * 60 * 1000,
   });
 
   const showMessage = useCallback((type: 'success' | 'error' | 'info', text: string) => {
-    if (!isComponentMounted) return;
+    if (!isMounted.current) return;
     setMessage({ type, text });
-  }, [isComponentMounted]);
+  }, []);
 
   // Handle message timeout with proper cleanup
   useEffect(() => {
     if (message.type) {
       const timer = setTimeout(() => {
-        if (isComponentMounted) {
+        if (isMounted.current) {
           setMessage({ type: null, text: '' });
         }
       }, 5000);
       
       return () => clearTimeout(timer);
     }
-  }, [message.type, isComponentMounted]);
+  }, [message.type]);
 
-  // Safe download function with proper DOM cleanup
+  // Safe download function with proper DOM cleanup and debouncing
   const downloadFile = useCallback(async (blob: Blob, filename: string) => {
-    if (!isComponentMounted) {
+    if (!isMounted.current) {
       console.warn('Download attempted on unmounted component');
       return false;
     }
+
+    // Debounce rapid consecutive downloads
+    const now = Date.now();
+    if (now - lastDownloadTime.current < 1000) {
+      console.warn('Download debounced - too rapid');
+      return false;
+    }
+    lastDownloadTime.current = now;
 
     try {
       console.log('Starting download:', filename);
       const url = URL.createObjectURL(blob);
       
       // Create download link with unique ID for tracking
-      const linkId = `download-link-${Date.now()}`;
+      const linkId = `download-link-${crypto.randomUUID()}`;
       const link = document.createElement('a');
       link.id = linkId;
       link.href = url;
@@ -80,11 +89,11 @@ export default function ReportsSafe() {
       // Schedule cleanup with component mount check
       downloadTimeoutRef.current = setTimeout(() => {
         try {
-          if (!isComponentMounted) return;
+          if (!isMounted.current) return;
           
           const elementToRemove = document.getElementById(linkId);
-          if (elementToRemove && document.body.contains(elementToRemove)) {
-            document.body.removeChild(elementToRemove);
+          if (elementToRemove && elementToRemove.parentElement) {
+            elementToRemove.parentElement.removeChild(elementToRemove);
             console.log('Download link cleaned up:', linkId);
           }
           URL.revokeObjectURL(url);
@@ -98,7 +107,7 @@ export default function ReportsSafe() {
       console.error('Download error:', error);
       return false;
     }
-  }, [isComponentMounted]);
+  }, []);
 
   // Generate report mutation
   const generateReportMutation = useMutation({
@@ -185,7 +194,7 @@ export default function ReportsSafe() {
 
   return (
     <ErrorBoundary>
-      <div style={{ 
+      <div key="reports-safe-container" style={{ 
         padding: '24px', 
         maxWidth: '1000px', 
         margin: '0 auto',
@@ -193,7 +202,7 @@ export default function ReportsSafe() {
       }}>
       {/* Message Display - Fixed positioning to avoid React reconciliation issues */}
       {message.type && (
-        <div key={`msg-${message.type}`} style={{
+        <div key={`msg-${message.type}-${crypto.randomUUID()}`} style={{
           position: 'fixed',
           top: '20px',
           right: '20px',

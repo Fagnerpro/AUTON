@@ -1,0 +1,67 @@
+orreções adicionais que você precisa aplicar agora
+✔ 1. Use crypto.randomUUID() no key das mensagens
+tsx
+Copiar
+Editar
+{message.type && (
+  <div key={`msg-${message.type}-${crypto.randomUUID()}`} style={{ ... }}>
+    {message.type === 'success' ? '✅' : message.type === 'error' ? '❌' : 'ℹ️'} {message.text}
+  </div>
+)}
+Isso garante que toda nova mensagem seja renderizada com uma chave única, evitando o conflito com a DOM real.
+
+✔ 2. Garanta que você não está usando Date.now() em key ou id se múltiplos forem criados rapidamente
+O problema pode estar vindo do trecho de downloadFile():
+
+ts
+Copiar
+Editar
+const linkId = `download-link-${Date.now()}`;
+Substitua por:
+
+ts
+Copiar
+Editar
+const linkId = `download-link-${crypto.randomUUID()}`;
+E remova com segurança:
+
+ts
+Copiar
+Editar
+const el = document.getElementById(linkId);
+if (el && el.parentElement) {
+  el.parentElement.removeChild(el);
+}
+✔ 3. Evite múltiplas atualizações simultâneas de estado
+Certifique-se de que o showMessage() não está sendo chamado de forma consecutiva sem controle. Se necessário, debouncing pode ser aplicado.
+
+✔ 4. Verifique se o erro ocorre ao trocar de rota ou desmontar rapidamente
+Se o usuário clica no botão de gerar e logo depois navega para outra página, o componente pode tentar inserir ou remover elementos que já não existem no DOM.
+
+Nesse caso, o isComponentMounted deve ser convertido para useRef, como sugerido anteriormente:
+
+tsx
+Copiar
+Editar
+const isMounted = useRef(true);
+
+useEffect(() => {
+  isMounted.current = true;
+  return () => {
+    isMounted.current = false;
+  };
+}, []);
+E em vez de if (!isComponentMounted), use:
+
+ts
+Copiar
+Editar
+if (!isMounted.current) return;
+✅ Diagnóstico adicional (se o erro persistir)
+Se mesmo com as correções o erro continuar:
+
+Envolva o <div> pai de todo o return com uma key dinâmica.
+
+Use o DevTools para verificar se há múltiplas instâncias do mesmo elemento no DOM.
+
+Adicione logs dentro do ErrorBoundary com console.error(error.stack) para confirmar se o erro vem do download, da mensagem, ou de alguma lista.
