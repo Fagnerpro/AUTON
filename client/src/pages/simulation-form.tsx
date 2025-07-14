@@ -56,6 +56,8 @@ export default function SimulationForm() {
     enabled: !!simulationId && !!user,
     retry: false,
     staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   });
 
   // Redirect to upgrade if no access and not editing existing (except demo)
@@ -68,8 +70,6 @@ export default function SimulationForm() {
   // Load simulation data when editing
   useEffect(() => {
     if (simulation) {
-      // Loading simulation data for editing
-      
       setFormData(simulation);
       setSimulationType(simulation.type);
       

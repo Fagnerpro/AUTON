@@ -732,15 +732,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   private calculateCommonAreas(params: any): any {
-    const elevatorPower = (params.elevators || 0) * 4; // 4kW per elevator
-    const poolPower = (params.pools || 0) * 2; // 2kW per pool
-    const lightingPower = (params.lightingLoad || 0);
-    const securityPower = (params.securityLoad || 0);
+    // Use direct monthly consumption from frontend or calculate from equipment
+    let monthlyConsumption = params.monthlyConsumption || 0;
+    
+    // If monthlyConsumption is not provided, calculate from equipment
+    if (!monthlyConsumption && (params.elevators || params.pools || params.lightingLoad || params.securityLoad)) {
+      const elevatorPower = (params.elevators || 0) * 4; // 4kW per elevator
+      const poolPower = (params.pools || 0) * 2; // 2kW per pool
+      const lightingPower = (params.lightingLoad || 0);
+      const securityPower = (params.securityLoad || 0);
 
-    const totalLoad = elevatorPower + poolPower + lightingPower + securityPower;
-    const dailyHours = params.dailyHours || 12;
-    const monthlyConsumption = totalLoad * dailyHours * 30 / 1000; // kWh
+      const totalLoad = elevatorPower + poolPower + lightingPower + securityPower;
+      const dailyHours = params.dailyHours || 12;
+      monthlyConsumption = totalLoad * dailyHours * 30 / 1000; // kWh
+    }
 
+    // Use base residential calculation
     return this.calculateResidential({ 
       ...params, 
       monthlyConsumption 
