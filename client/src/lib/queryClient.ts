@@ -45,6 +45,12 @@ export async function apiRequest(
     return res; // Return response object for blob handling
   }
   
+  // For reports endpoints, check if it's binary data
+  const contentType = res.headers.get('content-type') || '';
+  if (contentType.includes('application/pdf') || contentType.includes('text/csv')) {
+    return res; // Return response for download handling
+  }
+  
   return await res.json();
 }
 

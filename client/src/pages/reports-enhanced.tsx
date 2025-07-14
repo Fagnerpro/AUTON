@@ -56,7 +56,7 @@ export default function ReportsEnhanced() {
       includeScenarios?: boolean;
       sections?: string[];
     }) => {
-      return apiRequest('POST', `/api/reports/generate`, data);
+      return apiRequest('POST', `/api/reports/generate`, data, { responseType: 'blob' });
     },
     onSuccess: async (response) => {
       try {
