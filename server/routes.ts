@@ -364,9 +364,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Demo route - creates a temporary demo user
+  // Demo route - creates a temporary demo user with IP limitation
   app.post("/api/auth/demo", async (req, res) => {
     try {
+      // Obter IP do cliente
+      const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || 
+                       req.headers['x-real-ip'] as string ||
+                       req.socket.remoteAddress || 
+                       req.ip || 
+                       'unknown';
+      const userAgent = req.headers['user-agent'];
+
+      // Verificar limite de demo por IP
+      const demoLimit = await storage.checkDemoSimulationLimit(clientIp, userAgent);
+      if (!demoLimit.canCreate && demoLimit.count >= 2) {
+        return res.status(429).json({ 
+          message: "Limite de acesso demo atingido. Apenas 2 acessos demo por IP a cada 24 horas. Crie uma conta Premium para acesso ilimitado.",
+          canCreate: false,
+          count: demoLimit.count
+        });
+      }
+
       // Create temporary demo user
       const demoEmail = `demo_${Date.now()}@auton.demo`;
       const demoUser = await storage.createUser({
@@ -387,6 +405,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         JWT_SECRET,
         { expiresIn: "24h" } // Demo token expires in 24 hours
       );
+
+      // Registrar acesso demo
+      await storage.recordDemoSimulation(clientIp, userAgent);
 
       const { hashedPassword, ...userWithoutPassword } = demoUser;
 

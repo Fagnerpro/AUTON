@@ -52,11 +52,11 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
 
   // Estrutura correta dos dados vindos do backend - baseado na API real
   const technicalSpecs = {
-    installed_power: (results.systemPower || 0) / 1000, // Convertendo W para kW
+    installed_power: Math.round(((results.systemPower || 0) / 1000) * 10) / 10, // Convertendo W para kW com arredondamento
     panel_count: results.num_panels || results.panelCount || 0,
-    monthly_generation: results.monthlyGeneration || 0,
-    annual_generation: results.annualGeneration || 0,
-    used_area: results.usedArea || 0,
+    monthly_generation: Math.round((results.monthlyGeneration || 0) * 10) / 10,
+    annual_generation: Math.round((results.annualGeneration || 0) * 10) / 10,
+    used_area: Math.round((results.usedArea || 0) * 10) / 10,
     coverage_percentage: Math.round((results.coveragePercentage || 100) * 10) / 10,
     irradiation: results.irradiation || 5.8,
     system_efficiency: 0.78
