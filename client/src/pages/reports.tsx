@@ -31,28 +31,35 @@ export default function Reports() {
       try {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
+        
+        // Create temporary download link with safe positioning
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
         
         // Get proper file extension
         const extension = reportFormat === 'excel' ? 'csv' : reportFormat;
-        a.download = `relatorio-simulacao-${selectedSimulation}.${extension}`;
-        a.style.display = 'none';
+        downloadLink.download = `relatorio-simulacao-${selectedSimulation}.${extension}`;
+        downloadLink.style.position = 'fixed';
+        downloadLink.style.top = '-1000px';
+        downloadLink.style.left = '-1000px';
+        downloadLink.style.opacity = '0';
+        downloadLink.style.pointerEvents = 'none';
         
-        document.body.appendChild(a);
-        a.click();
+        // Safely append, click, and remove
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
         
-        // Clean up safely
-        setTimeout(() => {
+        // Clean up immediately after click
+        requestAnimationFrame(() => {
           try {
-            if (a.parentNode) {
-              a.parentNode.removeChild(a);
+            if (downloadLink && downloadLink.parentNode === document.body) {
+              document.body.removeChild(downloadLink);
             }
             window.URL.revokeObjectURL(url);
-          } catch (e) {
-            // Ignore cleanup errors
+          } catch (cleanupError) {
+            console.warn('Download cleanup warning:', cleanupError);
           }
-        }, 100);
+        });
         
         toast({
           title: "Relatório gerado",

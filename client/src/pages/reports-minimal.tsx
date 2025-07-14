@@ -26,24 +26,32 @@ export default function ReportsMinimal() {
       try {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `relatorio-completo-${selectedSimulation}.${reportFormat}`;
-        a.style.display = 'none';
         
-        document.body.appendChild(a);
-        a.click();
+        // Create temporary download link with safe positioning
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.download = `relatorio-completo-${selectedSimulation}.${reportFormat}`;
+        downloadLink.style.position = 'fixed';
+        downloadLink.style.top = '-1000px';
+        downloadLink.style.left = '-1000px';
+        downloadLink.style.opacity = '0';
+        downloadLink.style.pointerEvents = 'none';
         
-        setTimeout(() => {
+        // Safely append, click, and remove
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        
+        // Clean up immediately after click
+        requestAnimationFrame(() => {
           try {
-            if (a.parentNode) {
-              a.parentNode.removeChild(a);
+            if (downloadLink && downloadLink.parentNode === document.body) {
+              document.body.removeChild(downloadLink);
             }
             window.URL.revokeObjectURL(url);
-          } catch (e) {
-            // Ignore cleanup errors
+          } catch (cleanupError) {
+            console.warn('Download cleanup warning:', cleanupError);
           }
-        }, 100);
+        });
         
         toast({
           title: "✅ Relatório gerado com sucesso!",
