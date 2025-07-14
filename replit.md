@@ -52,6 +52,7 @@ Sistema completo de simulação solar para empresas com React frontend, FastAPI 
 ✓ **PÁGINA RELATÓRIOS SIMPLIFICADA**: Substituída por versão estável sem componentes Radix UI problemáticos (14/07/2025)
 ✓ **SOLUÇÃO DEFINITIVA DOM**: Eliminados erros insertBefore/removeChild com interface HTML nativa (14/07/2025)
 ✓ **VERSÃO ULTRA-MINIMALISTA**: Página relatórios reescrita com HTML/CSS puro, zero dependências problemáticas (14/07/2025)
+✓ **VERSÃO PURA ISOLADA**: Eliminado useToast e todos os componentes externos - interface 100% autônoma (14/07/2025)
 ✓ **DEMO LIMITADO**: Sistema de controle por IP implementado - máximo 2 acessos demo por IP/24h (14/07/2025)
 ✓ **ADMIN SYSTEM**: Modo admin premium para testes implementado com simulações ilimitadas (14/07/2025)
 ✓ **ARREDONDAMENTO FINAL**: Tripla correção backend+frontend+estrutura garante máximo 1 casa decimal (14/07/2025)
