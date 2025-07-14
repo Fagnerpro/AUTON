@@ -61,6 +61,8 @@ Sistema completo de simulação solar para empresas com React frontend, FastAPI 
 ✓ **DEMO LIMITADO**: Sistema de controle por IP implementado - máximo 2 acessos demo por IP/24h (14/07/2025)
 ✓ **ADMIN SYSTEM**: Modo admin premium para testes implementado com simulações ilimitadas (14/07/2025)
 ✓ **ARREDONDAMENTO FINAL**: Tripla correção backend+frontend+estrutura garante máximo 1 casa decimal (14/07/2025)
+✓ **RELATÓRIOS ULTRA-MINIMALISTAS**: Nova versão ReportsMinimal sem ErrorBoundary nem dependências externas (14/07/2025)
+✓ **SOLUÇÃO RADICAL DOM**: Eliminados todos os componentes problemáticos - interface HTML pura para máxima estabilidade (14/07/2025)
 ✓ **ACESSO RESTRITO**: Sistema implementado para permitir login apenas para usuários com assinatura
 ✓ **IA PREMIUM**: Assistente IA disponível exclusivamente para assinantes Premium
 ✓ **CONTROLE DE ACESSO**: Usuários com plano gratuito não podem fazer login - apenas modo demo
