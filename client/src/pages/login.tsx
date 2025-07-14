@@ -30,10 +30,7 @@ export default function Login() {
 
   const demoMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest("/api/auth/demo", {
-        method: "POST",
-        body: JSON.stringify({}),
-      });
+      return apiRequest("POST", "/api/auth/demo", {});
     },
     onSuccess: (data) => {
       localStorage.setItem("token", data.token);
@@ -54,10 +51,7 @@ export default function Login() {
 
   const adminMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest("/api/auth/admin", {
-        method: "POST",
-        body: JSON.stringify({}),
-      });
+      return apiRequest("POST", "/api/auth/admin", {});
     },
     onSuccess: (data) => {
       localStorage.setItem("token", data.token);
