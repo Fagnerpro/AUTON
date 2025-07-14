@@ -68,13 +68,13 @@ export default function SimulationForm() {
   // Load simulation data when editing
   useEffect(() => {
     if (simulation) {
-      // Loading simulation data for editing
-      
       setFormData(simulation);
       setSimulationType(simulation.type);
       
-      // If simulation has results, show results tab by default
-      if (simulation.results && Object.keys(simulation.results).length > 0) {
+      // If simulation has results and is calculated/completed, show results tab by default
+      if (simulation.results && 
+          Object.keys(simulation.results).length > 0 && 
+          (simulation.status === 'calculated' || simulation.status === 'completed')) {
         setActiveTab('results');
       } else {
         setActiveTab('form');
@@ -258,11 +258,11 @@ export default function SimulationForm() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
-            {simulationId ? (formData.results ? 'Visualizar Simulação' : 'Editar Simulação') : 'Nova Simulação'}
+            {simulationId ? (formData.results ? 'Simulação Calculada' : 'Editar Simulação') : 'Nova Simulação'}
           </h1>
           <p className="text-gray-600 mt-2">
             {simulationId && formData.results 
-              ? 'Resultados da simulação calculada. Use a aba Configuração para editar parâmetros.'
+              ? 'Visualize os resultados calculados ou edite os parâmetros na aba Configuração.'
               : 'Configure os parâmetros para sua simulação solar'
             }
           </p>
@@ -299,7 +299,9 @@ export default function SimulationForm() {
       <Card>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="form">Configuração</TabsTrigger>
+            <TabsTrigger value="form">
+              {formData.results ? 'Editar Configuração' : 'Configuração'}
+            </TabsTrigger>
             <TabsTrigger value="results" disabled={!formData.results}>
               Resultados
             </TabsTrigger>
@@ -368,8 +370,17 @@ export default function SimulationForm() {
               )}
               
               <div className="flex justify-end space-x-3 pt-6 border-t">
-                <Button variant="outline">
+                <Button 
+                  variant="outline"
+                  onClick={() => setLocation('/reports')}
+                >
                   Baixar Relatório
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => setActiveTab('form')}
+                >
+                  Editar Parâmetros
                 </Button>
                 <Button 
                   onClick={handleSave}

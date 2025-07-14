@@ -13,6 +13,9 @@ Sistema completo de simulação solar para empresas com React frontend, FastAPI 
 ✓ **ROUTING SIMULAÇÕES CORRIGIDO**: Visualização de simulações salvas agora carrega parâmetros corretamente (14/07/2025)
 ✓ **RACE CONDITION RESOLVIDA**: Problema de sincronização entre tipo de simulação e componentes corrigido
 ✓ **CARREGAMENTO OTIMIZADO**: Estados de loading e data synchronization aprimorados
+✓ **UX MELHORADA**: Títulos dinâmicos e descrições contextuais baseadas no estado da simulação
+✓ **NAVEGAÇÃO INTUITIVA**: Simulações com resultados carregam diretamente na aba de resultados
+✓ **INTERFACE CLARA**: Botões contextuais para edição de parâmetros e download de relatórios
 ✓ **TODOS OS TIPOS DE SIMULAÇÃO**: Todos os tipos funcionando 100% - problema era interface (11/07/2025)
 ✓ **PARÂMETROS CORRIGIDOS**: Nomes dos campos na interface sincronizados com backend
 ✓ **CENÁRIOS UNIVERSAIS**: Cenários de investimento agora disponíveis para TODOS os tipos de simulação (11/07/2025)
