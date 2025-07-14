@@ -518,7 +518,7 @@ export class DatabaseStorage implements IStorage {
       roi: Math.round((annualSavings / totalInvestment) * 100 * 10) / 10,
       co2Reduction: monthlyGeneration * 12 * 0.084, // kg CO2/year
       scenarios,
-      coveragePercentage: Math.min(100, (monthlyGeneration / monthlyConsumption) * 100),
+      coveragePercentage: Math.round(Math.min(100, (monthlyGeneration / monthlyConsumption) * 100) * 10) / 10,
       irradiation,
       regionalFactor
     };
@@ -604,7 +604,7 @@ export class DatabaseStorage implements IStorage {
       paybackYears,
       roi: Math.round((annualSavings / totalInvestment) * 100 * 10) / 10,
       co2Reduction: annualGeneration * 0.084, // kg CO2/year evitado
-      coveragePercentage: Math.min(100, (annualGeneration / annualConsumption) * 100),
+      coveragePercentage: Math.round(Math.min(100, (annualGeneration / annualConsumption) * 100) * 10) / 10,
       irradiation,
       regionalFactor,
       scenarios,

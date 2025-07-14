@@ -51,9 +51,22 @@ export default function SimulationForm() {
   });
 
   // Fetch existing simulation if editing
-  const { data: simulation, isLoading } = useQuery({
+  const { data: simulation, isLoading, error } = useQuery({
     queryKey: ['/api/simulations', simulationId],
     enabled: !!simulationId,
+    queryFn: async () => {
+      if (!simulationId) return null;
+      const response = await fetch(`/api/simulations/${simulationId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Simulação não encontrada');
+      }
+      return response.json();
+    }
   });
 
   // Redirect to upgrade if no access and not editing existing (except demo)
@@ -237,6 +250,19 @@ export default function SimulationForm() {
         <div className="text-center">
           <div className="animate-spin h-8 w-8 border-2 border-solar-orange border-t-transparent rounded-full mx-auto mb-4"></div>
           <p className="text-gray-600">Carregando simulação...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && simulationId) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Erro ao carregar simulação</p>
+          <Button onClick={() => setLocation('/dashboard')}>
+            Voltar ao Dashboard
+          </Button>
         </div>
       </div>
     );
