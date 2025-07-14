@@ -1,0 +1,72 @@
+Uncaught NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+    at removeChild (chunk-WERSD76P.js?v=9445e512:8456:26)
+    at commitDeletionEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17510:21)
+    at commitDeletionEffects (chunk-WERSD76P.js?v=9445e512:17477:13)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17674:17)
+    at commitMutationEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17737:15)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17685:15)
+    at commitMutationEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17737:15)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17685:15)
+    at commitMutationEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17737:15)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17685:15)Understand this error
+chunk-WERSD76P.js?v=9445e512:16670 Uncaught NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.
+    at insertBefore (chunk-WERSD76P.js?v=9445e512:8446:26)
+    at insertOrAppendPlacementNode (chunk-WERSD76P.js?v=9445e512:17432:15)
+    at commitPlacement (chunk-WERSD76P.js?v=9445e512:17389:15)
+    at commitReconciliationEffects (chunk-WERSD76P.js?v=9445e512:17906:15)
+    at commitMutationEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17738:15)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17685:15)
+    at commitMutationEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17737:15)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17685:15)
+    at commitMutationEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17737:15)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17685:15)Understand this error
+chunk-WERSD76P.js?v=9445e512:14032 The above error occurred in the <Text> component:
+
+    at button
+    at div
+    at div
+    at ReportsMinimal (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/src/pages/reports-minimal.tsx:23:55)
+    at Route (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9445e512:323:16)
+    at Switch (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9445e512:379:17)
+    at main
+    at div
+    at AuthenticatedLayout (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/src/App.tsx?v=4Wi4ah37isA1pVwa1aeV6:34:32)
+    at Router (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/src/App.tsx?v=4Wi4ah37isA1pVwa1aeV6:60:42)
+    at AuthProvider (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/src/hooks/use-auth.tsx:22:32)
+    at QueryClientProvider (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=9445e512:2805:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+logCapturedError @ chunk-WERSD76P.js?v=9445e512:14032Understand this error
+chunk-WERSD76P.js?v=9445e512:14032 The above error occurred in the <span> component:
+
+    at span
+    at button
+    at div
+    at div
+    at ReportsMinimal (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/src/pages/reports-minimal.tsx:23:55)
+    at Route (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9445e512:323:16)
+    at Switch (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9445e512:379:17)
+    at main
+    at div
+    at AuthenticatedLayout (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/src/App.tsx?v=4Wi4ah37isA1pVwa1aeV6:34:32)
+    at Router (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/src/App.tsx?v=4Wi4ah37isA1pVwa1aeV6:60:42)
+    at AuthProvider (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/src/hooks/use-auth.tsx:22:32)
+    at QueryClientProvider (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=9445e512:2805:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+logCapturedError @ chunk-WERSD76P.js?v=9445e512:14032Understand this error
+chunk-WERSD76P.js?v=9445e512:9129 Uncaught NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+    at removeChild (chunk-WERSD76P.js?v=9445e512:8456:26)
+    at commitDeletionEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17510:21)
+    at commitDeletionEffects (chunk-WERSD76P.js?v=9445e512:17477:13)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17674:17)
+    at commitMutationEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17737:15)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17685:15)
+    at commitMutationEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17737:15)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17685:15)
+    at commitMutationEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17737:15)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17685:15)
