@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -147,7 +148,8 @@ export default function ReportsEnhanced() {
   };
 
   return (
-    <div className="space-y-6">
+    <ErrorBoundary fallback={<div className="p-6 text-center"><p>Erro ao carregar relatórios. Recarregue a página.</p></div>}>
+      <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">📊 Relatórios Avançados</h1>
@@ -184,27 +186,28 @@ export default function ReportsEnhanced() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Select value={selectedSimulation} onValueChange={setSelectedSimulation}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma simulação..." />
-                  </SelectTrigger>
-                  <SelectContent>
+                <ErrorBoundary>
+                  <NativeSelect 
+                    value={selectedSimulation} 
+                    onChange={(e) => setSelectedSimulation(e.target.value)}
+                    placeholder="Selecione uma simulação..."
+                  >
                     {simulations.length > 0 ? (
                       simulations.map((simulation) => (
-                        <SelectItem 
+                        <NativeSelectOption 
                           key={simulation.id} 
                           value={simulation.id.toString()}
                         >
                           {simulation.name || `Simulação ${simulation.id}`}
-                        </SelectItem>
+                        </NativeSelectOption>
                       ))
                     ) : (
-                      <SelectItem value="empty" disabled>
+                      <NativeSelectOption value="empty" disabled>
                         Nenhuma simulação encontrada
-                      </SelectItem>
+                      </NativeSelectOption>
                     )}
-                  </SelectContent>
-                </Select>
+                  </NativeSelect>
+                </ErrorBoundary>
 
                 {selectedSimulation && (
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg">
@@ -405,6 +408,7 @@ export default function ReportsEnhanced() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }
