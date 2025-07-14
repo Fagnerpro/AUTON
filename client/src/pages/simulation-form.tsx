@@ -53,20 +53,9 @@ export default function SimulationForm() {
   // Fetch existing simulation if editing
   const { data: simulation, isLoading, error } = useQuery({
     queryKey: ['/api/simulations', simulationId],
-    enabled: !!simulationId,
-    queryFn: async () => {
-      if (!simulationId) return null;
-      const response = await fetch(`/api/simulations/${simulationId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      if (!response.ok) {
-        throw new Error('Simulação não encontrada');
-      }
-      return response.json();
-    }
+    enabled: !!simulationId && !!user,
+    retry: false,
+    staleTime: 0,
   });
 
   // Redirect to upgrade if no access and not editing existing (except demo)
@@ -259,7 +248,12 @@ export default function SimulationForm() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <p className="text-red-600 mb-4">Erro ao carregar simulação</p>
+          <p className="text-red-600 mb-4">
+            {error.message.includes('403') || error.message.includes('401') 
+              ? 'Acesso negado. Faça login novamente.' 
+              : 'Simulação não encontrada'
+            }
+          </p>
           <Button onClick={() => setLocation('/dashboard')}>
             Voltar ao Dashboard
           </Button>
