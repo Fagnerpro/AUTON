@@ -68,8 +68,11 @@ export default function SimulationForm() {
     if (simulation) {
       setFormData(simulation);
       setSimulationType(simulation.type);
-      if (simulation.results) {
+      // If simulation has results, show results tab by default
+      if (simulation.results && Object.keys(simulation.results).length > 0) {
         setActiveTab('results');
+      } else {
+        setActiveTab('form');
       }
     }
   }, [simulation]);
@@ -244,10 +247,13 @@ export default function SimulationForm() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
-            {simulationId ? 'Editar Simulação' : 'Nova Simulação'}
+            {simulationId ? (formData.results ? 'Visualizar Simulação' : 'Editar Simulação') : 'Nova Simulação'}
           </h1>
           <p className="text-gray-600 mt-2">
-            Configure os parâmetros para sua simulação solar
+            {simulationId && formData.results 
+              ? 'Resultados da simulação calculada. Use a aba Configuração para editar parâmetros.'
+              : 'Configure os parâmetros para sua simulação solar'
+            }
           </p>
         </div>
         <Button 

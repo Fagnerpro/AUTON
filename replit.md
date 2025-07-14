@@ -22,6 +22,8 @@ Sistema completo de simulação solar para empresas com React frontend, FastAPI 
 ✓ **DADOS EV COMPLETOS**: Pontos de recarga, consumo diário/anual, capacidade bateria incluídos
 ✓ **REPORTS FUNCIONAIS**: PDF, Excel e JSON gerando dados reais EV sem falhas
 ✓ **UI REPORTS MELHORADA**: Estados de erro, loading e vazio implementados com feedback claro
+✓ **ROUTING CORRIGIDO**: Simulações salvas agora carregam diretamente na aba de resultados (14/07/2025)
+✓ **UX MELHORADA**: Títulos dinâmicos e descrições contextuais baseadas no estado da simulação
 ✓ **ACESSO RESTRITO**: Sistema implementado para permitir login apenas para usuários com assinatura
 ✓ **IA PREMIUM**: Assistente IA disponível exclusivamente para assinantes Premium
 ✓ **CONTROLE DE ACESSO**: Usuários com plano gratuito não podem fazer login - apenas modo demo
