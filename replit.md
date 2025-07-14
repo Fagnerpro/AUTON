@@ -26,6 +26,8 @@ Sistema completo de simulação solar para empresas com React frontend, FastAPI 
 ✓ **UX MELHORADA**: Títulos dinâmicos e descrições contextuais baseadas no estado da simulação
 ✓ **ARREDONDAMENTO UNIVERSAL**: Todos os percentuais limitados a 1 casa decimal (14/07/2025)
 ✓ **QUERY APRIMORADA**: Sistema de carregamento de simulações com tratamento de erro robusto
+✓ **FRONTEND CORRIGIDO**: formatNumber() com arredondamento forçado, mapeamento de dados corrigido
+✓ **DASHBOARD ATUALIZADO**: Correção do mapeamento systemPower/annualSavings no componente
 ✓ **ACESSO RESTRITO**: Sistema implementado para permitir login apenas para usuários com assinatura
 ✓ **IA PREMIUM**: Assistente IA disponível exclusivamente para assinantes Premium
 ✓ **CONTROLE DE ACESSO**: Usuários com plano gratuito não podem fazer login - apenas modo demo

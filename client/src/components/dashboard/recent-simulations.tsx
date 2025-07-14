@@ -125,8 +125,8 @@ export default function RecentSimulations() {
           <div className="space-y-4">
             {recentSimulations.map((simulation: Simulation) => {
               const results = simulation.results as any;
-              const savings = results?.annual_savings || 0;
-              const power = results?.total_power || 0;
+              const savings = results?.annualSavings || results?.annual_savings || 0;
+              const power = (results?.systemPower || results?.total_power || 0) / 1000; // Converter W para kW
               
               return (
                 <div key={simulation.id} className="flex flex-col md:flex-row md:items-center md:justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors space-y-3 md:space-y-0">

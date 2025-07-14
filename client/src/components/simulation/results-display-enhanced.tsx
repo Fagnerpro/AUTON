@@ -41,7 +41,10 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
   const formatNumber = (value: number, decimals = 1) => {
     if (!value || isNaN(value)) return '0';
     
-    return value.toLocaleString('pt-BR', { 
+    // Arredondamento forçado antes da formatação
+    const rounded = Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals);
+    
+    return rounded.toLocaleString('pt-BR', { 
       minimumFractionDigits: decimals, 
       maximumFractionDigits: decimals 
     });
@@ -54,7 +57,7 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
     monthly_generation: results.monthlyGeneration || 0,
     annual_generation: results.annualGeneration || 0,
     used_area: results.usedArea || 0,
-    coverage_percentage: results.coveragePercentage || 100,
+    coverage_percentage: Math.round((results.coveragePercentage || 100) * 10) / 10,
     irradiation: results.irradiation || 5.8,
     system_efficiency: 0.78
   };
@@ -63,8 +66,8 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
     total_investment: results.totalInvestment || 0,
     monthly_savings: (results.annualSavings || 0) / 12,
     annual_savings: results.annualSavings || 0,
-    payback_years: results.paybackYears || 0,
-    roi_25_years: results.roi_percentage || 0,
+    payback_years: Math.round((results.paybackYears || 0) * 10) / 10,
+    roi_25_years: Math.round((results.roi_percentage || results.roi || 0) * 10) / 10,
     net_profit_25_years: ((results.annualSavings || 0) * 25 - (results.totalInvestment || 0)),
     total_savings_25_years: (results.annualSavings || 0) * 25,
     investment_scenarios: results.scenarios || {}
