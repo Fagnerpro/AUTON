@@ -43,7 +43,7 @@ export default function SimulationForm() {
   }, [formData.type]);
 
   const simulationId = params?.id ? parseInt(params.id) : null;
-
+  
   // Check plan access
   const { data: planAccess } = useQuery({
     queryKey: ['/api/users/plan-access'],
@@ -68,13 +68,13 @@ export default function SimulationForm() {
   // Load simulation data when editing
   useEffect(() => {
     if (simulation) {
+      // Loading simulation data for editing
+      
       setFormData(simulation);
       setSimulationType(simulation.type);
       
-      // If simulation has results and is calculated/completed, show results tab by default
-      if (simulation.results && 
-          Object.keys(simulation.results).length > 0 && 
-          (simulation.status === 'calculated' || simulation.status === 'completed')) {
+      // If simulation has results, show results tab by default
+      if (simulation.results && Object.keys(simulation.results).length > 0) {
         setActiveTab('results');
       } else {
         setActiveTab('form');

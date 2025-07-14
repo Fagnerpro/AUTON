@@ -573,6 +573,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const simulation = await storage.getSimulation(id);
       
+      // Debug removed for production
+      
       if (!simulation) {
         return res.status(404).json({ message: "Simulação não encontrada" });
       }
@@ -585,6 +587,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(simulation);
     } catch (error) {
+      console.error('Error fetching simulation:', error);
       res.status(500).json({ message: "Erro ao buscar simulação" });
     }
   });

@@ -40,6 +40,7 @@ Sistema completo de simulação solar para empresas com React frontend, FastAPI 
 ✓ **QUERY APRIMORADA**: Sistema de carregamento de simulações com tratamento de erro robusto
 ✓ **FRONTEND CORRIGIDO**: formatNumber() com arredondamento forçado, mapeamento de dados corrigido
 ✓ **DASHBOARD ATUALIZADO**: Correção do mapeamento systemPower/annualSavings no componente
+✓ **CONDIÇÃO SIMPLIFICADA**: Removida verificação de status específico para exibição de resultados (14/07/2025)
 ✓ **DEMO LIMITADO**: Sistema de controle por IP implementado - máximo 2 acessos demo por IP/24h (14/07/2025)
 ✓ **ADMIN SYSTEM**: Modo admin premium para testes implementado com simulações ilimitadas (14/07/2025)
 ✓ **ARREDONDAMENTO FINAL**: Tripla correção backend+frontend+estrutura garante máximo 1 casa decimal (14/07/2025)
