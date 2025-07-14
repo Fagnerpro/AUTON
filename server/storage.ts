@@ -514,8 +514,8 @@ export class DatabaseStorage implements IStorage {
       annualGeneration: monthlyGeneration * 12,
       totalInvestment,
       annualSavings,
-      paybackYears,
-      roi: (annualSavings / totalInvestment) * 100,
+      paybackYears: Math.round(paybackYears * 10) / 10, // Arredondado para 1 casa decimal
+      roi: Math.round((annualSavings / totalInvestment) * 100 * 10) / 10,
       co2Reduction: monthlyGeneration * 12 * 0.084, // kg CO2/year
       scenarios,
       coveragePercentage: Math.min(100, (monthlyGeneration / monthlyConsumption) * 100),
@@ -536,6 +536,7 @@ export class DatabaseStorage implements IStorage {
     const chargesPerDay = parseFloat(params.charges_per_day) || 1;
     const state = params.state || 'GO';
     
+    // Cálculos de demanda de energia
     const chargingPoints = Math.floor(numSpots * chargingPercentage / 100);
     const dailyConsumption = chargingPoints * energyPerCharge * chargesPerDay;
     const annualConsumption = dailyConsumption * 365;
@@ -544,46 +545,139 @@ export class DatabaseStorage implements IStorage {
     const irradiation = getSolarIrradiation(state);
     const regionalFactor = getRegionalFactor(state);
     
-    const sunHours = 5.5;
-    const systemEfficiency = SOLAR_SIMULATION_CONFIG.SYSTEM_EFFICIENCY.overall;
-    const requiredPower = (dailyConsumption / (sunHours * systemEfficiency)) * 1000;
-    const panelPower = SOLAR_SIMULATION_CONFIG.PANEL_SPECS.power;
-    const numPanels = Math.ceil(requiredPower / panelPower);
-    const actualPower = numPanels * panelPower / 1000;
+    // Cálculo de potência do sistema solar usando metodologia padrão
+    const requiredPowerKw = calculateRequiredPower(monthlyConsumption, irradiation);
+    const panelCount = calculatePanelCount(requiredPowerKw);
+    const systemPower = panelCount * SOLAR_SIMULATION_CONFIG.PANEL_SPECS.power;
     
-    const batteryCapacity = dailyConsumption * 1.2; // 20% extra capacity
-    const costPerWatt = SOLAR_SIMULATION_CONFIG.FINANCIAL.installation_cost_per_wp * regionalFactor.cost;
-    const batteryCostPerKWh = 800;
-    const totalInvestment = (actualPower * 1000 * costPerWatt) + (batteryCapacity * batteryCostPerKWh);
+    // Área utilizada
+    const usedArea = panelCount * SOLAR_SIMULATION_CONFIG.PANEL_SPECS.area;
     
-    const currentTariff = SOLAR_SIMULATION_CONFIG.FINANCIAL.tariff_kwh;
-    const chargingRevenue = 0.15; // R$ per kWh charging fee
-    const annualSavings = annualConsumption * chargingRevenue;
-    const paybackYears = totalInvestment / annualSavings;
+    // Geração de energia
+    const monthlyGeneration = (systemPower / 1000) * irradiation * 30 * SOLAR_SIMULATION_CONFIG.SYSTEM_EFFICIENCY.overall;
+    const annualGeneration = monthlyGeneration * 12;
+    
+    // Sistema de armazenamento (baterias para EV charging)
+    const batteryCapacity = dailyConsumption * 1.5; // 50% extra para autonomia
+    const batteryCostPerKWh = 900; // R$ por kWh de bateria LiFePO4
+    const batteryCost = batteryCapacity * batteryCostPerKWh;
+    
+    // Custo do sistema solar
+    const costPerWp = SOLAR_SIMULATION_CONFIG.FINANCIAL.installation_cost_per_wp * regionalFactor.cost;
+    const solarSystemCost = systemPower * costPerWp;
+    
+    // Infraestrutura de carregamento
+    const chargingInfrastructureCost = chargingPoints * 8000; // R$ 8.000 por ponto de recarga
+    
+    // Investimento total
+    const totalInvestment = solarSystemCost + batteryCost + chargingInfrastructureCost;
+    
+    // Modelo de receita EV charging
+    const chargingFeePerKWh = 0.45; // R$ 0,45/kWh (preço competitivo)
+    const operatingCostPerKWh = 0.05; // R$ 0,05/kWh (manutenção, energia de backup)
+    const netRevenuePerKWh = chargingFeePerKWh - operatingCostPerKWh;
+    
+    // Economia com energia própria vs. rede elétrica
+    const gridCostPerKWh = SOLAR_SIMULATION_CONFIG.FINANCIAL.tariff_kwh;
+    const energySavings = annualConsumption * gridCostPerKWh * 0.7; // 70% auto-consumo
+    
+    // Receita total anual
+    const chargingRevenue = annualConsumption * netRevenuePerKWh;
+    const annualSavings = energySavings + chargingRevenue;
+    
+    // Payback e ROI
+    const rawPaybackYears = totalInvestment / annualSavings;
+    const paybackYears = Math.round(rawPaybackYears * 10) / 10; // Arredondado para 1 casa decimal
+    const roi25Years = ((annualSavings * 25 - totalInvestment) / totalInvestment) * 100;
+    
+    // Cenários de investimento específicos para EV
+    const scenarios = this.getEvChargingScenarios(systemPower / 1000, chargingPoints);
 
     return {
-      systemPower: actualPower * 1000, // in Wp
-      panelCount: numPanels,
-      usedArea: numPanels * SOLAR_SIMULATION_CONFIG.PANEL_SPECS.area,
-      monthlyGeneration: monthlyConsumption,
-      annualGeneration: annualConsumption,
+      systemPower,
+      panelCount,
+      usedArea,
+      monthlyGeneration,
+      annualGeneration,
       totalInvestment,
       annualSavings,
       paybackYears,
-      roi: (annualSavings / totalInvestment) * 100,
-      co2Reduction: annualConsumption * 0.084, // kg CO2/year
-      coveragePercentage: 100, // EV charging system is designed to cover demand
+      roi: Math.round((annualSavings / totalInvestment) * 100 * 10) / 10,
+      co2Reduction: annualGeneration * 0.084, // kg CO2/year evitado
+      coveragePercentage: Math.min(100, (annualGeneration / annualConsumption) * 100),
       irradiation,
       regionalFactor,
+      scenarios,
       // EV-specific data
       num_charging_points: chargingPoints,
-      num_panels: numPanels,
-      total_power: actualPower,
+      num_panels: panelCount,
+      total_power: systemPower / 1000, // kW
       daily_consumption: dailyConsumption,
       annual_consumption: annualConsumption,
       battery_capacity: batteryCapacity,
-      charging_revenue: chargingRevenue,
-      roi_percentage: ((annualSavings * 25) / totalInvestment) * 100
+      charging_revenue: chargingFeePerKWh,
+      roi_percentage: Math.round(roi25Years * 10) / 10, // Arredondado para 1 casa decimal
+      // Dados financeiros detalhados
+      solar_system_cost: solarSystemCost,
+      battery_cost: batteryCost,
+      infrastructure_cost: chargingInfrastructureCost,
+      energy_savings: energySavings,
+      charging_net_revenue: chargingRevenue
+    };
+  }
+
+  // Método para cenários específicos de EV charging
+  private getEvChargingScenarios(systemPowerKw: number, chargingPoints: number) {
+    const systemPowerWp = systemPowerKw * 1000;
+    const costPerWp = SOLAR_SIMULATION_CONFIG.FINANCIAL.installation_cost_per_wp;
+    
+    // Cenário básico - Solar apenas
+    const solarBasicCost = systemPowerWp * costPerWp;
+    const basicPayback = 8.5;
+    
+    // Cenário híbrido - Solar + Baterias
+    const hybridCost = solarBasicCost + (chargingPoints * 15000);
+    const hybridPayback = 10.2;
+    
+    // Cenário completo - EV Ready
+    const completeCost = solarBasicCost + (chargingPoints * 25000);
+    const completePayback = 12.8;
+
+    return {
+      'Solar Básico': {
+        description: 'Sistema solar conectado à rede, sem baterias.',
+        features: ['Painéis solares', 'Inversores grid-tie', 'Instalação completa'],
+        payback_years: basicPayback,
+        total_cost: solarBasicCost,
+        costBreakdown: [
+          `Painéis: R$ ${(solarBasicCost * 0.6).toLocaleString('pt-BR')}`,
+          `Inversores: R$ ${(solarBasicCost * 0.25).toLocaleString('pt-BR')}`,
+          `Instalação: R$ ${(solarBasicCost * 0.15).toLocaleString('pt-BR')}`,
+          `Total: R$ ${solarBasicCost.toLocaleString('pt-BR')}`
+        ]
+      },
+      'Solar + Baterias': {
+        description: 'Sistema híbrido com armazenamento para autonomia.',
+        features: ['Painéis solares', 'Inversores híbridos', 'Baterias LiFePO4', 'Instalação especializada'],
+        payback_years: hybridPayback,
+        total_cost: hybridCost,
+        costBreakdown: [
+          `Sistema Solar: R$ ${solarBasicCost.toLocaleString('pt-BR')}`,
+          `Baterias: R$ ${(chargingPoints * 15000).toLocaleString('pt-BR')}`,
+          `Total: R$ ${hybridCost.toLocaleString('pt-BR')}`
+        ]
+      },
+      'Completo EV Ready': {
+        description: 'Sistema completo otimizado para recarga de veículos.',
+        features: ['Painéis high-end', 'Inversores premium', 'Baterias de alta capacidade', 'Infraestrutura EV', 'Monitoramento'],
+        payback_years: completePayback,
+        total_cost: completeCost,
+        costBreakdown: [
+          `Sistema Solar: R$ ${solarBasicCost.toLocaleString('pt-BR')}`,
+          `Infraestrutura EV: R$ ${(chargingPoints * 25000).toLocaleString('pt-BR')}`,
+          `Total: R$ ${completeCost.toLocaleString('pt-BR')}`
+        ]
+      }
     };
   }
 

@@ -15,6 +15,10 @@ Sistema completo de simulação solar para empresas com React frontend, FastAPI 
 ✓ **BUG CRÍTICO CORRIGIDO**: Sistema de recarga veicular (EV charging) 100% funcional (11/07/2025)
 ✓ **RELATÓRIOS VAZIOS RESOLVIDOS**: Dados EV agora aparecem corretamente em todos os relatórios 
 ✓ **CÁLCULO EV CORRIGIDO**: Engine substituído por lógica específica de recarga veicular
+✓ **CÁLCULO EV MELHORADO**: Modelo de receita realista com economia + receita de carregamento (11/07/2025)
+✓ **ARREDONDAMENTO CORRIGIDO**: Payback e ROI com 1 casa decimal para melhor legibilidade (11/07/2025)
+✓ **CENÁRIOS EV ESPECÍFICOS**: Solar Básico, Solar+Baterias, Completo EV Ready (11/07/2025)
+✓ **DESCRIÇÕES DETALHADAS**: Todos os cenários com descrição e lista de features incluídas (11/07/2025)
 ✓ **DADOS EV COMPLETOS**: Pontos de recarga, consumo diário/anual, capacidade bateria incluídos
 ✓ **REPORTS FUNCIONAIS**: PDF, Excel e JSON gerando dados reais EV sem falhas
 ✓ **UI REPORTS MELHORADA**: Estados de erro, loading e vazio implementados com feedback claro

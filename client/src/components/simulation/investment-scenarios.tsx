@@ -114,11 +114,13 @@ export default function InvestmentScenarios({ scenarios, results, simulationType
                         Payback: <span className="font-medium">{scenario.payback_years || 'N/A'} anos</span>
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {scenario.cost_breakdown && Array.isArray(scenario.cost_breakdown) && scenario.cost_breakdown.length > 0 
-                          ? scenario.cost_breakdown[0] 
-                          : 'Detalhes do investimento'
-                        }
+                        {scenario.description || 'Detalhes do investimento'}
                       </div>
+                      {scenario.features && Array.isArray(scenario.features) && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          • {scenario.features.slice(0, 2).join(' • ')}
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 );
@@ -145,6 +147,26 @@ export default function InvestmentScenarios({ scenarios, results, simulationType
                     </div>
                   </CardHeader>
                   <CardContent>
+                    {scenario.description && (
+                      <div className="text-sm text-muted-foreground mb-3 p-2 bg-gray-50 rounded">
+                        {scenario.description}
+                      </div>
+                    )}
+                    
+                    {scenario.features && Array.isArray(scenario.features) && (
+                      <div className="mb-3">
+                        <h4 className="text-sm font-medium mb-2">Inclui:</h4>
+                        <ul className="text-sm text-muted-foreground space-y-1">
+                          {scenario.features.map((feature: string, idx: number) => (
+                            <li key={idx} className="flex items-center">
+                              <span className="text-green-600 mr-2">✓</span>
+                              {feature}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
                     <div className="space-y-1">
                       {scenario.cost_breakdown && Array.isArray(scenario.cost_breakdown) && scenario.cost_breakdown.length > 0 
                         ? scenario.cost_breakdown.map((breakdown: string, index: number) => (

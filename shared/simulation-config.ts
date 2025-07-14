@@ -307,18 +307,43 @@ function calculateEvConsumption(stations: number, dailyKm: number, efficiency: n
  * Cenários de investimento pré-definidos para tomada de decisão
  */
 export function getInvestmentScenarios(systemPowerKw: number) {
+  const basic = calculateModularInvestment(systemPowerKw, false);
+  const complete = calculateModularInvestment(systemPowerKw, true);
+  const premium = calculateModularInvestment(systemPowerKw, true, {
+    panelCostPerWp: 4.20,
+    inverterCostPerWp: 1.10
+  });
+  const economic = calculateModularInvestment(systemPowerKw, true, {
+    panelCostPerWp: 3.40,
+    inverterCostPerWp: 0.75,
+    installationPercentage: 0.12
+  });
+
   return {
-    'Básico (só equipamentos)': calculateModularInvestment(systemPowerKw, false),
-    'Completo (com instalação)': calculateModularInvestment(systemPowerKw, true),
-    'Premium (equipamentos top)': calculateModularInvestment(systemPowerKw, true, {
-      panelCostPerWp: 4.20,
-      inverterCostPerWp: 1.10
-    }),
-    'Econômico (custo reduzido)': calculateModularInvestment(systemPowerKw, true, {
-      panelCostPerWp: 3.40,
-      inverterCostPerWp: 0.75,
-      installationPercentage: 0.12
-    })
+    'Básico (só equipamentos)': {
+      ...basic,
+      description: 'Apenas painéis e inversores. Instalação por conta própria.',
+      features: ['Painéis solares padrão', 'Inversores básicos', 'Sem instalação incluída'],
+      payback_years: Math.round(basic.payback_years * 10) / 10
+    },
+    'Completo (com instalação)': {
+      ...complete,
+      description: 'Sistema completo com instalação profissional incluída.',
+      features: ['Painéis solares', 'Inversores', 'Instalação completa', 'Garantia de 5 anos'],
+      payback_years: Math.round(complete.payback_years * 10) / 10
+    },
+    'Premium (equipamentos top)': {
+      ...premium,
+      description: 'Equipamentos de alta qualidade com melhor eficiência.',
+      features: ['Painéis high-end', 'Inversores premium', 'Instalação especializada', 'Garantia estendida'],
+      payback_years: Math.round(premium.payback_years * 10) / 10
+    },
+    'Econômico (custo reduzido)': {
+      ...economic,
+      description: 'Opção mais acessível mantendo qualidade adequada.',
+      features: ['Painéis econômicos', 'Inversores básicos', 'Instalação simplificada', 'Garantia padrão'],
+      payback_years: Math.round(economic.payback_years * 10) / 10
+    }
   };
 }
 
