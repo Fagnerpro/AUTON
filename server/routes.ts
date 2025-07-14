@@ -573,7 +573,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const simulation = await storage.getSimulation(id);
       
-      if (!simulation || simulation.userId !== req.user!.id) {
+      if (!simulation) {
+        return res.status(404).json({ message: "Simulação não encontrada" });
+      }
+      
+      // Usuários admin podem acessar qualquer simulação
+      // Usuários normais só podem acessar suas próprias simulações
+      if (req.user!.role !== 'admin' && simulation.userId !== req.user!.id) {
         return res.status(404).json({ message: "Simulação não encontrada" });
       }
       
@@ -682,7 +688,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const simulation = await storage.getSimulation(id);
       
-      if (!simulation || simulation.userId !== req.user!.id) {
+      if (!simulation) {
+        return res.status(404).json({ message: "Simulação não encontrada" });
+      }
+      
+      // Usuários admin podem calcular qualquer simulação
+      // Usuários normais só podem calcular suas próprias simulações
+      if (req.user!.role !== 'admin' && simulation.userId !== req.user!.id) {
         return res.status(404).json({ message: "Simulação não encontrada" });
       }
       
@@ -706,7 +718,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const simulation = await storage.getSimulation(id);
       
-      if (!simulation || simulation.userId !== req.user!.id) {
+      if (!simulation) {
+        return res.status(404).json({ message: "Simulação não encontrada" });
+      }
+      
+      // Usuários admin podem editar qualquer simulação
+      // Usuários normais só podem editar suas próprias simulações
+      if (req.user!.role !== 'admin' && simulation.userId !== req.user!.id) {
         return res.status(404).json({ message: "Simulação não encontrada" });
       }
       
