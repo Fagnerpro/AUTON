@@ -762,33 +762,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/reports/generate", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const { simulationId, format } = req.body;
+      
+      console.log('📊 Gerando relatório:', { simulationId, format, userId: req.user?.id });
+      
       const simulation = await storage.getSimulation(simulationId);
       
-      if (!simulation || simulation.userId !== req.user!.id) {
+      if (!simulation) {
+        console.log('❌ Simulação não encontrada:', simulationId);
+        return res.status(404).json({ message: "Simulação não encontrada" });
+      }
+      
+      if (simulation.userId !== req.user!.id) {
+        console.log('❌ Acesso negado - usuário diferente:', { simulationUserId: simulation.userId, requestUserId: req.user!.id });
         return res.status(404).json({ message: "Simulação não encontrada" });
       }
 
-      if (!simulation.results) {
+      if (!simulation.results || Object.keys(simulation.results).length === 0) {
+        console.log('❌ Simulação sem resultados:', { simulationId, results: simulation.results });
         return res.status(400).json({ message: "Simulação não foi calculada ainda" });
       }
 
-      const reportData = await generateReport(simulation, format);
+      console.log('✅ Dados da simulação encontrados:', { 
+        id: simulation.id, 
+        name: simulation.name, 
+        type: simulation.type,
+        hasResults: !!simulation.results 
+      });
+
+      const reportData = await generateReport(simulation, format || 'json');
+      
+      // Set proper headers based on format
+      const filename = `relatorio-${simulation.name.replace(/[^a-zA-Z0-9]/g, '-')}-${simulation.id}`;
       
       if (format === 'pdf') {
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="relatorio-${simulation.name}.pdf"`);
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}.pdf"`);
       } else if (format === 'excel') {
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', `attachment; filename="relatorio-${simulation.name}.xlsx"`);
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}.csv"`);
       } else {
-        res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Content-Disposition', `attachment; filename="relatorio-${simulation.name}.json"`);
+        res.setHeader('Content-Type', 'application/json; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}.json"`);
       }
       
+      console.log('✅ Enviando relatório:', { format, dataLength: reportData.length || 'N/A' });
       res.send(reportData);
     } catch (error) {
-      console.error('Erro ao gerar relatório:', error);
-      res.status(500).json({ message: "Erro ao gerar relatório" });
+      console.error('❌ Erro ao gerar relatório:', error);
+      res.status(500).json({ 
+        message: "Erro ao gerar relatório: " + (error as Error).message,
+        error: process.env.NODE_ENV === 'development' ? error : undefined
+      });
     }
   });
 

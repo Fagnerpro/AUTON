@@ -525,8 +525,58 @@ export class DatabaseStorage implements IStorage {
   }
 
   private calculateCommercial(params: any): any {
-    // Similar to residential but with commercial factors
-    return this.calculateResidential(params);
+    const monthlyConsumption = params.monthlyConsumption || 0;
+    const availableArea = params.availableArea || 0;
+    const state = params.state || 'GO';
+    const peakPower = params.peakPower || 0;
+    const operatingHours = params.operatingHours || 12;
+
+    const irradiation = getSolarIrradiation(state);
+    const regionalFactor = getRegionalFactor(state);
+    
+    // Commercial systems use different calculation approach
+    const requiredPower = calculateRequiredPower(monthlyConsumption, irradiation);
+    const panelCount = calculatePanelCount(requiredPower);
+    
+    const systemPower = panelCount * SOLAR_SIMULATION_CONFIG.PANEL_SPECS.power;
+    const usedArea = panelCount * SOLAR_SIMULATION_CONFIG.PANEL_SPECS.area;
+    const monthlyGeneration = (systemPower / 1000) * irradiation * 30 * SOLAR_SIMULATION_CONFIG.SYSTEM_EFFICIENCY.overall;
+    
+    // Commercial tariff and factors
+    const commercialTariff = 0.75; // Higher commercial tariff R$/kWh
+    const commercialFactor = 0.85; // Commercial systems have better utilization
+    const installationFactor = 0.9; // Commercial installations are typically more efficient
+    
+    // Financial calculations for commercial
+    const investmentPerWp = SOLAR_SIMULATION_CONFIG.FINANCIAL.installation_cost_per_wp * regionalFactor.cost * installationFactor;
+    const totalInvestment = systemPower * investmentPerWp;
+    
+    const annualSavings = monthlyGeneration * 12 * commercialTariff * commercialFactor;
+    const paybackYears = totalInvestment / annualSavings;
+    
+    const scenarios = getInvestmentScenarios(systemPower / 1000); // Convert Wp to kW
+
+    return {
+      systemPower,
+      panelCount,
+      usedArea,
+      monthlyGeneration,
+      annualGeneration: monthlyGeneration * 12,
+      totalInvestment,
+      annualSavings,
+      paybackYears: Math.round(paybackYears * 10) / 10,
+      roi: Math.round((annualSavings / totalInvestment) * 100 * 10) / 10,
+      co2Reduction: monthlyGeneration * 12 * 0.084, // kg CO2/year
+      scenarios,
+      coveragePercentage: Math.round(Math.min(100, (monthlyGeneration / monthlyConsumption) * 100) * 10) / 10,
+      irradiation,
+      regionalFactor,
+      commercialTariff,
+      // Commercial-specific metrics
+      demandSavings: peakPower * 15 * 12, // Peak demand savings (R$/kW/month)
+      operationalSavings: annualSavings * 0.15, // Additional operational savings
+      totalCommercialSavings: annualSavings + (peakPower * 15 * 12)
+    };
   }
 
   private calculateEvCharging(params: any): any {

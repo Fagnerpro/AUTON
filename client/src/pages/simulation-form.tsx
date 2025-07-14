@@ -83,17 +83,11 @@ export default function SimulationForm() {
   const saveMutation = useMutation({
     mutationFn: async (data: Partial<InsertSimulation>) => {
       if (simulationId) {
-        return apiRequest(`/api/simulations/${simulationId}`, {
-          method: 'PUT',
-          body: JSON.stringify(data)
-        });
+        return apiRequest('PUT', `/api/simulations/${simulationId}`, data);
       } else {
         // Use demo endpoint if user is not logged in
         const endpoint = user ? '/api/simulations' : '/api/simulations/demo';
-        return apiRequest(endpoint, {
-          method: 'POST',
-          body: JSON.stringify(data)
-        });
+        return apiRequest('POST', endpoint, data);
       }
     },
     onSuccess: async (savedSimulation) => {
@@ -168,10 +162,7 @@ export default function SimulationForm() {
     mutationFn: async (id: number) => {
       // Use demo endpoint if user is not logged in
       const endpoint = user ? `/api/simulations/${id}/calculate` : `/api/simulations/demo/${id}/calculate`;
-      return apiRequest(endpoint, {
-        method: 'POST',
-        body: JSON.stringify({})
-      });
+      return apiRequest('POST', endpoint, {});
     },
     onSuccess: async (calculatedSimulation) => {
       setFormData(calculatedSimulation);
@@ -203,10 +194,7 @@ export default function SimulationForm() {
       // Save first, then calculate
       try {
         const endpoint = user ? '/api/simulations' : '/api/simulations/demo';
-        const savedSimulation = await apiRequest(endpoint, {
-          method: 'POST',
-          body: JSON.stringify(formData)
-        });
+        const savedSimulation = await apiRequest('POST', endpoint, formData);
         calculateMutation.mutate(savedSimulation.id);
       } catch (error) {
         toast({

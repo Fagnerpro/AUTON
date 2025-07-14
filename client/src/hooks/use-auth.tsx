@@ -55,10 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (credentials: LoginRequest) => {
     try {
       setIsLoading(true);
-      const response = await apiRequest('/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify(credentials),
-      });
+      const response = await apiRequest('POST', '/api/auth/login', credentials);
       
       localStorage.setItem('token', response.token);
       setUser(response.user);
@@ -82,10 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (userData: RegisterRequest) => {
     try {
       setIsLoading(true);
-      const response = await apiRequest('/api/auth/register', {
-        method: 'POST',
-        body: JSON.stringify(userData),
-      });
+      const response = await apiRequest('POST', '/api/auth/register', userData);
       
       localStorage.setItem('token', response.token);
       setUser(response.user);

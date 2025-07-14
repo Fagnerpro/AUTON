@@ -8,31 +8,43 @@ async function throwIfResNotOk(res: Response) {
 }
 
 export async function apiRequest(
+  method: string,
   url: string,
-  options: {
-    method: string;
-    body?: string;
+  data?: any,
+  options?: {
     headers?: Record<string, string>;
+    responseType?: 'json' | 'blob';
   }
 ): Promise<any> {
   const token = localStorage.getItem('token');
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...options.headers
+    ...options?.headers
   };
   
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(url, {
-    method: options.method,
+  const fetchOptions: RequestInit = {
+    method,
     headers,
-    body: options.body,
     credentials: "include",
-  });
+  };
+
+  if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+    fetchOptions.body = JSON.stringify(data);
+  }
+
+  const res = await fetch(url, fetchOptions);
 
   await throwIfResNotOk(res);
+  
+  // Handle different response types
+  if (options?.responseType === 'blob') {
+    return res; // Return response object for blob handling
+  }
+  
   return await res.json();
 }
 

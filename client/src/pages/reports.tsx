@@ -25,7 +25,7 @@ export default function Reports() {
   // Generate report mutation with scenarios
   const generateReportMutation = useMutation({
     mutationFn: async (data: { simulationId: number; format: string; includeScenarios?: boolean }) => {
-      return apiRequest('POST', `/api/reports/generate`, data);
+      return apiRequest('POST', `/api/reports/generate`, data, { responseType: 'blob' });
     },
     onSuccess: async (response) => {
       try {
@@ -33,17 +33,16 @@ export default function Reports() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `relatorio-simulacao-${selectedSimulation}.${reportFormat}`;
+        
+        // Get proper file extension
+        const extension = reportFormat === 'excel' ? 'csv' : reportFormat;
+        a.download = `relatorio-simulacao-${selectedSimulation}.${extension}`;
         a.style.display = 'none';
         
-        // Verificar se o elemento não está no DOM antes de adicionar
-        if (!document.body.contains(a)) {
-          document.body.appendChild(a);
-        }
-        
+        document.body.appendChild(a);
         a.click();
         
-        // Remover o elemento de forma segura
+        // Clean up
         setTimeout(() => {
           if (document.body.contains(a)) {
             document.body.removeChild(a);
@@ -53,21 +52,23 @@ export default function Reports() {
         
         toast({
           title: "Relatório gerado",
-          description: "Download iniciado com sucesso.",
+          description: `Download do relatório ${reportFormat.toUpperCase()} iniciado com sucesso.`,
         });
       } catch (error) {
+        console.error('Erro no download:', error);
         toast({
           variant: "destructive",
           title: "Erro no download",
-          description: "Erro ao processar o arquivo.",
+          description: "Erro ao processar o arquivo de relatório.",
         });
       }
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('Erro ao gerar relatório:', error);
       toast({
         variant: "destructive",
         title: "Erro ao gerar relatório",
-        description: "Não foi possível gerar o relatório.",
+        description: error.message || "Não foi possível gerar o relatório.",
       });
     },
   });
