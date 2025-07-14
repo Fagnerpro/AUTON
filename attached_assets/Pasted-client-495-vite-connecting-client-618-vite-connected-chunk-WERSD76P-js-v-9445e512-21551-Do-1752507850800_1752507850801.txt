@@ -1,0 +1,87 @@
+client:495 [vite] connecting...
+client:618 [vite] connected.
+chunk-WERSD76P.js?v=9445e512:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/:1 [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) <input data-replit-metadata=​"client/​src/​pages/​login.tsx:​173:​22" data-component-name=​"Input" type=​"password" class=​"flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:​border-0 file:​bg-transparent file:​text-sm file:​font-medium file:​text-foreground placeholder:​text-muted-foreground focus-visible:​outline-none focus-visible:​ring-2 focus-visible:​ring-ring focus-visible:​ring-offset-2 disabled:​cursor-not-allowed disabled:​opacity-50 md:​text-sm pl-10" id=​"login-password" name=​"password" placeholder=​"••••••••" required value>​
+chunk-WERSD76P.js?v=9445e512:16670 Uncaught NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+    at removeChild (chunk-WERSD76P.js?v=9445e512:8456:26)
+    at commitDeletionEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17510:21)
+    at commitDeletionEffects (chunk-WERSD76P.js?v=9445e512:17477:13)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17674:17)
+    at commitMutationEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17737:15)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17685:15)
+    at commitMutationEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17737:15)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17685:15)
+    at commitMutationEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17737:15)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17685:15)
+chunk-WERSD76P.js?v=9445e512:16670 Uncaught NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.
+    at insertBefore (chunk-WERSD76P.js?v=9445e512:8446:26)
+    at insertOrAppendPlacementNode (chunk-WERSD76P.js?v=9445e512:17432:15)
+    at commitPlacement (chunk-WERSD76P.js?v=9445e512:17389:15)
+    at commitReconciliationEffects (chunk-WERSD76P.js?v=9445e512:17906:15)
+    at commitMutationEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17738:15)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17685:15)
+    at commitMutationEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17737:15)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17685:15)
+    at commitMutationEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17737:15)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17685:15)
+chunk-WERSD76P.js?v=9445e512:14032 The above error occurred in the <Text> component:
+
+    at button
+    at div
+    at div
+    at ReportsPure (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/src/pages/reports-pure.tsx:23:55)
+    at Route (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9445e512:323:16)
+    at Switch (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9445e512:379:17)
+    at main
+    at div
+    at AuthenticatedLayout (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/src/App.tsx?v=bQr_UYEZvM_HZcsoc8NR8:36:32)
+    at Router (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/src/App.tsx?v=bQr_UYEZvM_HZcsoc8NR8:62:42)
+    at AuthProvider (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/src/hooks/use-auth.tsx:22:32)
+    at Provider (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-XIZKKOCE.js?v=9445e512:22:15)
+    at TooltipProvider (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=9445e512:59:5)
+    at QueryClientProvider (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=9445e512:2805:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+logCapturedError @ chunk-WERSD76P.js?v=9445e512:14032
+chunk-WERSD76P.js?v=9445e512:14032 The above error occurred in the <div> component:
+
+    at div
+    at button
+    at div
+    at div
+    at ReportsPure (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/src/pages/reports-pure.tsx:23:55)
+    at Route (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9445e512:323:16)
+    at Switch (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9445e512:379:17)
+    at main
+    at div
+    at AuthenticatedLayout (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/src/App.tsx?v=bQr_UYEZvM_HZcsoc8NR8:36:32)
+    at Router (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/src/App.tsx?v=bQr_UYEZvM_HZcsoc8NR8:62:42)
+    at AuthProvider (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/src/hooks/use-auth.tsx:22:32)
+    at Provider (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-XIZKKOCE.js?v=9445e512:22:15)
+    at TooltipProvider (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=9445e512:59:5)
+    at QueryClientProvider (https://40456406-c2d2-4d96-a95e-b742dce4014a-00-riqsm5497ajp.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=9445e512:2805:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+logCapturedError @ chunk-WERSD76P.js?v=9445e512:14032
+chunk-WERSD76P.js?v=9445e512:9129 Uncaught NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+    at removeChild (chunk-WERSD76P.js?v=9445e512:8456:26)
+    at commitDeletionEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17510:21)
+    at commitDeletionEffects (chunk-WERSD76P.js?v=9445e512:17477:13)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17674:17)
+    at commitMutationEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17737:15)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17685:15)
+    at commitMutationEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17737:15)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17685:15)
+    at commitMutationEffectsOnFiber (chunk-WERSD76P.js?v=9445e512:17737:15)
+    at recursivelyTraverseMutationEffects (chunk-WERSD76P.js?v=9445e512:17685:15)
+reports:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+reports:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+reports:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+reports:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+reports:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+reports:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+reports:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
