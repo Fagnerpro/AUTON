@@ -20,6 +20,7 @@ export default function ReportsSafe() {
       setIsComponentMounted(false);
       if (downloadTimeoutRef.current) {
         clearTimeout(downloadTimeoutRef.current);
+        console.log('Download timeout cleared on unmount');
       }
       console.log('ReportsSafe component unmounted');
     };
@@ -35,16 +36,21 @@ export default function ReportsSafe() {
 
   const showMessage = useCallback((type: 'success' | 'error' | 'info', text: string) => {
     if (!isComponentMounted) return;
-    
     setMessage({ type, text });
-    const timer = setTimeout(() => {
-      if (isComponentMounted) {
-        setMessage({ type: null, text: '' });
-      }
-    }, 5000);
-    
-    return () => clearTimeout(timer);
   }, [isComponentMounted]);
+
+  // Handle message timeout with proper cleanup
+  useEffect(() => {
+    if (message.type) {
+      const timer = setTimeout(() => {
+        if (isComponentMounted) {
+          setMessage({ type: null, text: '' });
+        }
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [message.type, isComponentMounted]);
 
   // Safe download function with proper DOM cleanup
   const downloadFile = useCallback(async (blob: Blob, filename: string) => {
@@ -74,8 +80,10 @@ export default function ReportsSafe() {
       // Schedule cleanup with component mount check
       downloadTimeoutRef.current = setTimeout(() => {
         try {
+          if (!isComponentMounted) return;
+          
           const elementToRemove = document.getElementById(linkId);
-          if (elementToRemove && elementToRemove.parentNode === document.body) {
+          if (elementToRemove && document.body.contains(elementToRemove)) {
             document.body.removeChild(elementToRemove);
             console.log('Download link cleaned up:', linkId);
           }
@@ -185,7 +193,7 @@ export default function ReportsSafe() {
       }}>
       {/* Message Display - Fixed positioning to avoid React reconciliation issues */}
       {message.type && (
-        <div style={{
+        <div key={`msg-${message.type}`} style={{
           position: 'fixed',
           top: '20px',
           right: '20px',
@@ -453,11 +461,10 @@ export default function ReportsSafe() {
             {simulations.map((simulation) => {
               const viability = getViabilityInfo(simulation);
               const isSelected = selectedSimulation === simulation.id.toString();
-              const simulationKey = `simulation-${simulation.id}-${simulation.updatedAt || simulation.createdAt}`;
               
               return (
                 <div
-                  key={simulationKey}
+                  key={simulation.id}
                   style={{
                     padding: '16px 20px',
                     border: isSelected ? '2px solid #3b82f6' : '1px solid #e5e7eb',
