@@ -3,7 +3,7 @@
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { Check, ChevronDown, ChevronUp } from "lucide-react"
-import { AnimatePresence } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
 
 import { cn } from "@/lib/utils"
 
@@ -89,20 +89,34 @@ const SelectContent = React.forwardRef<
   const portalRef = React.useRef<HTMLDivElement | null>(null);
   const contentId = React.useId();
   const [isMounted, setIsMounted] = React.useState(false);
+  const [shouldRender, setShouldRender] = React.useState(false);
 
   React.useEffect(() => {
     setIsMounted(true);
+    setShouldRender(true);
+    
     return () => {
-      // Cleanup seguro do portal para evitar erros DOM
-      if (portalRef.current && portalRef.current.parentNode) {
-        try {
-          portalRef.current.parentNode.removeChild(portalRef.current);
-        } catch (e) {
-          console.warn('Portal já foi removido do DOM:', e);
+      // Cleanup seguro com timeout para animações
+      const timeout = setTimeout(() => {
+        if (portalRef.current?.parentNode) {
+          try {
+            portalRef.current.parentNode.removeChild(portalRef.current);
+          } catch (err) {
+            console.warn('⚠️ Portal já removido:', err);
+          }
         }
-      }
+      }, 300); // Tempo da animação exit
+      
+      return () => clearTimeout(timeout);
     };
   }, []);
+
+  React.useEffect(() => {
+    if (!isMounted) {
+      const timeout = setTimeout(() => setShouldRender(false), 300);
+      return () => clearTimeout(timeout);
+    }
+  }, [isMounted]);
 
   if (!isMounted) {
     return null;
@@ -110,32 +124,43 @@ const SelectContent = React.forwardRef<
 
   return (
     <SelectPrimitive.Portal>
-      <AnimatePresence mode="wait">
-        <SelectPrimitive.Content
-          key={`select-content-${contentId}`}
-          ref={ref}
-          className={cn(
-            "relative z-50 max-h-[--radix-select-content-available-height] min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-select-content-transform-origin]",
-            position === "popper" &&
-              "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
-            className
+      <div ref={portalRef}>
+        <AnimatePresence mode="wait">
+          {shouldRender && (
+            <motion.div
+              key={`select-motion-${contentId}`}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.15 }}
+            >
+              <SelectPrimitive.Content
+                ref={ref}
+                className={cn(
+                  "relative z-50 max-h-[--radix-select-content-available-height] min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border bg-popover text-popover-foreground shadow-md",
+                  position === "popper" &&
+                    "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
+                  className
+                )}
+                position={position}
+                {...props}
+              >
+                <SelectScrollUpButton />
+                <SelectPrimitive.Viewport
+                  className={cn(
+                    "p-1",
+                    position === "popper" &&
+                      "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
+                  )}
+                >
+                  {children}
+                </SelectPrimitive.Viewport>
+                <SelectScrollDownButton />
+              </SelectPrimitive.Content>
+            </motion.div>
           )}
-          position={position}
-          {...props}
-        >
-          <SelectScrollUpButton />
-          <SelectPrimitive.Viewport
-            className={cn(
-              "p-1",
-              position === "popper" &&
-                "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
-            )}
-          >
-            {children}
-          </SelectPrimitive.Viewport>
-          <SelectScrollDownButton />
-        </SelectPrimitive.Content>
-      </AnimatePresence>
+        </AnimatePresence>
+      </div>
     </SelectPrimitive.Portal>
   );
 })

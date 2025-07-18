@@ -69,8 +69,11 @@ Sistema completo de simulação solar para empresas com React frontend, FastAPI 
 ✓ **COMPONENTES SEGUROS**: Select e Tabs protegidos com ErrorBoundary e AnimatePresence (18/07/2025)
 ✓ **PORTAIS SEGUROS**: Cleanup automático de portais DOM para prevenir erros de reconciliação (18/07/2025)
 ✓ **CHAVES ÚNICAS**: useId() implementado em todos os componentes para identificação React estável (18/07/2025)
-✓ **RADIX UI ATUALIZADO**: @radix-ui/react-tabs atualizado para última versão estável (18/07/2025)
+✓ **RADIX UI ATUALIZADO**: @radix-ui/react-tabs e @radix-ui/react-select atualizados para versões estáveis (18/07/2025)
 ✓ **SISTEMA ROBUSTO**: ErrorBoundary implementado para captura e isolamento de erros (18/07/2025)
+✓ **CONTROLE TEMPORAL**: Desmontagem manual com shouldRender e timeouts para evitar DOM inconsistente (18/07/2025)
+✓ **FRAMER MOTION SEGURO**: AnimatePresence com controle manual de renderização e exit handlers (18/07/2025)
+✓ **REFS SEGUROS**: Portal refs com verificação de parentNode antes de removeChild (18/07/2025)
 ✓ **ACESSO RESTRITO**: Sistema implementado para permitir login apenas para usuários com assinatura
 ✓ **IA PREMIUM**: Assistente IA disponível exclusivamente para assinantes Premium
 ✓ **CONTROLE DE ACESSO**: Usuários com plano gratuito não podem fazer login - apenas modo demo

@@ -56,44 +56,66 @@ const TabsContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
 >(({ className, children, ...props }, ref) => {
   const contentId = React.useId();
+  const portalRef = React.useRef<HTMLDivElement | null>(null);
   const [isMounted, setIsMounted] = React.useState(false);
+  const [shouldRender, setShouldRender] = React.useState(false);
 
   React.useEffect(() => {
     setIsMounted(true);
+    setShouldRender(true);
+    
     return () => {
-      // Cleanup seguro para evitar erros removeChild
-      const cleanupTimer = setTimeout(() => {
-        // Permitir que animações terminem antes do cleanup
-      }, 150);
-      return () => clearTimeout(cleanupTimer);
+      // Cleanup seguro com timeout para animações
+      const timeout = setTimeout(() => {
+        if (portalRef.current?.parentNode) {
+          try {
+            portalRef.current.parentNode.removeChild(portalRef.current);
+          } catch (err) {
+            console.warn('⚠️ Portal Tabs já removido:', err);
+          }
+        }
+      }, 300); // Tempo da animação exit
+      
+      return () => clearTimeout(timeout);
     };
   }, []);
+
+  React.useEffect(() => {
+    if (!isMounted) {
+      const timeout = setTimeout(() => setShouldRender(false), 300);
+      return () => clearTimeout(timeout);
+    }
+  }, [isMounted]);
 
   if (!isMounted) {
     return null;
   }
 
   return (
-    <AnimatePresence mode="wait">
-      <TabsPrimitive.Content
-        key={`tabs-content-${contentId}`}
-        ref={ref}
-        className={cn(
-          "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-          className
+    <div ref={portalRef}>
+      <AnimatePresence mode="wait">
+        {shouldRender && (
+          <TabsPrimitive.Content
+            key={`tabs-content-${contentId}`}
+            ref={ref}
+            className={cn(
+              "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+              className
+            )}
+            {...props}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15 }}
+            >
+              {children}
+            </motion.div>
+          </TabsPrimitive.Content>
         )}
-        {...props}
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.15 }}
-        >
-          {children}
-        </motion.div>
-      </TabsPrimitive.Content>
-    </AnimatePresence>
+      </AnimatePresence>
+    </div>
   );
 })
 TabsContent.displayName = TabsPrimitive.Content.displayName
