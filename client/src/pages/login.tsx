@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SafeTabs as Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs-safe';
 import { Sun, Mail, Lock, User, Building2, TestTube } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useMutation } from '@tanstack/react-query';

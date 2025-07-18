@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { SafeSelect as Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select-safe';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SafeTabs as Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs-safe';
 import { User as UserIcon, Settings as SettingsIcon, Bell, Shield, FileText, Calculator } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';

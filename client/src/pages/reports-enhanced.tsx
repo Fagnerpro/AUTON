@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SafeTabs as Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs-safe';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   FileText, 

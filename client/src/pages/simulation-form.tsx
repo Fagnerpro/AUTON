@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ArrowLeft, Crown } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SafeTabs as Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs-safe';
 import TypeSelector from '@/components/simulation/type-selector';
 import BasicForm from '@/components/simulation/basic-form';
 import SpecificConfig from '@/components/simulation/specific-config';

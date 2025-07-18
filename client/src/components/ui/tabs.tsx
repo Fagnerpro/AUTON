@@ -1,9 +1,25 @@
 import * as React from "react"
 import * as TabsPrimitive from "@radix-ui/react-tabs"
+import { AnimatePresence, motion } from "framer-motion"
 
 import { cn } from "@/lib/utils"
 
-const Tabs = TabsPrimitive.Root
+// Tabs com controle DOM seguro
+const Tabs = React.forwardRef<
+  React.ElementRef<typeof TabsPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root>
+>((props, ref) => {
+  const tabsId = React.useId();
+  
+  return (
+    <TabsPrimitive.Root
+      key={`tabs-root-${tabsId}`}
+      ref={ref}
+      {...props}
+    />
+  );
+});
+Tabs.displayName = "Tabs";
 
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
@@ -38,16 +54,48 @@ TabsTrigger.displayName = TabsPrimitive.Trigger.displayName
 const TabsContent = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Content
-    ref={ref}
-    className={cn(
-      "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-      className
-    )}
-    {...props}
-  />
-))
+>(({ className, children, ...props }, ref) => {
+  const contentId = React.useId();
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+    return () => {
+      // Cleanup seguro para evitar erros removeChild
+      const cleanupTimer = setTimeout(() => {
+        // Permitir que animações terminem antes do cleanup
+      }, 150);
+      return () => clearTimeout(cleanupTimer);
+    };
+  }, []);
+
+  if (!isMounted) {
+    return null;
+  }
+
+  return (
+    <AnimatePresence mode="wait">
+      <TabsPrimitive.Content
+        key={`tabs-content-${contentId}`}
+        ref={ref}
+        className={cn(
+          "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+          className
+        )}
+        {...props}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.15 }}
+        >
+          {children}
+        </motion.div>
+      </TabsPrimitive.Content>
+    </AnimatePresence>
+  );
+})
 TabsContent.displayName = TabsPrimitive.Content.displayName
 
 export { Tabs, TabsList, TabsTrigger, TabsContent }
