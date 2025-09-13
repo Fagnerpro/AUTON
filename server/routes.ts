@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { aiAdvisor } from "./services/ai-advisor";
@@ -167,12 +167,12 @@ Relatório gerado em: ${new Date().toLocaleString('pt-BR')}`;
   return Buffer.from(pdfContent, 'utf-8');
 }
 
-interface AuthRequest extends Express.Request {
+interface AuthRequest extends Request {
   user?: User;
 }
 
 // Middleware to verify JWT token
-function authenticateToken(req: AuthRequest, res: Express.Response, next: Express.NextFunction) {
+function authenticateToken(req: AuthRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -354,7 +354,7 @@ function calculateCommonAreasSystem(params: any) {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Root API endpoint - handles HEAD requests to /api to prevent them from hitting Vite catch-all
-  app.all("/api", async (req, res) => {
+  app.all("/api", async (req: Request, res: Response) => {
     if (req.method === "HEAD") {
       return res.status(200).end();
     }
@@ -373,7 +373,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Health check endpoint
-  app.get("/api/health", async (req, res) => {
+  app.get("/api/health", async (req: Request, res: Response) => {
     res.json({
       status: "ok",
       timestamp: new Date().toISOString(),
@@ -384,7 +384,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Demo route - creates a temporary demo user with IP limitation
-  app.post("/api/auth/demo", async (req, res) => {
+  app.post("/api/auth/demo", async (req: Request, res: Response) => {
     try {
       // Obter IP do cliente
       const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || 
@@ -441,7 +441,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin route - creates admin user with premium access for testing
-  app.post("/api/auth/admin", async (req, res) => {
+  app.post("/api/auth/admin", async (req: Request, res: Response) => {
     try {
       // Create admin user with premium access
       const adminEmail = `admin_${Date.now()}@auton.admin`;
@@ -478,7 +478,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Auth routes - apenas usuários com assinatura podem fazer login
-  app.post("/api/auth/login", async (req, res) => {
+  app.post("/api/auth/login", async (req: Request, res: Response) => {
     try {
       const { email, password } = loginSchema.parse(req.body);
       
@@ -520,7 +520,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/auth/register", async (req, res) => {
+  app.post("/api/auth/register", async (req: Request, res: Response) => {
     try {
       const userData = registerSchema.parse(req.body);
       
@@ -562,13 +562,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/auth/me", authenticateToken, async (req: AuthRequest, res) => {
+  app.get("/api/auth/me", authenticateToken, async (req: AuthRequest, res: Response) => {
     const { hashedPassword, ...userWithoutPassword } = req.user!;
     res.json(userWithoutPassword);
   });
 
   // User stats
-  app.get("/api/users/stats", authenticateToken, async (req: AuthRequest, res) => {
+  app.get("/api/users/stats", authenticateToken, async (req: AuthRequest, res: Response) => {
     try {
       const stats = await storage.getUserStats(req.user!.id);
       res.json(stats);
@@ -578,7 +578,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Simulations routes
-  app.get("/api/simulations", authenticateToken, async (req: AuthRequest, res) => {
+  app.get("/api/simulations", authenticateToken, async (req: AuthRequest, res: Response) => {
     try {
       const simulations = await storage.getSimulationsByUser(req.user!.id);
       res.json(simulations);
@@ -587,7 +587,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/simulations/:id", authenticateToken, async (req: AuthRequest, res) => {
+  app.get("/api/simulations/:id", authenticateToken, async (req: AuthRequest, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       const simulation = await storage.getSimulation(id);
@@ -612,7 +612,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Middleware para verificar acesso de plano
-  const checkPlanAccess = async (req: AuthRequest, res: any, next: any) => {
+  const checkPlanAccess = async (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({ message: "Usuário não autenticado" });
     }
@@ -630,7 +630,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // Endpoint para simulações demo (sem autenticação)
-  app.post("/api/simulations/demo", async (req, res) => {
+  app.post("/api/simulations/demo", async (req: Request, res: Response) => {
     try {
       // Obter IP do cliente de forma robusta
       const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || 
@@ -666,7 +666,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/simulations", authenticateToken, checkPlanAccess, async (req: AuthRequest, res) => {
+  app.post("/api/simulations", authenticateToken, checkPlanAccess, async (req: AuthRequest, res: Response) => {
     try {
       const simulationData = insertSimulationSchema.parse({
         ...req.body,
@@ -681,7 +681,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Endpoint para calcular simulações demo (sem autenticação)
-  app.post("/api/simulations/demo/:id/calculate", async (req, res) => {
+  app.post("/api/simulations/demo/:id/calculate", async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       const simulation = await storage.getSimulation(id);
@@ -735,7 +735,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/simulations/:id", authenticateToken, async (req: AuthRequest, res) => {
+  app.put("/api/simulations/:id", authenticateToken, async (req: AuthRequest, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       const simulation = await storage.getSimulation(id);
@@ -760,7 +760,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/simulations/:id", authenticateToken, async (req: AuthRequest, res) => {
+  app.delete("/api/simulations/:id", authenticateToken, async (req: AuthRequest, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       const simulation = await storage.getSimulation(id);
@@ -781,7 +781,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Reports routes
-  app.post("/api/reports/generate", authenticateToken, async (req: AuthRequest, res) => {
+  app.post("/api/reports/generate", authenticateToken, async (req: AuthRequest, res: Response) => {
     try {
       const { simulationId, format } = req.body;
       
@@ -839,7 +839,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User profile routes
-  app.put("/api/users/profile", authenticateToken, async (req: AuthRequest, res) => {
+  app.put("/api/users/profile", authenticateToken, async (req: AuthRequest, res: Response) => {
     try {
       const updateData = req.body;
       const updatedUser = await storage.updateUser(req.user!.id, updateData);
@@ -855,7 +855,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/users/preferences", authenticateToken, async (req: AuthRequest, res) => {
+  app.put("/api/users/preferences", authenticateToken, async (req: AuthRequest, res: Response) => {
     try {
       // For now, just return success - preferences would be stored in user profile
       res.json({ message: "Preferências atualizadas com sucesso" });
@@ -865,7 +865,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Stripe payment routes
-  app.post("/api/create-payment-intent", authenticateToken, async (req: AuthRequest, res) => {
+  app.post("/api/create-payment-intent", authenticateToken, async (req: AuthRequest, res: Response) => {
     try {
       if (!stripe) {
         return res.status(500).json({ message: "Stripe não configurado" });
@@ -888,7 +888,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Upgrade to premium route
-  app.post("/api/upgrade-to-premium", authenticateToken, async (req: AuthRequest, res) => {
+  app.post("/api/upgrade-to-premium", authenticateToken, async (req: AuthRequest, res: Response) => {
     try {
       if (!stripe) {
         return res.status(500).json({ message: "Stripe não configurado" });
@@ -906,7 +906,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const updatedUser = await storage.updateUser(req.user!.id, {
           plan: "premium",
           maxSimulations: 999,
-          stripeCustomerId: paymentIntent.customer as string,
         });
 
         if (updatedUser) {
@@ -929,7 +928,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Plan routes
-  app.get("/api/plans", async (req, res) => {
+  app.get("/api/plans", async (req: Request, res: Response) => {
     try {
       const plans = await storage.getPlans();
       res.json(plans);
@@ -939,7 +938,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Plan access check
-  app.get("/api/users/plan-access", authenticateToken, async (req: AuthRequest, res) => {
+  app.get("/api/users/plan-access", authenticateToken, async (req: AuthRequest, res: Response) => {
     try {
       const access = await storage.checkUserPlanAccess(req.user!.id);
       res.json(access);
@@ -949,7 +948,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Password reset routes
-  app.post("/api/auth/forgot-password", async (req, res) => {
+  app.post("/api/auth/forgot-password", async (req: Request, res: Response) => {
     try {
       const { email } = resetPasswordSchema.parse(req.body);
       
@@ -970,7 +969,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/auth/reset-password", async (req, res) => {
+  app.post("/api/auth/reset-password", async (req: Request, res: Response) => {
     try {
       const { token, password } = updatePasswordSchema.parse(req.body);
       
@@ -992,7 +991,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/auth/logout", authenticateToken, async (req: AuthRequest, res) => {
+  app.post("/api/auth/logout", authenticateToken, async (req: AuthRequest, res: Response) => {
     try {
       // For now, just return success - in production, you'd invalidate the token
       res.json({ message: "Logout realizado com sucesso" });
@@ -1002,7 +1001,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI Advisor routes - ACESSO RESTRITO APENAS PARA ASSINANTES
-  app.post("/api/ai/advice", authenticateToken, async (req: AuthRequest, res) => {
+  app.post("/api/ai/advice", authenticateToken, async (req: AuthRequest, res: Response) => {
     if (!req.user) {
       return res.status(401).json({ message: "Usuário não autenticado" });
     }
@@ -1033,7 +1032,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get user's simulations if not provided
       let userSimulations = simulationData;
       if (!userSimulations && (context === 'simulation_analysis' || !context)) {
-        userSimulations = await storage.getUserSimulations(req.user.id);
+        userSimulations = await storage.getSimulationsByUser(req.user.id);
       }
 
       // Prepare AI advisor request
@@ -1067,7 +1066,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Specific AI analysis for simulations - ACESSO RESTRITO APENAS PARA ASSINANTES
-  app.post("/api/ai/analyze-simulation/:id", authenticateToken, async (req: AuthRequest, res) => {
+  app.post("/api/ai/analyze-simulation/:id", authenticateToken, async (req: AuthRequest, res: Response) => {
     if (!req.user) {
       return res.status(401).json({ message: "Usuário não autenticado" });
     }
@@ -1098,7 +1097,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI pricing insights
-  app.post("/api/ai/pricing-insights", authenticateToken, async (req: AuthRequest, res) => {
+  app.post("/api/ai/pricing-insights", authenticateToken, async (req: AuthRequest, res: Response) => {
     if (!req.user) {
       return res.status(401).json({ message: "Usuário não autenticado" });
     }
@@ -1119,7 +1118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Payment upgrade route
-  app.post("/api/payments/upgrade", authenticateToken, async (req: AuthRequest, res) => {
+  app.post("/api/payments/upgrade", authenticateToken, async (req: AuthRequest, res: Response) => {
     try {
       const { planId, paymentMethod } = upgradeToPremiumSchema.parse(req.body);
       

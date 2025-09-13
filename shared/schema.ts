@@ -9,7 +9,7 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   company: text("company"),
   phone: text("phone"),
-  role: text("role", { enum: ["admin", "user", "manager"] }).notNull().default("user"),
+  role: text("role", { enum: ["admin", "user", "manager", "demo"] }).notNull().default("user"),
   plan: text("plan", { enum: ["demo", "gratuito", "premium"] }).notNull().default("gratuito"),
   planExpiresAt: timestamp("plan_expires_at"),
   maxSimulations: integer("max_simulations").default(5), // 5 for free, -1 for unlimited
