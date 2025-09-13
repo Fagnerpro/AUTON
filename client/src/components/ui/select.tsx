@@ -85,85 +85,33 @@ SelectScrollDownButton.displayName =
 const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({ className, children, position = "popper", ...props }, ref) => {
-  const portalRef = React.useRef<HTMLDivElement | null>(null);
-  const contentId = React.useId();
-  const [isMounted, setIsMounted] = React.useState(false);
-  const [shouldRender, setShouldRender] = React.useState(false);
-
-  React.useEffect(() => {
-    setIsMounted(true);
-    setShouldRender(true);
-    
-    return () => {
-      // Cleanup seguro com timeout para animações
-      const timeout = setTimeout(() => {
-        if (portalRef.current?.parentNode) {
-          try {
-            portalRef.current.parentNode.removeChild(portalRef.current);
-          } catch (err) {
-            console.warn('⚠️ Portal já removido:', err);
-          }
-        }
-      }, 300); // Tempo da animação exit
-      
-      return () => clearTimeout(timeout);
-    };
-  }, []);
-
-  React.useEffect(() => {
-    if (!isMounted) {
-      const timeout = setTimeout(() => setShouldRender(false), 300);
-      return () => clearTimeout(timeout);
-    }
-  }, [isMounted]);
-
-  if (!isMounted) {
-    return null;
-  }
-
-  return (
-    <SelectPrimitive.Portal>
-      <div ref={portalRef}>
-        <AnimatePresence mode="wait">
-          {shouldRender && (
-            <motion.div
-              key={`select-motion-${contentId}`}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.15 }}
-            >
-              <SelectPrimitive.Content
-                ref={ref}
-                className={cn(
-                  "relative z-50 max-h-[--radix-select-content-available-height] min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border bg-popover text-popover-foreground shadow-md",
-                  position === "popper" &&
-                    "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
-                  className
-                )}
-                position={position}
-                {...props}
-              >
-                <SelectScrollUpButton />
-                <SelectPrimitive.Viewport
-                  className={cn(
-                    "p-1",
-                    position === "popper" &&
-                      "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
-                  )}
-                >
-                  {children}
-                </SelectPrimitive.Viewport>
-                <SelectScrollDownButton />
-              </SelectPrimitive.Content>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </SelectPrimitive.Portal>
-  );
-})
+>(({ className, children, position = "popper", ...props }, ref) => (
+  <SelectPrimitive.Portal>
+    <SelectPrimitive.Content
+      ref={ref}
+      className={cn(
+        "relative z-50 max-h-[--radix-select-content-available-height] min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        position === "popper" &&
+          "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
+        className
+      )}
+      position={position}
+      {...props}
+    >
+      <SelectScrollUpButton />
+      <SelectPrimitive.Viewport
+        className={cn(
+          "p-1",
+          position === "popper" &&
+            "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
+        )}
+      >
+        {children}
+      </SelectPrimitive.Viewport>
+      <SelectScrollDownButton />
+    </SelectPrimitive.Content>
+  </SelectPrimitive.Portal>
+))
 SelectContent.displayName = SelectPrimitive.Content.displayName
 
 const SelectLabel = React.forwardRef<

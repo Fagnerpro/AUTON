@@ -13,6 +13,7 @@ export default function ReportsStatic() {
   const [message, setMessage] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const mountedRef = useRef(true);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Carregar simulações de forma independente
   useEffect(() => {
@@ -51,6 +52,9 @@ export default function ReportsStatic() {
     
     return () => {
       mountedRef.current = false;
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
     };
   }, []);
 
@@ -121,8 +125,11 @@ export default function ReportsStatic() {
     } finally {
       setIsGenerating(false);
       
-      // Limpar mensagem após 3 segundos
-      setTimeout(() => {
+      // Limpar mensagem após 3 segundos com cleanup apropriado
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => {
         if (mountedRef.current) {
           setMessage('');
         }
@@ -367,7 +374,7 @@ export default function ReportsStatic() {
                       {simulation.type} • {new Date(simulation.createdAt).toLocaleDateString('pt-BR')}
                     </div>
                   </div>
-                  {simulation.results && (
+                  {simulation.results !== null && simulation.results !== undefined && (
                     <span style={{
                       background: '#10b981',
                       color: 'white',
