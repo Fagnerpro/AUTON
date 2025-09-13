@@ -17,9 +17,9 @@ if (!process.env.DATABASE_URL) {
 // Create pool with proper configuration for Replit environment
 export const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL,
-  max: 1, // Limit concurrent connections
-  idleTimeoutMillis: 10000,
-  connectionTimeoutMillis: 5000
+  max: 3, // Allow reasonable concurrent connections for web app
+  idleTimeoutMillis: 30000, // 30 seconds - reduce connection churn
+  connectionTimeoutMillis: 10000 // 10 seconds - allow for complex queries
 });
 
 export const db = drizzle({ client: pool, schema });
