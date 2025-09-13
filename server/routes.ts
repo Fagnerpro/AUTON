@@ -8,7 +8,7 @@ import {
   insertSimulationSchema, 
   resetPasswordSchema,
   updatePasswordSchema,
-  upgradeToPremiumumSchema,
+  upgradeToPremiumSchema,
   type User 
 } from "@shared/schema";
 import jwt from "jsonwebtoken";
@@ -353,6 +353,25 @@ function calculateCommonAreasSystem(params: any) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Root API endpoint - handles HEAD requests to /api to prevent them from hitting Vite catch-all
+  app.all("/api", async (req, res) => {
+    if (req.method === "HEAD") {
+      return res.status(200).end();
+    }
+    res.json({
+      name: "AUTON® API",
+      version: "1.0.0",
+      status: "ok",
+      endpoints: {
+        health: "/api/health",
+        auth: "/api/auth/*",
+        simulations: "/api/simulations",
+        reports: "/api/reports/*",
+        ai: "/api/ai/*"
+      }
+    });
+  });
+
   // Health check endpoint
   app.get("/api/health", async (req, res) => {
     res.json({
@@ -1102,7 +1121,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Payment upgrade route
   app.post("/api/payments/upgrade", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      const { planId, paymentMethod } = upgradeToPremiumumSchema.parse(req.body);
+      const { planId, paymentMethod } = upgradeToPremiumSchema.parse(req.body);
       
       const plan = await storage.getPlan(planId);
       if (!plan) {

@@ -155,7 +155,7 @@ export const updatePasswordSchema = z.object({
   password: z.string().min(6),
 });
 
-export const upgradeToPremiumumSchema = z.object({
+export const upgradeToPremiumSchema = z.object({
   planId: z.number(),
   paymentMethod: z.enum(["stripe", "mercadopago"]),
 });
@@ -178,4 +178,4 @@ export type LoginRequest = z.infer<typeof loginSchema>;
 export type RegisterRequest = z.infer<typeof registerSchema>;
 export type ResetPasswordRequest = z.infer<typeof resetPasswordSchema>;
 export type UpdatePasswordRequest = z.infer<typeof updatePasswordSchema>;
-export type UpgradeToPremiumRequest = z.infer<typeof upgradeToPremiumumSchema>;
+export type UpgradeToPremiumRequest = z.infer<typeof upgradeToPremiumSchema>;
