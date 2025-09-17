@@ -24,7 +24,7 @@ import {
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { db } from "./db";
-import { eq, and, desc, count, gte } from "drizzle-orm";
+import { eq, and, desc, count, gte, lt } from "drizzle-orm";
 import { 
   SOLAR_SIMULATION_CONFIG, 
   getSolarIrradiation, 
@@ -268,7 +268,7 @@ export class DatabaseStorage implements IStorage {
 
   async cleanExpiredSessions(): Promise<void> {
     await db.delete(sessions).where(
-      gte(sessions.expiresAt, new Date())
+      lt(sessions.expiresAt, new Date())
     );
   }
 

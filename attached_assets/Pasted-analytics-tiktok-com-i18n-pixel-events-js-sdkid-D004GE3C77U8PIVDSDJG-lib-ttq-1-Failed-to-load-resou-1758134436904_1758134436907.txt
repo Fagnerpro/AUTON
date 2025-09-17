@@ -1,0 +1,165 @@
+analytics.tiktok.com/i18n/pixel/events.js?sdkid=D004GE3C77U8PIVDSDJG&lib=ttq:1  Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+Auton:1 The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+Auton:1 The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+Auton:1 The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+_app-eb1b3448106d3d9a.js:38 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+_app-eb1b3448106d3d9a.js:38 [LaunchDarkly] LaunchDarkly client initialized
+Auton:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+gravatar.com/avatar/a11a2ff2b14b8d09d2805114e7a03f14?d=404:1  Failed to load resource: the server responded with a status of 404 ()
+framework-b17bc0012d7bb7e5.js:1 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-b17bc0012d7bb7e5.js:1
+framework-b17bc0012d7bb7e5.js:1 Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-b17bc0012d7bb7e5.js:1
+framework-b17bc0012d7bb7e5.js:1 Unrecognized feature: 'battery'.
+_ @ framework-b17bc0012d7bb7e5.js:1
+framework-b17bc0012d7bb7e5.js:1 Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-b17bc0012d7bb7e5.js:1
+framework-b17bc0012d7bb7e5.js:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-b17bc0012d7bb7e5.js:1
+framework-b17bc0012d7bb7e5.js:1 Unrecognized feature: 'layout-animations'.
+_ @ framework-b17bc0012d7bb7e5.js:1
+framework-b17bc0012d7bb7e5.js:1 Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-b17bc0012d7bb7e5.js:1
+framework-b17bc0012d7bb7e5.js:1 Unrecognized feature: 'navigation-override'.
+_ @ framework-b17bc0012d7bb7e5.js:1
+framework-b17bc0012d7bb7e5.js:1 Unrecognized feature: 'oversized-images'.
+_ @ framework-b17bc0012d7bb7e5.js:1
+framework-b17bc0012d7bb7e5.js:1 Unrecognized feature: 'publickey-credentials'.
+_ @ framework-b17bc0012d7bb7e5.js:1
+framework-b17bc0012d7bb7e5.js:1 Unrecognized feature: 'speaker-selection'.
+_ @ framework-b17bc0012d7bb7e5.js:1
+framework-b17bc0012d7bb7e5.js:1 Unrecognized feature: 'unoptimized-images'.
+_ @ framework-b17bc0012d7bb7e5.js:1
+framework-b17bc0012d7bb7e5.js:1 Unrecognized feature: 'unsized-media'.
+_ @ framework-b17bc0012d7bb7e5.js:1
+framework-b17bc0012d7bb7e5.js:1 Unrecognized feature: 'pointer-lock'.
+_ @ framework-b17bc0012d7bb7e5.js:1
+framework-b17bc0012d7bb7e5.js:1 Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-b17bc0012d7bb7e5.js:1
+framework-b17bc0012d7bb7e5.js:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-b17bc0012d7bb7e5.js:1
+workspace_iframe.html?initialPath=%2F&id=%3Arf0%3A:32 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+workspace_iframe.html?initialPath=%2F&id=%3Arf0%3A:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html?initialPath=%2F&id=%3Arf0%3A:32 Unrecognized feature: 'battery'.
+workspace_iframe.html?initialPath=%2F&id=%3Arf0%3A:32 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html?initialPath=%2F&id=%3Arf0%3A:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html?initialPath=%2F&id=%3Arf0%3A:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html?initialPath=%2F&id=%3Arf0%3A:32 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html?initialPath=%2F&id=%3Arf0%3A:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.html?initialPath=%2F&id=%3Arf0%3A:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Arf0%3A:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html?initialPath=%2F&id=%3Arf0%3A:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html?initialPath=%2F&id=%3Arf0%3A:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Arf0%3A:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.html?initialPath=%2F&id=%3Arf0%3A:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html?initialPath=%2F&id=%3Arf0%3A:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+dotdevproxy.janeway.replit.dev/__reachability:1  Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED
+dotdevproxy.janeway.replit.dev/__reachability:1  Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED
+dotdevproxy.janeway.replit.dev/__reachability:1  Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED
+dotdevproxy.kirk.replit.dev/__reachability:1  Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED
+dotdevproxy.kirk.replit.dev/__reachability:1  Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED
+dotdevproxy.kirk.replit.dev/__reachability:1  Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED
+dotdevproxy.picard.replit.dev/__reachability:1  Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED
+_app-eb1b3448106d3d9a.js:38  GET https://dotdevproxy.picard.replit.dev/__reachability net::ERR_TUNNEL_CONNECTION_FAILED
+(anonymous) @ _app-eb1b3448106d3d9a.js:38
+(anonymous) @ _app-eb1b3448106d3d9a.js:1
+(anonymous) @ main-ccd33b85ac5f5d61.js:1
+n @ main-ccd33b85ac5f5d61.js:1
+u @ main-ccd33b85ac5f5d61.js:1
+(anonymous) @ main-ccd33b85ac5f5d61.js:1
+(anonymous) @ main-ccd33b85ac5f5d61.js:1
+e @ _app-eb1b3448106d3d9a.js:1
+(anonymous) @ _app-eb1b3448106d3d9a.js:1
+(anonymous) @ main-ccd33b85ac5f5d61.js:1
+n @ main-ccd33b85ac5f5d61.js:1
+u @ main-ccd33b85ac5f5d61.js:1
+_app-eb1b3448106d3d9a.js:38  GET https://dotdevproxy.picard.replit.dev/__reachability net::ERR_TUNNEL_CONNECTION_FAILED
+(anonymous) @ _app-eb1b3448106d3d9a.js:38
+(anonymous) @ _app-eb1b3448106d3d9a.js:1
+(anonymous) @ main-ccd33b85ac5f5d61.js:1
+n @ main-ccd33b85ac5f5d61.js:1
+u @ main-ccd33b85ac5f5d61.js:1
+(anonymous) @ main-ccd33b85ac5f5d61.js:1
+(anonymous) @ main-ccd33b85ac5f5d61.js:1
+e @ _app-eb1b3448106d3d9a.js:1
+(anonymous) @ _app-eb1b3448106d3d9a.js:1
+(anonymous) @ main-ccd33b85ac5f5d61.js:1
+n @ main-ccd33b85ac5f5d61.js:1
+u @ main-ccd33b85ac5f5d61.js:1
+Promise.then
+n @ main-ccd33b85ac5f5d61.js:1
+u @ main-ccd33b85ac5f5d61.js:1
+(anonymous) @ main-ccd33b85ac5f5d61.js:1
+(anonymous) @ main-ccd33b85ac5f5d61.js:1
+o @ _app-eb1b3448106d3d9a.js:1
+(anonymous) @ _app-eb1b3448106d3d9a.js:1
+(anonymous) @ main-ccd33b85ac5f5d61.js:1
+n @ main-ccd33b85ac5f5d61.js:1
+c @ main-ccd33b85ac5f5d61.js:1
+Promise.then
+n @ main-ccd33b85ac5f5d61.js:1
+u @ main-ccd33b85ac5f5d61.js:1
+(anonymous) @ main-ccd33b85ac5f5d61.js:1
+(anonymous) @ main-ccd33b85ac5f5d61.js:1
+e @ _app-eb1b3448106d3d9a.js:1
+(anonymous) @ _app-eb1b3448106d3d9a.js:1
+(anonymous) @ main-ccd33b85ac5f5d61.js:1
+n @ main-ccd33b85ac5f5d61.js:1
+u @ main-ccd33b85ac5f5d61.js:1
+_app-eb1b3448106d3d9a.js:38  GET https://dotdevproxy.pike.replit.dev/__reachability net::ERR_TUNNEL_CONNECTION_FAILED
+(anonymous) @ _app-eb1b3448106d3d9a.js:38
+(anonymous) @ _app-eb1b3448106d3d9a.js:1
+(anonymous) @ main-ccd33b85ac5f5d61.js:1
+n @ main-ccd33b85ac5f5d61.js:1
+u @ main-ccd33b85ac5f5d61.js:1
+(anonymous) @ main-ccd33b85ac5f5d61.js:1
+(anonymous) @ main-ccd33b85ac5f5d61.js:1
+e @ _app-eb1b3448106d3d9a.js:1
+(anonymous) @ _app-eb1b3448106d3d9a.js:1
+(anonymous) @ main-ccd33b85ac5f5d61.js:1
+n @ main-ccd33b85ac5f5d61.js:1
+u @ main-ccd33b85ac5f5d61.js:1
