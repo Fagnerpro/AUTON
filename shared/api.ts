@@ -90,16 +90,23 @@ export const calculateResultsResponseSchema = z.object({
 export type CalculateResultsResponse = z.infer<typeof calculateResultsResponseSchema>;
 
 // Dashboard Responses
-export const dashboardStatsSchema = z.object({
-  total: z.number(),
-  completed: z.number(),
-  draft: z.number(),
-  totalPower: z.number(),
+export const userStatsResponseSchema = z.object({
+  totalSimulations: z.number(),
+  activeProjects: z.number(),
   totalSavings: z.number(),
-  recentSimulations: z.array(simulationResponseSchema),
+  totalPower: z.number(),
 });
 
-export type DashboardStats = z.infer<typeof dashboardStatsSchema>;
+export type UserStatsResponse = z.infer<typeof userStatsResponseSchema>;
+
+export const planAccessResponseSchema = z.object({
+  hasAccess: z.boolean(),
+  remainingSimulations: z.number(),
+  maxSimulations: z.number(),
+  plan: z.enum(["demo", "gratuito", "premium"]),
+});
+
+export type PlanAccessResponse = z.infer<typeof planAccessResponseSchema>;
 
 // Payment Responses
 export const createCheckoutResponseSchema = z.object({

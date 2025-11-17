@@ -1,9 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator, FileText, TrendingUp, Sun } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import type { UserStatsResponse } from '@shared/api';
 
 export default function StatsCards() {
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading } = useQuery<UserStatsResponse>({
     queryKey: ['/api/users/stats'],
   });
 

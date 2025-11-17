@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Plus, Crown, AlertTriangle, Calculator, Brain } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import type { PlanAccessResponse } from '@shared/api';
 import StatsCards from '@/components/dashboard/stats-cards';
 import Charts from '@/components/dashboard/charts';
 import RecentSimulations from '@/components/dashboard/recent-simulations';
@@ -14,7 +15,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
 
-  const { data: planAccess } = useQuery({
+  const { data: planAccess } = useQuery<PlanAccessResponse>({
     queryKey: ['/api/users/plan-access'],
     enabled: !!user,
   });
