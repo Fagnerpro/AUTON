@@ -15,6 +15,7 @@ import {
   BarChart3
 } from 'lucide-react';
 import InvestmentScenarios from './investment-scenarios';
+import { CashFlowChart } from './cash-flow-chart';
 import type { Simulation } from '@shared/schema';
 
 interface ResultsDisplayProps {
@@ -63,13 +64,16 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
   
   const financialAnalysis = {
     total_investment: results.totalInvestment || 0,
-    monthly_savings: (results.annualSavings || 0) / 12,
+    monthly_savings: results.monthlySavings || (results.annualSavings || 0) / 12,
     annual_savings: results.annualSavings || 0,
     payback_years: Math.round((results.paybackYears || 0) * 10) / 10,
-    roi_25_years: Math.round((results.roi_percentage || results.roi || 0) * 10) / 10,
-    net_profit_25_years: ((results.annualSavings || 0) * 25 - (results.totalInvestment || 0)),
-    total_savings_25_years: (results.annualSavings || 0) * 25,
-    investment_scenarios: results.scenarios || {}
+    payback_months: results.paybackMonths || ((results.paybackYears || 0) * 12),
+    roi_annual: results.roi_annual || results.roi || 0,
+    roi_25_years: results.roi_25_years || results.roi_percentage || 0,
+    net_profit_25_years: results.net_profit_25_years || ((results.annualSavings || 0) * 25 - (results.totalInvestment || 0)),
+    total_savings_25_years: results.total_savings_25_years || ((results.annualSavings || 0) * 25),
+    investment_scenarios: results.scenarios || {},
+    cash_flow_data: results.cashFlowData || []
   };
   
   const environmentalImpact = {
@@ -263,7 +267,7 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
 
         {/* Tab: Análise Financeira */}
         <TabsContent value="financial" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -300,6 +304,28 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
               </CardContent>
             </Card>
 
+            <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-purple-800">
+                  <TrendingUp className="h-5 w-5 text-purple-600" />
+                  📊 ROI Anualizado
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="text-center p-6 bg-white rounded-lg border-2 border-purple-300">
+                  <p className="text-4xl font-bold text-purple-600" data-testid="text-roi-annual">
+                    {formatNumber(financialAnalysis?.roi_annual || 0, 1)}%
+                  </p>
+                  <p className="text-sm text-gray-600 mt-2">Retorno Anual sobre Investimento</p>
+                </div>
+                <Alert className="bg-purple-50 border-purple-200">
+                  <AlertDescription className="text-purple-800 text-sm">
+                    <strong>ROI Anualizado:</strong> O sistema retorna {formatNumber(financialAnalysis?.roi_annual || 0, 1)}% do investimento por ano.
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle>💎 Ganhos de 25 Anos</CardTitle>
@@ -307,7 +333,7 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
               <CardContent className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">ROI Total:</span>
-                  <span className="font-bold text-green-600">
+                  <span className="font-bold text-green-600" data-testid="text-roi-25years">
                     {formatNumber(financialAnalysis?.roi_25_years || 0, 1)}%
                   </span>
                 </div>
@@ -326,6 +352,14 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
               </CardContent>
             </Card>
           </div>
+
+          {/* Gráficos de Fluxo de Caixa */}
+          {financialAnalysis?.cash_flow_data && financialAnalysis.cash_flow_data.length > 0 && (
+            <CashFlowChart 
+              data={financialAnalysis.cash_flow_data} 
+              totalInvestment={financialAnalysis.total_investment}
+            />
+          )}
         </TabsContent>
 
         {/* Tab: Especificações Técnicas */}
