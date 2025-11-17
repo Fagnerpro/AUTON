@@ -13,6 +13,7 @@ interface CashFlowData {
 interface CashFlowChartProps {
   data: CashFlowData[];
   totalInvestment: number;
+  paybackMonths?: number;
 }
 
 const formatCurrency = (value: number) => {
@@ -42,13 +43,16 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export function CashFlowChart({ data, totalInvestment }: CashFlowChartProps) {
+export function CashFlowChart({ data, totalInvestment, paybackMonths }: CashFlowChartProps) {
   if (!data || data.length === 0) {
     return null;
   }
 
-  // Find breakeven point (when accumulated flow becomes positive)
-  const breakevenMonth = data.find(d => d.accumulatedFlow >= 0)?.month || null;
+  // Find breakeven point (when accumulated flow becomes positive within 24 months)
+  const breakevenInData = data.find(d => d.accumulatedFlow >= 0)?.month || null;
+  
+  // Use backend-calculated payback if breakeven not found in 24 months
+  const breakevenMonth = breakevenInData || paybackMonths;
   const finalAccumulated = data[data.length - 1]?.accumulatedFlow || 0;
 
   return (
@@ -81,9 +85,14 @@ export function CashFlowChart({ data, totalInvestment }: CashFlowChartProps) {
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-blue-500" />
               <span className="text-2xl font-bold text-gray-900 dark:text-white" data-testid="text-breakeven-month">
-                {breakevenMonth ? `${breakevenMonth} meses` : 'Calculando...'}
+                {breakevenMonth ? `${Math.round(breakevenMonth)} meses` : 'N/A'}
               </span>
             </div>
+            {breakevenMonth && breakevenMonth > 24 && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                Retorno após o período de 24 meses
+              </p>
+            )}
           </CardContent>
         </Card>
 

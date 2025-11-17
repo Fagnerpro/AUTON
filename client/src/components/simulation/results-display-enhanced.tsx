@@ -358,6 +358,7 @@ export default function ResultsDisplayEnhanced({ type, results, simulation }: Re
             <CashFlowChart 
               data={financialAnalysis.cash_flow_data} 
               totalInvestment={financialAnalysis.total_investment}
+              paybackMonths={financialAnalysis.payback_months}
             />
           )}
         </TabsContent>
