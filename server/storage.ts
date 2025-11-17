@@ -33,6 +33,10 @@ import {
   calculatePanelCount,
   getInvestmentScenarios
 } from '@shared/simulation-config';
+import { 
+  calculateMonthlyCashFlow, 
+  calculateFinancialMetrics 
+} from './utils/financial-calculations';
 
 export interface IStorage {
   // User operations
@@ -502,7 +506,14 @@ export class DatabaseStorage implements IStorage {
     
     const currentTariff = SOLAR_SIMULATION_CONFIG.FINANCIAL.tariff_kwh;
     const annualSavings = monthlyGeneration * 12 * currentTariff * 0.95; // 95% considering compensation
+    const monthlySavings = annualSavings / 12;
     const paybackYears = totalInvestment / annualSavings;
+    
+    // Advanced financial metrics
+    const financialMetrics = calculateFinancialMetrics(totalInvestment, annualSavings);
+    
+    // Cash flow data for visualization
+    const cashFlowData = calculateMonthlyCashFlow(totalInvestment, monthlySavings, 24);
     
     const scenarios = getInvestmentScenarios(systemPower / 1000); // Convert Wp to kW
 
@@ -514,8 +525,15 @@ export class DatabaseStorage implements IStorage {
       annualGeneration: monthlyGeneration * 12,
       totalInvestment,
       annualSavings,
-      paybackYears: Math.round(paybackYears * 10) / 10, // Arredondado para 1 casa decimal
-      roi: Math.round((annualSavings / totalInvestment) * 100 * 10) / 10,
+      monthlySavings,
+      paybackYears: Math.round(paybackYears * 10) / 10,
+      paybackMonths: financialMetrics.payback_months,
+      roi: financialMetrics.roi_annual, // ROI Anualizado
+      roi_annual: financialMetrics.roi_annual,
+      roi_25_years: financialMetrics.roi_25_years,
+      total_savings_25_years: financialMetrics.total_savings_25_years,
+      net_profit_25_years: financialMetrics.net_profit_25_years,
+      cashFlowData,
       co2Reduction: monthlyGeneration * 12 * 0.084, // kg CO2/year
       scenarios,
       coveragePercentage: Math.round(Math.min(100, (monthlyGeneration / monthlyConsumption) * 100) * 10) / 10,
@@ -552,7 +570,14 @@ export class DatabaseStorage implements IStorage {
     const totalInvestment = systemPower * investmentPerWp;
     
     const annualSavings = monthlyGeneration * 12 * commercialTariff * commercialFactor;
+    const monthlySavings = annualSavings / 12;
     const paybackYears = totalInvestment / annualSavings;
+    
+    // Advanced financial metrics
+    const financialMetrics = calculateFinancialMetrics(totalInvestment, annualSavings);
+    
+    // Cash flow data for visualization
+    const cashFlowData = calculateMonthlyCashFlow(totalInvestment, monthlySavings, 24);
     
     const scenarios = getInvestmentScenarios(systemPower / 1000); // Convert Wp to kW
 
@@ -564,8 +589,15 @@ export class DatabaseStorage implements IStorage {
       annualGeneration: monthlyGeneration * 12,
       totalInvestment,
       annualSavings,
+      monthlySavings,
       paybackYears: Math.round(paybackYears * 10) / 10,
-      roi: Math.round((annualSavings / totalInvestment) * 100 * 10) / 10,
+      paybackMonths: financialMetrics.payback_months,
+      roi: financialMetrics.roi_annual,
+      roi_annual: financialMetrics.roi_annual,
+      roi_25_years: financialMetrics.roi_25_years,
+      total_savings_25_years: financialMetrics.total_savings_25_years,
+      net_profit_25_years: financialMetrics.net_profit_25_years,
+      cashFlowData,
       co2Reduction: monthlyGeneration * 12 * 0.084, // kg CO2/year
       scenarios,
       coveragePercentage: Math.round(Math.min(100, (monthlyGeneration / monthlyConsumption) * 100) * 10) / 10,
@@ -637,8 +669,14 @@ export class DatabaseStorage implements IStorage {
     
     // Payback e ROI
     const rawPaybackYears = totalInvestment / annualSavings;
-    const paybackYears = Math.round(rawPaybackYears * 10) / 10; // Arredondado para 1 casa decimal
-    const roi25Years = ((annualSavings * 25 - totalInvestment) / totalInvestment) * 100;
+    const paybackYears = Math.round(rawPaybackYears * 10) / 10;
+    const monthlySavings = annualSavings / 12;
+    
+    // Advanced financial metrics
+    const financialMetrics = calculateFinancialMetrics(totalInvestment, annualSavings);
+    
+    // Cash flow data for visualization
+    const cashFlowData = calculateMonthlyCashFlow(totalInvestment, monthlySavings, 24);
     
     // Cenários de investimento específicos para EV
     const scenarios = this.getEvChargingScenarios(systemPower / 1000, chargingPoints);
@@ -651,8 +689,16 @@ export class DatabaseStorage implements IStorage {
       annualGeneration,
       totalInvestment,
       annualSavings,
+      monthlySavings,
       paybackYears,
-      roi: Math.round((annualSavings / totalInvestment) * 100 * 10) / 10,
+      paybackMonths: financialMetrics.payback_months,
+      roi: financialMetrics.roi_annual,
+      roi_annual: financialMetrics.roi_annual,
+      roi_25_years: financialMetrics.roi_25_years,
+      roi_percentage: financialMetrics.roi_25_years, // Mantido para compatibilidade
+      total_savings_25_years: financialMetrics.total_savings_25_years,
+      net_profit_25_years: financialMetrics.net_profit_25_years,
+      cashFlowData,
       co2Reduction: annualGeneration * 0.084, // kg CO2/year evitado
       coveragePercentage: Math.round(Math.min(100, (annualGeneration / annualConsumption) * 100) * 10) / 10,
       irradiation,
@@ -666,7 +712,6 @@ export class DatabaseStorage implements IStorage {
       annual_consumption: annualConsumption,
       battery_capacity: batteryCapacity,
       charging_revenue: chargingFeePerKWh,
-      roi_percentage: Math.round(roi25Years * 10) / 10, // Arredondado para 1 casa decimal
       // Dados financeiros detalhados
       solar_system_cost: solarSystemCost,
       battery_cost: batteryCost,
