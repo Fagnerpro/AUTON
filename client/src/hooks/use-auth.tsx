@@ -1,10 +1,11 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { apiRequest } from '@/lib/queryClient';
-import type { LoginRequest, RegisterRequest, User } from '@shared/schema';
+import type { LoginRequest, RegisterRequest } from '@shared/schema';
+import type { AuthResponse, UserInfoResponse } from '@shared/api';
 import { useToast } from '@/hooks/use-toast';
 
 interface AuthContextType {
-  user: Omit<User, 'hashedPassword'> | null;
+  user: UserInfoResponse | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: LoginRequest) => Promise<void>;
@@ -15,7 +16,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<Omit<User, 'hashedPassword'> | null>(null);
+  const [user, setUser] = useState<UserInfoResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
@@ -33,10 +34,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           });
 
           if (response.ok) {
-            const currentUser = await response.json();
+            const currentUser: UserInfoResponse = await response.json();
             setUser(currentUser);
           } else {
-            // Token inválido, limpar
             localStorage.removeItem('token');
             setUser(null);
           }
@@ -55,10 +55,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (credentials: LoginRequest) => {
     try {
       setIsLoading(true);
-      const response = await apiRequest('POST', '/api/auth/login', credentials);
+      const response: AuthResponse = await apiRequest('POST', '/api/auth/login', credentials);
       
       localStorage.setItem('token', response.token);
-      setUser(response.user);
+      
+      // Fetch full user info with access data
+      const userResponse: UserInfoResponse = await apiRequest('GET', '/api/auth/me');
+      setUser(userResponse);
       
       toast({
         title: "Login realizado com sucesso",
@@ -79,10 +82,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (userData: RegisterRequest) => {
     try {
       setIsLoading(true);
-      const response = await apiRequest('POST', '/api/auth/register', userData);
+      const response: AuthResponse = await apiRequest('POST', '/api/auth/register', userData);
       
       localStorage.setItem('token', response.token);
-      setUser(response.user);
+      
+      // Fetch full user info with access data
+      const userResponse: UserInfoResponse = await apiRequest('GET', '/api/auth/me');
+      setUser(userResponse);
       
       toast({
         title: "Conta criada com sucesso",

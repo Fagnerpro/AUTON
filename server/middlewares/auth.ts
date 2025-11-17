@@ -2,9 +2,10 @@ import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { storage } from "../storage";
 import type { User } from "@shared/schema";
+import { env } from "../config/env";
 
-// Get JWT secret from env (will be validated on startup)
-const JWT_SECRET = process.env.JWT_SECRET || "temp-secret";
+// Get JWT secret from validated env config
+const JWT_SECRET = env.jwtSecret;
 
 // Extend Request to include user
 export interface AuthRequest extends Request {

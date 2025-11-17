@@ -34,6 +34,7 @@ let validatedConfig: Env | null = null;
 /**
  * Validate and load environment variables
  * Throws error if critical variables are missing or invalid
+ * Auto-runs on first import
  */
 export function validateEnv(): Env {
   if (validatedConfig) {
@@ -115,3 +116,6 @@ export const env = {
     return this.nodeEnv === "development";
   },
 };
+
+// Auto-validate on module load
+validateEnv();

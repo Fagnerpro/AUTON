@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
+// Environment validated automatically on import in config/env.ts
 const app = express();
 app.set('trust proxy', true); // Para capturar IP corretamente atrás de proxies
 app.use(express.json());
