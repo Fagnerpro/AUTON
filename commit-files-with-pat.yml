@@ -1,0 +1,520 @@
+# Workflow manual dispatch: escreve todos os arquivos preparados no branch `ci-prod-setup`,
+# faz commit/push usando o PAT (AUTOMATION_PAT ou COPILOT_PAT) e tenta criar um PR contra main.
+# Execute manualmente em Actions -> Commit prepared files (manual dispatch) -> Run workflow.
+#
+# Observações:
+# - Certifique-se de que o secret existe com um desses nomes: AUTOMATION_PAT or COPILOT_PAT.
+# - Em Settings > Actions > General defina Workflow permissions: Read and write.
+# - O workflow cria/atualiza a branch ci-prod-setup e cria um PR (se possível).
+on:
+  workflow_dispatch:
+
+jobs:
+  commit-files:
+    name: Commit prepared files to ci-prod-setup and open PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Configure git user
+        run: |
+          git config --global user.name "auton-bot"
+          git config --global user.email "auton-bot@users.noreply.github.com"
+
+      - name: Create branch ci-prod-setup
+        run: |
+          # Create or reset local branch to current default (main)
+          git checkout -B ci-prod-setup
+
+      - name: Write prepared files
+        env:
+          GITHUB_REPO: ${{ github.repository }}
+        run: |
+          # Dockerfile.server
+          cat > Dockerfile.server <<'EOF'
+# Multi-stage Dockerfile para backend (Node + esbuild bundling)
+FROM node:20-alpine AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --production=false
+
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npm run build
+# opcional: garantir bundling do server
+RUN npx esbuild server/index.ts --platform=node --bundle --format=esm --outfile=dist/index.js || true
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+COPY package.json package-lock.json ./
+RUN npm ci --only=production
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/public ./public
+EXPOSE 3000
+CMD ["node", "dist/index.js"]
+EOF
+
+          # Dockerfile.client
+          cat > Dockerfile.client <<'EOF'
+# Build estático do frontend e serve via nginx
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM nginx:alpine AS runner
+COPY --from=builder /app/dist /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+EOF
+
+          # docker-compose.yml (dev)
+          cat > docker-compose.yml <<'EOF'
+version: "3.8"
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: auton
+      POSTGRES_PASSWORD: auton_password
+      POSTGRES_DB: auton_db
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    restart: on-failure
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgres://auton:auton_password@db:5432/auton_db
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - redis
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    restart: on-failure
+    ports:
+      - "8080:80"
+    depends_on:
+      - server
+
+volumes:
+  db-data:
+EOF
+
+          # CI/CD workflow (the one previously proposed)
+          mkdir -p .github/workflows
+          cat > .github/workflows/ci-cd.yml <<'EOF'
+name: CI / Build / Deploy
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_SERVER: ${{ env.REGISTRY }}/${{ github.repository }}/auton-server
+  IMAGE_CLIENT: ${{ env.REGISTRY }}/${{ github.repository }}/auton-client
+
+jobs:
+  checks:
+    name: Install, TypeCheck, Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm ci
+      - name: Typecheck
+        run: npm run check
+      - name: Build (frontend + server)
+        run: npm run build
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifact
+          path: |
+            dist
+            client/dist
+
+  build-and-push-images:
+    needs: checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Build & push server image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.server
+          push: true
+          tags: |
+            ${{ env.IMAGE_SERVER }}:staging
+            ${{ env.IMAGE_SERVER }}:${{ github.sha }}
+      - name: Build & push client image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.client
+          push: true
+          tags: |
+            ${{ env.IMAGE_CLIENT }}:staging
+            ${{ env.IMAGE_CLIENT }}:${{ github.sha }}
+
+  deploy-staging:
+    needs: build-and-push-images
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Deploy to staging via SSH
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            docker pull ${{ env.IMAGE_SERVER }}:${{ github.sha }} || docker pull ${{ env.IMAGE_SERVER }}:staging
+            docker pull ${{ env.IMAGE_CLIENT }}:${{ github.sha }} || docker pull ${{ env.IMAGE_CLIENT }}:staging
+            cd /srv/auton || mkdir -p /srv/auton
+            cat > /srv/auton/docker-compose.override.yml <<'EOF'
+            version: '3.8'
+            services:
+              server:
+                image: ${{ env.IMAGE_SERVER }}:${{ github.sha }}
+                restart: unless-stopped
+              client:
+                image: ${{ env.IMAGE_CLIENT }}:${{ github.sha }}
+                restart: unless-stopped
+            EOF
+            docker-compose -f /srv/auton/docker-compose.yml pull
+            docker-compose -f /srv/auton/docker-compose.yml -f /srv/auton/docker-compose.override.yml up -d --remove-orphans
+
+  smoke-test:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for app
+        run: sleep 10
+      - name: Health check staging
+        env:
+          STAGING_URL: ${{ secrets.STAGING_URL }}
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" ${STAGING_URL}/health || echo "000")
+          if [ "$STATUS" != "200" ]; then
+            echo "Health check failed: $STATUS"
+            exit 1
+          fi
+          echo "Smoke test passed"
+
+  require-prod-approval:
+    needs: smoke-test
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ secrets.PROD_URL }}
+    steps:
+      - name: Await manual approval
+        uses: chrnorm/deploy-approval@v1
+        with:
+          timeout_minutes: 1440
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-prod:
+    needs: require-prod-approval
+    runs-on: ubuntu-latest
+    if: ${{ needs.require-prod-approval.result == 'success' }}
+    steps:
+      - name: Deploy to production host via SSH
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            docker pull ${{ env.IMAGE_SERVER }}:${{ github.sha }} || docker pull ${{ env.IMAGE_SERVER }}:latest
+            docker pull ${{ env.IMAGE_CLIENT }}:${{ github.sha }} || docker pull ${{ env.IMAGE_CLIENT }}:latest
+            cd /srv/auton || mkdir -p /srv/auton
+            docker-compose -f /srv/auton/docker-compose.yml pull
+            docker-compose -f /srv/auton/docker-compose.yml -f /srv/auton/docker-compose.override.yml up -d --remove-orphans
+EOF
+
+          # .dockerignore
+          cat > .dockerignore <<'EOF'
+node_modules
+# build outputs
+dist
+client/dist
+.env
+.env.local
+.vscode
+.idea
+.DS_Store
+.git
+EOF
+
+          # server health endpoint skeleton
+          mkdir -p server/src/routes
+          cat > server/src/routes/health.ts <<'EOF'
+// Exemplo de endpoint /health em Express + TypeScript
+// Coloque este arquivo em server/src/routes/ e importe na inicialização do Express.
+// O endpoint tenta executar checagens básicas. Ajuste as funções checkDatabase/checkRedis
+// conforme a forma que o projeto cria clientes DB/Redis (Drizzle, Neon, ioredis, etc.).
+
+import { Router } from "express";
+
+const router = Router();
+
+async function checkDatabase(): Promise<{ ok: boolean; info?: string }> {
+  try {
+    const dbUrl = process.env.DATABASE_URL;
+    if (!dbUrl) return { ok: false, info: "no-database-url" };
+    // Se no projeto existir um client exportado, importe e use:
+    // import { db } from '../../shared/db';
+    // await db.execute('SELECT 1');
+    return { ok: true };
+  } catch (err: any) {
+    return { ok: false, info: err?.message || String(err) };
+  }
+}
+
+async function checkRedis(): Promise<{ ok: boolean; info?: string }> {
+  try {
+    const redisUrl = process.env.REDIS_URL;
+    if (!redisUrl) return { ok: false, info: "no-redis-url" };
+    // Se houver cliente Redis na base, use-o (ex: ioredis) para ping:
+    // import { redisClient } from '../../shared/redis';
+    // await redisClient.ping();
+    return { ok: true };
+  } catch (err: any) {
+    return { ok: false, info: err?.message || String(err) };
+  }
+}
+
+router.get("/health", async (req, res) => {
+  const start = Date.now();
+  const checks = await Promise.allSettled([checkDatabase(), checkRedis()]);
+
+  const dbCheck = checks[0].status === "fulfilled" ? checks[0].value : { ok: false };
+  const redisCheck = checks[1].status === "fulfilled" ? checks[1].value : { ok: false };
+
+  const ok = dbCheck.ok && redisCheck.ok;
+  const latencyMs = Date.now() - start;
+
+  res.status(ok ? 200 : 500).json({
+    status: ok ? "ok" : "degraded",
+    checks: {
+      database: dbCheck,
+      redis: redisCheck
+    },
+    latencyMs
+  });
+});
+
+export default router;
+EOF
+
+          # CHECKLIST-PRODUCAO.md (if not present; it was already committed earlier but we include to ensure)
+          cat > CHECKLIST-PRODUCAO.md <<'EOF'
+# Checklist executável para preparação à produção — AUTON
+
+Formato: cada tarefa tem: prioridade, responsável(s), estimativa, subtarefas e critérios de aceitação (CA).
+
+## Prioridade Alta (P0) — requisito mínimo para operação segura (Mínimo Viável Seguro)
+- Tarefa: Gerenciamento de Segredos e Variáveis de Ambiente
+  - Responsável: DevOps / Eng. Backend
+  - Estimativa: 1–2 dias
+  - Subtarefas:
+    - Remover qualquer segredo do repositório.
+    - Configurar Secret Manager (ex.: GitHub Secrets, AWS Secrets Manager, Vault).
+    - Validar que .env.example cobre todas variáveis exigidas, criar checklist de variáveis obrigatórias.
+  - Critério de aceitação:
+    - Nenhuma secret plain-text no repo.
+    - Pipeline lê secrets do Secret Manager; deploy de staging usa secrets criptografados.
+
+- Tarefa: HTTPS, Cookies e Hardening básico
+  - Responsável: Eng. Backend / DevOps
+  - Estimativa: 1 dia
+  - Subtarefas:
+    - Forçar HTTPS (redirecionamento).
+    - Configurar cookies: Secure, HttpOnly, SameSite=strict (quando aplicável).
+    - Adicionar helmet, express-rate-limit, cors configurado (lista de origens).
+  - CA:
+    - Requests em HTTP são redirecionados para HTTPS.
+    - Cabeçalhos de segurança presentes (X-Frame-Options, X-Content-Type-Options, CSP mínimo).
+    - Rate limiter aplicado em endpoints críticos (login, APIs públicas).
+
+- Tarefa: Health Endpoint e Smoke Tests
+  - Responsável: Eng. Backend
+  - Estimativa: 0.5 dia
+  - Subtarefas:
+    - Implementar /health ou /api/health que valide: processo app, DB conectado, cache (Redis) OK.
+    - Criar smoke test que chame health endpoint.
+  - CA:
+    - /health retorna 200 JSON com status OK e latência básica.
+    - Smoke test no CI passa após deploy em staging.
+
+## Prioridade Alta (P1) — infraestrutura e deploy minimum viable
+- Tarefa: Dockerização (server + client) e docker-compose para dev
+  - Responsável: Eng. Backend + Eng. Frontend
+  - Estimativa: 1–2 dias
+  - Subtarefas:
+    - Criar Dockerfile para backend (build stage + runtime).
+    - Criar Dockerfile para frontend e servir via Nginx.
+    - docker-compose com Postgres (para dev), Redis, server, client.
+  - CA:
+    - Consegue rodar stack local com `docker-compose up --build` e acessar UI + endpoints.
+    - Health check do server OK.
+
+- Tarefa: CI básico (build + check + tests)
+  - Responsável: Eng. Backend + Eng. Frontend
+  - Estimativa: 2–4 dias
+  - Subtarefas:
+    - Pipeline executa: install, lint/tsc, tests, build (frontend + server).
+    - Artefatos de build válidos (frontend build, server bundle).
+  - CA:
+    - PRs falham quando checks não passam.
+    - Build artifacts gerados com sucesso.
+
+- Tarefa: Build e push de imagens para registry
+  - Responsável: DevOps
+  - Estimativa: 0.5–1 dia
+  - Subtarefas:
+    - Configurar GitHub Secrets para AUTH do registry.
+    - Workflow que constrói e envia imagens taggeadas (staging/prod).
+  - CA:
+    - Imagens aparecem no registry (GCR/ghcr/dockerhub) com tags.
+
+## Prioridade Média (P2) — dados, sessões, migrations
+- Tarefa: Migrations, backup e rollback (Drizzle)
+  - Responsável: Eng. Backend / DBA
+  - Estimativa: 2–3 dias
+  - Subtarefas:
+    - Validar drizzle-kit push e migrations.
+    - Escrever playbook de rollback.
+    - Testar backup/restore (dump).
+  - CA:
+    - Processo de migration documentado e testado (backup -> migrate -> rollback).
+
+- Tarefa: Sessões & conexão DB para escala
+  - Responsável: Eng. Backend
+  - Estimativa: 1–2 dias
+  - Subtarefas:
+    - Mudar session store para Redis (recomendado) ou garantir pool adequado para Postgres.
+    - Configurar connection pooling (pgbouncer) se usar Neon.
+  - CA:
+    - Sessões persistem em Redis; testes de carga não esgotam conexões DB.
+
+## Prioridade Média (P3) — observability e segurança avançada
+- Tarefa: Logs estruturados e erros (Sentry)
+  - Responsável: Eng. Backend / SRE
+  - Estimativa: 2 dias
+  - Subtarefas:
+    - Integrar Sentry (server + client).
+    - Logs estruturados (pino/winston) enviados para um aggregator.
+  - CA:
+    - Erros aparecem no Sentry com contexto; logs pesquisáveis.
+
+- Tarefa: Testes e CI expandido (unit + integração + E2E)
+  - Responsável: QA / Eng. Fullstack
+  - Estimativa: 2–3 semanas (iterações)
+  - Subtarefas:
+    - Escrever testes unitários para auth, pagamento, endpoints críticos.
+    - Configurar E2E (Playwright/Cypress) cobrindo fluxos: signup, login, simulação, checkout.
+  - CA:
+    - Cobertura básica nos fluxos críticos; pipeline bloqueia deploy se E2E falhar em staging.
+
+## Prioridade Baixa (P4) — performance, compliance e entrega
+- Tarefa: Load Test e otimização
+  - Responsável: Eng. Backend / SRE
+  - Estimativa: 1–2 semanas
+  - Subtarefas:
+    - Rodar k6 para endpoints críticos, otimizar queries, índices.
+  - CA:
+    - App mantém latência aceitável sob target load.
+
+- Tarefa: Pagamentos e Compliance (Stripe)
+  - Responsável: Eng. Backend + Produto
+  - Estimativa: 3–5 dias
+  - Subtarefas:
+    - Usar Stripe Checkout/Elements; validar webhooks seguros.
+    - Documentar como reduzir escopo PCI.
+  - CA:
+    - Testes de pagamento em modo real (cards de teste) ok; webhooks validados.
+
+## Observações finais
+- MVP privado (beta) possível em 2–6 semanas com foco P0+P1.
+- Produção robusta exige P2+P3 implementados (8–16 semanas dependendo equipe).
+EOF
+
+          # Stage: commit changes
+          git add -A
+          git commit -m "ci(prod): add CI/CD, Dockerfiles, docker-compose, health endpoint, checklist" || echo "no changes to commit"
+
+      - name: Push branch using PAT and create PR
+        env:
+          PAT: ${{ secrets.AUTOMATION_PAT || secrets.COPILOT_PAT }}
+          REPO: ${{ github.repository }}
+        run: |
+          if [ -z "${PAT}" ]; then
+            echo "ERROR: No PAT found. Ensure repository secret AUTOMATION_PAT or COPILOT_PAT exists."
+            exit 1
+          fi
+          # Push branch
+          git remote set-url origin https://x-access-token:${PAT}@github.com/${REPO}.git
+          git push -u origin ci-prod-setup --force
+
+          # Try to create PR via GitHub API
+          echo "Creating PR from ci-prod-setup -> main..."
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -H "Authorization: token ${PAT}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${REPO}/pulls \
+            -d "{\"title\":\"ci(prod): add CI/CD, Dockerfiles, docker-compose, health endpoint, checklist\",\"head\":\"ci-prod-setup\",\"base\":\"main\",\"body\":\"Automated PR: adiciona Dockerfiles, docker-compose, CI/CD workflow, health endpoint e checklist de produção. Verifique os secrets e execute validações locais antes de merge.\"}")
+
+          if [ "$HTTP_CODE" -eq 201 ]; then
+            echo "PR created successfully."
+          elif [ "$HTTP_CODE" -eq 422 ]; then
+            echo "PR probably already exists or validation failed (HTTP 422). Continue."
+          else
+            echo "PR creation returned HTTP code $HTTP_CODE (non-fatal)."
+          fi
